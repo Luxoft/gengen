@@ -1,0 +1,9 @@
+// #region Enums
+<% enums.forEach(({ name, data }) => { %>
+export enum <%= name %> { 
+    <% data.forEach(({ key, value }) => { %>
+        <%= key %> = <%= value %>,
+    <% }) %>
+}
+<% }); %>
+// #endregion

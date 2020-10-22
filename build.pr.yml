@@ -1,0 +1,39 @@
+variables:
+  Build.Repository.Clean: true # clean the local repo on the build agents
+  BuildPlatform: 'any cpu'
+
+resources:
+- repo: self
+
+queue:
+  name: default
+
+trigger: none # will disable CI builds entirely
+
+steps:
+- task: NodeTool@0
+  displayName: 'Use Node 12.19.0'
+  inputs:
+    versionSpec: 12.19.0
+
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    workingDir: .
+    verbose: false
+
+- task: Npm@1
+  displayName: 'npm run build:all'
+  inputs:
+    command: custom
+    workingDir: .
+    verbose: false
+    customCommand: 'run build:all'
+
+- task: Npm@1
+  displayName: 'npm test'
+  inputs:
+    command: custom
+    workingDir: .
+    verbose: false
+    customCommand: 'run test'

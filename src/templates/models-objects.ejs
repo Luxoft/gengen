@@ -1,0 +1,87 @@
+// #region Models<% models.forEach(({ name, properties, isOut, isIn, isIdentity }) => { %>
+export class <%= name %> { <% properties.forEach((property) => { %>
+    <% if (property.isArray) { -%>
+    public <%= property.name %>: <%= property.typeName %>[] = undefined;
+    <% } else { -%>
+    public <%= property.name %>: <%= property.typeName %> = undefined;
+    <% } -%>
+<% }) %>
+
+    private __<%= name[0].toLowerCase() + name.slice(1) %>: string;
+
+    <% if (isIdentity) { -%>
+    constructor(id: Guid | string = null) {
+        <% properties.forEach((property) => { -%>
+            this.<%= property.name %> = new Guid(id);
+        <% }) -%>
+    }
+    <% } -%>
+
+    <% if (isIdentity) { -%>
+        public static toDTO(id: Guid): I<%= name %> {
+            return { id: id.toString() };
+        }
+    <% } -%>
+
+    <% if (!isIdentity && isOut) { -%>
+    public static toDTO(model: Partial<<%= name %>>): I<%= name %> {
+        return {
+            <% properties.forEach((property) => { -%>
+            <% switch (true) { 
+            case property.isArray && property.isObject && !property.isIdentity: -%>
+            <%= property.name %>: model.<%= property.name %> ? model.<%= property.name %>.map(x => <%= property.typeName %>.toDTO(x)) : undefined,
+            <% break; case property.isArray && property.isObject && property.isIdentity: -%>
+            <%= property.name %>: model.<%= property.name %> ? model.<%= property.name %>.map(x => <%= property.typeName %>.toDTO(x.id)) : undefined,
+            <% break; case property.isArray && property.isGuid: -%>
+            <%= property.name %>: model.<%= property.name %> ? model.<%= property.name %>.map(x => x.toString()) : undefined,
+            <% break; case property.isObject && !property.isIdentity: -%>
+            <%= property.name %>: model.<%= property.name %> ? <%= property.typeName %>.toDTO(model.<%= property.name %>) : undefined,
+            <% break; case property.isObject && property.isIdentity: -%>
+            <%= property.name %>: model.<%= property.name %> ? <%= property.typeName %>.toDTO(model.<%= property.name %>.id) : undefined,
+            <% break; case property.isDate: -%>
+            <%= property.name %>: toDateOut(model.<%= property.name %>),
+            <% break; case property.isGuid && !property.isNullable: -%>
+            <%= property.name %>: model.<%= property.name %> ? model.<%= property.name %>.toString() : Guid.empty.toString(),
+            <% break; case property.isGuid && property.isNullable: -%>
+            <%= property.name %>: model.<%= property.name %> ? model.<%= property.name %>.toString() : undefined,
+            <% break; default: -%>
+            <%= property.name %>: model.<%= property.name %>,
+            <% break; } -%>
+            <% }) -%>
+        };
+    }
+    <% } -%>
+
+    <% if (!isIdentity && isIn) { -%>
+    public static fromDTO(dto: I<%= name %>): <%= name %> {
+        const result = new <%= name %>();
+
+        <% properties.forEach((property) => { -%>
+        <% switch (true) { 
+        case property.isArray && property.isObject && !property.isIdentity: -%>
+        result.<%= property.name %> = dto.<%= property.name %> ? dto.<%= property.name %>.map(x => <%= property.typeName %>.fromDTO(x)) : [];
+        <% break; case property.isArray && property.isObject && property.isIdentity: -%>
+        result.<%= property.name %> = dto.<%= property.name %> ? dto.<%= property.name %>.map(x => new <%= property.typeName %>(x.id)) : [];
+        <% break; case property.isArray && property.isGuid: -%>
+        result.<%= property.name %> = dto.<%= property.name %> ? dto.<%= property.name %>.map(x => new Guid(x)) : [];
+        <% break; case property.isObject && !property.isIdentity: -%>
+        result.<%= property.name %> = dto.<%= property.name %> ? <%= property.typeName %>.fromDTO(dto.<%= property.name %>) : undefined;
+        <% break; case property.isObject && property.isIdentity: -%>
+        result.<%= property.name %> = dto.<%= property.name %> ? new <%= property.typeName %>(dto.<%= property.name %>.id) : undefined;
+        <% break; case property.isDate: -%>
+        result.<%= property.name %> = toDateIn(dto.<%= property.name %>);
+        <% break; case property.isGuid && !property.isNullable: -%>
+        result.<%= property.name %> = new Guid(dto.<%= property.name %>);
+        <% break; case property.isGuid && property.isNullable: -%>
+        result.<%= property.name %> = dto.<%= property.name %> ? new Guid(dto.<%= property.name %>) : undefined;
+        <% break; default: -%>
+        result.<%= property.name %> = dto.<%= property.name %>;
+        <% break; } -%>
+        <% }) -%>
+
+        return result;
+    }
+    <% } -%>
+}
+<% }); %>
+// #endregion

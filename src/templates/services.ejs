@@ -1,0 +1,50 @@
+<%- include('./imports-services.ejs') -%>
+<% services.forEach(({ name, path, methods, hasDownloadMethods }) => { %>
+@Injectable({
+    providedIn: 'root'
+})
+export class <%= name %>Service extends<% if (hasDownloadMethods) { -%> DownloadFileService <% } else { -%> BaseHttpService <% } -%> {
+    constructor(http: HttpClient) {
+        super('<%= path %>', http);
+    }
+
+    <% methods.forEach(({ name, params, queryParams, queryString, isCollection, isEnum, httpMethod, resultDto, resultDtoString, resultModel, resultModelString, isPrimitive, isIdentity, isDownload }) => { %>
+    public <%= name %>(
+        <% [...params, ...queryParams].forEach(({ type, name }) => { %><%= name %>: <%= type %>,<% }) %>
+        <% if (isDownload) { -%>saveAs?: string<% } -%>
+    ): <% if (isDownload) { -%> Promise<IDownloadResult> <% } else { -%> Observable<<%= resultModelString %>> <% } -%> {
+        <% if (isDownload) { -%>
+            return this.downloadFile(
+                `<%= name %><%- queryString %>`,
+                `<%= httpMethod %>`,
+                <%  if (params.length === 1) { -%> <%= params[0].name %> <% } else { -%> undefined <% } -%>,
+                saveAs
+            );
+        <% } else { -%>
+        return this
+            .<%= httpMethod %><<%= resultDtoString %>>(
+                `<%= name %><%- queryString %>`,
+                <%  if (params.length) { -%>
+                <% params.forEach(({ type, name }) => { -%>
+                <%= name %>
+                <% }) -%>
+                <% } -%>
+            )
+            <% if (resultDto !== 'void' && !isPrimitive && !isEnum) { -%>
+            .pipe(
+                <% if (isCollection && !isIdentity) { -%>
+                mapCollection(<%= resultModel %>)
+                <% } else if (isCollection && isIdentity) { -%>
+                mapIdentityCollection(<%= resultModel %>)
+                <% } else if (!isCollection && isIdentity) { -%>
+                mapIdentitySingle(<%= resultModel %>)
+                <% } else { -%>
+                mapSingle(<%= resultModel %>)
+                <% } -%>
+            );
+            <% } -%>
+        <% } -%>
+    }
+    <% }) %>
+}
+<% }) %>

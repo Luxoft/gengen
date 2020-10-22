@@ -1,0 +1,10 @@
+// #region Interfaces<% models.forEach(({ name, properties }) => { %>
+export interface I<%= name %> { <% properties.forEach((property) => { %>
+    <% if (property.isArray) { -%>
+    <%= property.name %>: <%= property.typeNameDto %>[];
+    <% } else { -%>
+    <%= property.name %>: <%= property.typeNameDto %>;
+    <% } -%>
+<% }) %>}
+<% }); %>
+// #endregion
