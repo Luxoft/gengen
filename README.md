@@ -32,5 +32,15 @@ export default new Set([
 gengen g
 ```
 
-# Files
-For asp.net core add [ProducesResponseType(typeof(FileStreamResult), 200)] to methods that returns files (Streams)
+# Contributors
+
+* [Vsevolod Arutyunov](https://github.com/sevaru)
+* [Egorov Nikita](https://github.com/nikitaegorov)
+* [Leshchev Artem](https://github.com/aleshchev)
+
+
+# License and copyright
+
+Copyright (c) 2020 Luxoft
+
+Licensed under the MIT license
