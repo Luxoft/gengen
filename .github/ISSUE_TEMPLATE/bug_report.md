@@ -11,7 +11,9 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **To Reproduce**
+```json
 A piece of swagger.json 
+```
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
