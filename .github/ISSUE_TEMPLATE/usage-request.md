@@ -2,7 +2,7 @@
 name: Usage request
 about: Request to use open source
 title: ''
-labels: usage request
+labels: ''
 assignees: ''
 
 ---
