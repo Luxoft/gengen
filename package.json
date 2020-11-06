@@ -15,7 +15,12 @@
     "debug": "node --inspect-brk ./bin/index.js g --all --file=./swagger.json --outDir=./dist",
     "test": "npm run generate && npm run generate:all && ts-node ./scripts/test.ts"
   },
-  "keywords": ["swagger", "open-api", "codegen", "angular"],
+  "keywords": [
+    "swagger",
+    "open-api",
+    "codegen",
+    "angular"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
