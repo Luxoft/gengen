@@ -1,43 +1,57 @@
-# Usage 
+GenGen
+======
 
-To add new server methods
+[![license](https://img.shields.io/github/license/luxoft/gengen)](https://github.com/Luxoft/gengen/blob/master/LICENSE.txt) [![GitHub contributors](https://img.shields.io/github/contributors/luxoft/gengen)](https://github.com/Luxoft/gengen/graphs/contributors/)
 
-1) Start server app (swagger should be accessable here https://localhost:5001/swagger/v1/swagger.json)
+The tool generates models and [Angular](https://angular.io/) services based on the generated [Swagger JSON](https://swagger.io/specification/).
 
-2) Init
-```shell
-gengen init
-```
+# Getting Started
 
-3) Generate whole method list by (--file=./swagger.json)
-```shell
-gengen g:f
-```
+First of all you make sure that swagger.json is accessable.
+> Location by default is https://localhost:5001/swagger/v1/swagger.json. You can override it. See [all options](https://github.com/Luxoft/gengen#all-options)
 
-3) Add/Remove needed methods in facade.config.ts (--file=./swagger.json)
-```ts
+##### Generate all API
+   ```shell
+   gengen g --all
+   ```
 
+##### Generate a part of API
 
-import { Facade } from './facade';
+1. Initialize empty rule set
+   ```shell
+   gengen init
+   ```
 
-export default new Set([
-    Facade.EmployeeService.GetVisualEmployeesByActiveEmployeeFilter,
-    Facade.ProjectActivityService.GetVisualProjectActivitiesByFilter,
-    Facade.ProjectMethodologyService.GetVisualProjectMethodologiesByFilter,
-]);
-```
+2. Generate list of available routes
+   ```shell
+   gengen g:f
+   ```
 
-4) Generate Services/Models/Enums by
-```shell
-gengen g
-```
+3. Describe routes who will be generated
+   ```ts
+   import { Facade } from './facade';
+   
+   export default new Set([
+       Facade.ProductService.GetProducts,
+       Facade.CategoryService.AddCategory
+   ]);
+   ```
 
-# Contributors
+4. Generate specified routes
+   ```shell
+   gengen g
+   ```
 
-* [Vsevolod Arutyunov](https://github.com/sevaru)
-* [Egorov Nikita](https://github.com/nikitaegorov)
-* [Leshchev Artem](https://github.com/aleshchev)
+##### All options
 
+| Option | Description | Type | Default value |
+|---|---|---|---|
+|**all**|Generate all|boolean|false|
+|**swaggerUrl**|Location of swagger.json|string|https://localhost:5001/swagger/v1/swagger.json|
+|**file**|Local path to swagger.json|string||
+|**outDir**|Output directory|string|./src/generated|
+|**outDirFacade**|Temporary output directory using in 'Generate a part of API' scenario|string|./.generated|
+|**print**|Prints swagger.json to file|boolean|true|
 
 # License and copyright
 
