@@ -1,9 +1,12 @@
 import { IOptions } from '../options';
-import { PATH_PREFIX } from './consts';
 import { ISwaggerMeta } from './types';
+import { TypesService } from './TypesService';
 
 export class MethodListService {
-    constructor(private meta: ISwaggerMeta) { }
+    constructor(
+        private meta: ISwaggerMeta,
+        private typesService: TypesService) {
+    }
 
     public async getMethodList(options: IOptions): Promise<Set<string>> {
         return options.all ? this.getAllMethods() : this.getMethodListFromFile(options);
@@ -18,15 +21,12 @@ export class MethodListService {
                 esModuleInterop: true,
             }
         });
-        const data = require(process.cwd() + `/${options.tempOutput}/facade.config.ts`).default;
-        return data;
+
+        return require(process.cwd() + `/${options.tempOutput}/facade.config.ts`).default;
     }
 
     private getAllMethods(): Set<string> {
         const meta = this.meta;
-        return new Set(Object.entries(meta.paths).map(([path]) => {
-            const url = path.replace(PATH_PREFIX, '');
-            return url;
-        }, []));
+        return new Set(Object.entries(meta.paths).map(z => this.typesService.getRouteInfo(z).full, []));
     }
 }

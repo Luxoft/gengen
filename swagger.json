@@ -56,7 +56,7 @@
         }
       }
     },
-    "/api/v1/Product/GetProducts": {
+    "/Product/GetProducts": {
       "get": {
         "tags": [
           "Product"
@@ -94,7 +94,7 @@
         }
       }
     },
-    "/api/v1/Product/SearchProducts": {
+    "/Product/SearchProducts": {
       "get": {
         "tags": [
           "Product"
@@ -142,7 +142,7 @@
         }
       }
     },
-    "/api/v1/Product/Download": {
+    "/Product/Download": {
       "get": {
         "tags": [
           "Product"

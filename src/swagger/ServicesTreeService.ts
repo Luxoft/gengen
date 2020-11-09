@@ -1,4 +1,4 @@
-import { PATH_PREFIX, SQUARE_BRACKETS, TEMPLATE_MODEL_PREFIX } from './consts';
+import { SQUARE_BRACKETS, TEMPLATE_MODEL_PREFIX } from './consts';
 import { isCollectionSchema, isDownloadSchema, isPropertyType, isRefType, isSimpleCollectionSchema } from './guards';
 import {
     HttpMethod,
@@ -31,7 +31,9 @@ interface IMethodDescriptor {
 }
 
 export class ServicesTreeService {
-    constructor(private meta: ISwaggerMeta, private typesService: TypesService) {
+    constructor(
+        private meta: ISwaggerMeta,
+        private typesService: TypesService) {
     }
 
     public getServicesList(methodList: Set<string>): ITemplateServiceDescription[] {
@@ -256,13 +258,11 @@ export class ServicesTreeService {
     private getMethodDescriptors(meta: ISwaggerMeta, methodList: Set<string>): IMethodDescriptor[] {
         const paths = Object
             .entries(meta.paths)
-            .filter(([path]) => {
-                return methodList.has(path.replace(PATH_PREFIX, ''));
-            });
+            .filter(z => methodList.has(this.typesService.getRouteInfo(z).full));
 
         return paths.map(([path, descriptor]) => {
             return {
-                path: path.replace(PATH_PREFIX, ''),
+                path: this.typesService.getRouteInfo([path, descriptor]).full,
                 descriptor
             };
         });

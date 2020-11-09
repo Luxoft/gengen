@@ -13,8 +13,8 @@ export default async function main(optionsRaw: IOptions = defaultOptions) {
     const meta = await getMeta(options);
 
     // Services
-    const methodListService = new MethodListService(meta);
     const typesService = new TypesService(meta);
+    const methodListService = new MethodListService(meta, typesService);
     const modelsService = new ModelsService(meta, typesService);
     const servicesService = new ServicesTreeService(meta, typesService);
 

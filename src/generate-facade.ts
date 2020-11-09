@@ -7,11 +7,11 @@ import { sortBy } from './swagger/utils';
 
 export default async function main(optionsRaw: IOptions = defaultOptions) {
     const options = { ...defaultOptions, ...optionsRaw };
-
     const controllers = new FacadeService(await getMeta(options)).getControllers();
 
     const items = Object.entries(controllers)
     items.sort(sortBy(x => x[0]));
+
     const sorted = items.reduce<IControllers>((store, item) => {
         const methods = item[1];
         methods.sort();
