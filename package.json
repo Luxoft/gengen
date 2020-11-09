@@ -39,6 +39,6 @@
     "ts-node": "8.3.0",
     "prettier": "1.18.2",
     "ejs": "2.7.1",
-    "node-fetch": "2.6.0"
+    "node-fetch": "2.6.1"
   }
 }
