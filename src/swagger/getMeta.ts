@@ -4,8 +4,6 @@ import { IOptions, defaultOptions } from '../options';
 import { ISwaggerMeta } from './types';
 import { readFile, writeFile } from './utils';
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 export async function getMeta(input: IOptions): Promise<ISwaggerMeta> {
     const options: IOptions = { ...defaultOptions, ...input };
     const data = await getSwaggerData(options);
