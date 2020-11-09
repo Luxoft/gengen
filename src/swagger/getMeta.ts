@@ -2,19 +2,13 @@ import fetch from 'node-fetch';
 
 import { IOptions, defaultOptions } from '../options';
 import { ISwaggerMeta } from './types';
-import { readFile, writeFile } from './utils';
+import { readFile } from './utils';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-export async function getMeta(input: IOptions): Promise<ISwaggerMeta> {
+export function getMeta(input: IOptions): Promise<ISwaggerMeta> {
     const options: IOptions = { ...defaultOptions, ...input };
-    const data = await getSwaggerData(options);
-
-    if (options.print && options.file) {
-        await writeFile(options.file, JSON.stringify(data, null, 2), 'utf8');
-    }
-
-    return data;
+    return getSwaggerData(options);
 }
 
 async function getSwaggerData(options: IOptions): Promise<ISwaggerMeta> {

@@ -3,7 +3,7 @@ GenGen
 
 [![license](https://img.shields.io/github/license/luxoft/gengen)](https://github.com/Luxoft/gengen/blob/master/LICENSE.txt) [![GitHub contributors](https://img.shields.io/github/contributors/luxoft/gengen)](https://github.com/Luxoft/gengen/graphs/contributors/)
 
-The tool generates models and [Angular](https://angular.io/) services based on the generated [Swagger JSON](https://swagger.io/specification/).
+This tool generates models and [Angular](https://angular.io/) services based on generated [Swagger JSON](https://swagger.io/specification/).
 
 # Getting Started
 
@@ -51,7 +51,6 @@ First of all you make sure that swagger.json is accessable.
 |**file**|Local path to swagger.json|string||
 |**outDir**|Output directory|string|./src/generated|
 |**outDirFacade**|Temporary output directory using in 'Generate a part of API' scenario|string|./.generated|
-|**print**|Prints swagger.json to file|boolean|true|
 
 # License and copyright
 
