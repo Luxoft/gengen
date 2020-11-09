@@ -17,7 +17,7 @@ program
   .command("generate")
   .alias("g")
   .option("--file <string>")
-  .option("--outDir <string>")
+  .option("--output <string>")
   .option("--all")
   .description("Generates models and services")
   .action((params) => {

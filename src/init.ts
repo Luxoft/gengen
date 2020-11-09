@@ -14,7 +14,7 @@ export default new Set([]);
 
 export default async function init(options: IOptions = defaultOptions): Promise<void> {
     const text = TEMPLATE;
-    await mkdirAsync(options.outDirFacade, { recursive: true });
-    const outputFile = `${options.outDirFacade}/facade.config.ts`;
+    await mkdirAsync(options.tempOutput, { recursive: true });
+    const outputFile = `${options.tempOutput}/facade.config.ts`;
     await writeFileAsync(outputFile, text, 'utf8');
 }
