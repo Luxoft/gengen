@@ -18,7 +18,7 @@ export class MethodListService {
                 esModuleInterop: true,
             }
         });
-        const data = require(process.cwd() + `/${options.outDirFacade}/facade.config.ts`).default;
+        const data = require(process.cwd() + `/${options.tempOutput}/facade.config.ts`).default;
         return data;
     }
 
