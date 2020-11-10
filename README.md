@@ -50,7 +50,7 @@ First of all you make sure that swagger.json is accessable.
 |**url**|Location of swagger.json|string|https://localhost:5001/swagger/v1/swagger.json|
 |**file**|Local path to swagger.json|string||
 |**output**|Output directory|string|./src/generated|
-|**tempOutput**|Temporary output directory using in 'Generate a part of API' scenario|string|./.generated|
+|**configOutput**|Output directory using in 'Generate a part of API' scenario|string|./.generated|
 
 # License and copyright
 

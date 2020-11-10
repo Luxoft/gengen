@@ -5,6 +5,7 @@ import {
     IEnumDefinition,
     IGuidProperty,
     IMethodMeta,
+    IRouteMeta,
     isIdentity,
     isObjectDefinition,
     ISwaggerMeta,
@@ -145,7 +146,7 @@ export class TypesService {
         }
     }
 
-    public getRouteInfo(path: [string, ISwaggerPathMethodMeta]): { controller: string, actionPart: string, full: string } {
+    public getRouteInfo(path: [string, ISwaggerPathMethodMeta]): IRouteMeta {
         const [route, pathMeta] = path;
         const methodMeta = pathMeta.get || pathMeta.post || pathMeta.put || pathMeta.delete;
         const controller = methodMeta ? first(methodMeta.tags) : undefined;

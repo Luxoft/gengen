@@ -22,7 +22,7 @@ export class MethodListService {
             }
         });
 
-        return require(process.cwd() + `/${options.tempOutput}/facade.config.ts`).default;
+        return require(process.cwd() + `/${options.configOutput}/facade.config.ts`).default;
     }
 
     private getAllMethods(): Set<string> {

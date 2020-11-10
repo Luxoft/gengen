@@ -19,5 +19,5 @@ export default async function main(optionsRaw: IOptions = defaultOptions) {
         return store;
     }, {});
 
-    render({ controllers: sorted }, './templates/facade.ejs', `${options.tempOutput}/facade.ts`);
+    render({ controllers: sorted }, './templates/facade.ejs', `${options.configOutput}/facade.ts`);
 }

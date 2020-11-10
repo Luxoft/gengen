@@ -4,14 +4,14 @@ export const DEFAULT_OUT_DIR = './src/generated';
 
 export interface IOptions {
     all?: boolean;
-    tempOutput: string;
+    configOutput: string;
     output: string;
     file?: string;
     url?: string;
 }
 
 export const defaultOptions: IOptions = {
-    tempOutput: DEFAULT_TEMP_OUT_DIR,
+    configOutput: DEFAULT_TEMP_OUT_DIR,
     output: DEFAULT_OUT_DIR,
     url: SWAGGER_URL
 };
