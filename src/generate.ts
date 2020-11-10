@@ -13,8 +13,8 @@ export default async function main(optionsRaw: IOptions = defaultOptions) {
     const meta = await getMeta(options);
 
     // Services
-    const methodListService = new MethodListService(meta);
     const typesService = new TypesService(meta);
+    const methodListService = new MethodListService(meta, typesService);
     const modelsService = new ModelsService(meta, typesService);
     const servicesService = new ServicesTreeService(meta, typesService);
 
@@ -29,11 +29,11 @@ export default async function main(optionsRaw: IOptions = defaultOptions) {
     services.sort(sortBy(x => x.name));
 
     // Render
-    render({}, './templates/guid.ejs', `${options.outDir}/Guid.ts`)
-    render({}, './templates/date-converters.ejs', `${options.outDir}/date-converters.ts`)
-    render({}, './templates/mappers.ejs', `${options.outDir}/mappers.ts`)
-    render({}, './templates/base-http-service.ejs', `${options.outDir}/base-http.service.ts`)
-    render({}, './templates/download-service.ejs', `${options.outDir}/download-service.ts`)
-    render({ models, enums }, './templates/models.ejs', `${options.outDir}/models.ts`);
-    render({ services }, './templates/services.ejs', `${options.outDir}/services.ts`);
+    render({}, './templates/guid.ejs', `${options.output}/Guid.ts`)
+    render({}, './templates/date-converters.ejs', `${options.output}/date-converters.ts`)
+    render({}, './templates/mappers.ejs', `${options.output}/mappers.ts`)
+    render({}, './templates/base-http-service.ejs', `${options.output}/base-http.service.ts`)
+    render({}, './templates/download-service.ejs', `${options.output}/download-service.ts`)
+    render({ models, enums }, './templates/models.ejs', `${options.output}/models.ts`);
+    render({ services }, './templates/services.ejs', `${options.output}/services.ts`);
 }

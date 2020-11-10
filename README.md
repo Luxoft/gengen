@@ -47,10 +47,10 @@ First of all you make sure that swagger.json is accessable.
 | Option | Description | Type | Default value |
 |---|---|---|---|
 |**all**|Generate all|boolean|false|
-|**swaggerUrl**|Location of swagger.json|string|https://localhost:5001/swagger/v1/swagger.json|
+|**url**|Location of swagger.json|string|https://localhost:5001/swagger/v1/swagger.json|
 |**file**|Local path to swagger.json|string||
-|**outDir**|Output directory|string|./src/generated|
-|**outDirFacade**|Temporary output directory using in 'Generate a part of API' scenario|string|./.generated|
+|**output**|Output directory|string|./src/generated|
+|**configOutput**|Output directory using in 'Generate a part of API' scenario|string|./.generated|
 
 # License and copyright
 

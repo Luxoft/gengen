@@ -14,11 +14,11 @@ async function getSwaggerData(options: IOptions): Promise<ISwaggerMeta> {
         return getFromFile(options.file);
     }
 
-    if (options.swaggerUrl) {
-        return fetch(options.swaggerUrl).then<ISwaggerMeta>(res => res.json());
+    if (options.url) {
+        return fetch(options.url).then<ISwaggerMeta>(res => res.json());
     }
 
-    throw new Error('Specify file or swaggerUrl');
+    throw new Error('Specify file or url');
 }
 
 async function getFromFile(filePath: string): Promise<ISwaggerMeta> {

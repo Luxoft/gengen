@@ -1,4 +1,4 @@
-import { IGNORE_PROPERTIES, PATH_PREFIX } from './consts';
+import { IGNORE_PROPERTIES } from './consts';
 import { isCollectionSchema, isRefType } from './guards';
 import { ITemplateEnumDescriptor, ITemplatePropertyDescriptor, ITemplateTypeDescriptor } from './template-types';
 import { ICollectionSchema, IMethodMeta, ISingleSchema, isObjectDefinition, ISwaggerMeta, SchemaType } from './types';
@@ -9,7 +9,6 @@ export class ModelsService {
     constructor(
         private meta: ISwaggerMeta,
         private types: TypesService) {
-
     }
 
     public getTypesByMethodList(methodList: Set<string>): { models: ITemplateTypeDescriptor[], enums: ITemplateEnumDescriptor[] } {
@@ -91,12 +90,8 @@ export class ModelsService {
         const meta = this.meta;
         const types = new Set<string>();
 
-        const methodDescriptors =
-            Object
-                .entries(meta.paths)
-                .filter(([path]) => {
-                    return methodList.has(path.replace(PATH_PREFIX, ''))
-                });
+        const methodDescriptors = Object.entries(meta.paths)
+            .filter(z => methodList.has(this.types.getRouteInfo(z).full));
 
         methodDescriptors.forEach(([_, descriptor]) => {
             const meta = Object.values(descriptor)[0] as IMethodMeta;

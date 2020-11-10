@@ -5,20 +5,20 @@ import {
     IEnumDefinition,
     IGuidProperty,
     IMethodMeta,
+    IRouteMeta,
     isIdentity,
     isObjectDefinition,
     ISwaggerMeta,
+    ISwaggerPathMethodMeta,
     PropertyType,
     SchemaType,
     SimplePropertyType,
     TypeDefinition,
 } from './types';
-import { last } from './utils';
+import { first, last } from './utils';
 
 export class TypesService {
-    constructor(private meta: ISwaggerMeta) {
-
-    }
+    constructor(private meta: ISwaggerMeta) { }
 
     /**
      * @description Only json methods for now
@@ -144,6 +144,18 @@ export class TypesService {
                     };
                 }
         }
+    }
+
+    public getRouteInfo(path: [string, ISwaggerPathMethodMeta]): IRouteMeta {
+        const [route, pathMeta] = path;
+        const methodMeta = pathMeta.get || pathMeta.post || pathMeta.put || pathMeta.delete;
+        const controller = methodMeta ? first(methodMeta.tags) : undefined;
+        if (!controller) {
+            throw new Error(`Cannot find controller by path '${route}'`)
+        }
+
+        const actionPart = last(route.split(`/${controller}/`));
+        return { controller, actionPart, full: `${controller}/${actionPart}` }
     }
 
     private createRefPropertyTemplateDescriptor(name: string, ref: string): ITemplatePropertyDescriptor {

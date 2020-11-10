@@ -165,3 +165,9 @@ export function isIdentity(x: IObjectDefinition): boolean {
 }
 
 export type SchemaType = ISingleSchema | ISimpleCollectionSchema | ICollectionSchema | IDownloadSchema | PropertyType;
+
+export interface IRouteMeta {
+    controller: string;
+    actionPart: string;
+    full: string;
+}

@@ -1,6 +1,6 @@
 {
   "name": "gengen",
-  "version": "0.0.0-alpha.10",
+  "version": "0.0.0-alpha.11",
   "description": "",
   "bin": {
     "gengen": "./bin/index.js"
@@ -10,9 +10,9 @@
     "build": "tsc -p tsconfig.json",
     "build:all": "npm run build && ncp ./src/templates ./lib/templates",
     "generate-facade": "node ./bin/index.js g:f --file=./swagger.json",
-    "generate": "node ./bin/index.js g --file=./swagger.json --outDir=./.output/selected",
-    "generate:all": "node ./bin/index.js g --all --file=./swagger.json --outDir=./.output/all",
-    "debug": "node --inspect-brk ./bin/index.js g --all --file=./swagger.json --outDir=./dist",
+    "generate": "node ./bin/index.js g --file=./swagger.json --output=./.output/selected",
+    "generate:all": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/all",
+    "debug": "node --inspect-brk ./bin/index.js g --all --file=./swagger.json --output=./dist",
     "test": "npm run generate && npm run generate:all && ts-node ./scripts/test.ts"
   },
   "keywords": [
