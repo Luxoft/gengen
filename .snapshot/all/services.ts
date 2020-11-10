@@ -31,7 +31,7 @@ export class CategoryService extends BaseHttpService {
 })
 export class ProductService extends DownloadFileService {
   constructor(http: HttpClient) {
-    super('/api/v1/Product', http);
+    super('/Product', http);
   }
 
   public getProducts(): Observable<$models.Product[]> {
