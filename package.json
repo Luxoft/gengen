@@ -1,7 +1,7 @@
 {
   "name": "gengen",
-  "version": "0.0.0-alpha.11",
-  "description": "",
+  "version": "1.0.0-rc.1",
+  "description": "Tool for generating models and Angular services based on OpenAPIs and Swagger's JSON",
   "bin": {
     "gengen": "./bin/index.js"
   },
