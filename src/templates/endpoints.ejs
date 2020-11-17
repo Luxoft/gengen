@@ -1,0 +1,9 @@
+export class Endpoints {
+<% Object.entries(controllers).forEach(([controllerName, methods]) => { %>
+    public static <%=controllerName%>Service = {
+        <% methods.forEach((method) => { %>
+            <%= method %>: "<%= controllerName %>/<%= method %>",
+        <% }) %>
+    }
+<% }) %>
+}

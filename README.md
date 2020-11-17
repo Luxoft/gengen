@@ -19,21 +19,21 @@ First of all you make sure that swagger.json is accessable.
 
 1. Initialize empty rule set
    ```shell
-   gengen init
+   gengen init-config
    ```
 
 2. Generate list of available routes
    ```shell
-   gengen g:f
+   gengen g:c
    ```
 
 3. Describe routes who will be generated
    ```ts
-   import { Facade } from './facade';
-   
+   import { Endpoints } from './endpoints';
+
    export default new Set([
-       Facade.ProductService.GetProducts,
-       Facade.CategoryService.AddCategory
+      Endpoints.ProductService.GetProducts,
+      Endpoints.CategoryService.AddCategory
    ]);
    ```
 

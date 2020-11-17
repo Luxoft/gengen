@@ -19,14 +19,18 @@ describe('EndpointsService tests', () => {
                 }
             };
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec));
-            const service = new EndpointsService(openApiService);
             const expected = {
                 Category: ['AddCategory'],
                 Product: ['GetProducts', 'SearchProducts']
             };
 
-            expect(service.getGroupedActionsByController()).toEqual(expected);
+            const openApiService = new OpenAPIService(JSON.stringify(spec));
+            const service = new EndpointsService(openApiService);
+
+            const result = service.getGroupedActionsByController();
+
+            expect(Object.keys(result)).toEqual(['Category', 'Product']);
+            expect(result).toEqual(expected);
         });
 
         test('tags does not exists', () => {

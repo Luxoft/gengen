@@ -9,7 +9,7 @@ export class EndpointsService {
     public getGroupedActionsByController(): Record<string, string[]> {
         const endpoints = this.openAPIService.getEndpoints();
 
-        return endpoints.reduce<Record<string, string[]>>((store, endpoint) => {
+        const controllers = endpoints.reduce<Record<string, string[]>>((store, endpoint) => {
             const controller = first(this.openAPIService.getTagsByEndpoint(endpoint));
             if (!controller) {
                 return store;
@@ -25,5 +25,13 @@ export class EndpointsService {
             store[controller].push(action);
             return store;
         }, {});
+
+        const sortedControllers: Record<string, string[]> = {};
+
+        Object.keys(controllers)
+            .sort()
+            .forEach((z) => (sortedControllers[z] = controllers[z]));
+
+        return sortedControllers;
     }
 }
