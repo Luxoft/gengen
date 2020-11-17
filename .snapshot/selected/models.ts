@@ -11,7 +11,7 @@ export class Category {
 
   public static toDTO(model: Partial<Category>): ICategory {
     return {
-      name: model.name
+      name: model.name,
     };
   }
 
@@ -40,7 +40,7 @@ export class Product {
       id: model.id ? model.id.toString() : Guid.empty.toString(),
       name: model.name,
       expireDate: toDateOut(model.expireDate),
-      category: model.category ? Category.toDTO(model.category) : undefined
+      category: model.category ? Category.toDTO(model.category) : undefined,
     };
   }
 

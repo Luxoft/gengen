@@ -21,4 +21,4 @@ jobs:
     - run: npm ci
     - run: npm run build:all
     - run: npm t
-    - run: npm run check-snapshot
+    - run: npm run e2e

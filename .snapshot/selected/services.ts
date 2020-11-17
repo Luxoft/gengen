@@ -9,12 +9,12 @@ import {
   mapCollection,
   mapSingle,
   mapIdentityCollection,
-  mapIdentitySingle
+  mapIdentitySingle,
 } from './mappers';
 import * as $models from './models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CategoryService extends BaseHttpService {
   constructor(http: HttpClient) {
@@ -27,7 +27,7 @@ export class CategoryService extends BaseHttpService {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProductService extends BaseHttpService {
   constructor(http: HttpClient) {
