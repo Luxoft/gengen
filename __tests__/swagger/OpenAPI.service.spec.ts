@@ -1,4 +1,4 @@
-import { OpenAPIService } from '../../src/swagger/OpenAPIService';
+import { OpenAPIService } from '../../src/swagger/OpenAPI.service';
 
 describe('OpenAPIService tests', () => {
     describe('ctor', () => {

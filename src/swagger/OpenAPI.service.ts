@@ -7,7 +7,7 @@ export class OpenAPIService {
     private readonly spec: IOpenAPI3;
 
     constructor(json: string) {
-        this.spec = JSON.parse(json)
+        this.spec = JSON.parse(json);
 
         const majorVersion = this.majorVersion;
         if (majorVersion !== SUPPORTED_VERSION.toString()) {
