@@ -1,0 +1,31 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint",
+        "prettier"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "prettier"
+    ],
+    "rules": {
+        "@typescript-eslint/interface-name-prefix": 0,
+        "@typescript-eslint/explicit-function-return-type": [
+            2,
+            {
+                "allowExpressions": true
+            }
+        ],
+        "prettier/prettier": 2, // Means error
+        "quotes": [
+            2,
+            "single",
+            {
+                "avoidEscape": true
+            }
+        ]
+    }
+}

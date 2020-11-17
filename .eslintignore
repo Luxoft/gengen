@@ -1,0 +1,9 @@
+.generated
+.github
+.output
+.snapshot
+.vs
+.vscode
+dist
+lib
+node_modules

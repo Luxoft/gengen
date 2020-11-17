@@ -5,7 +5,7 @@ name: Build & Test
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ master, release-candidate ]
 
 jobs:
   build:
@@ -20,4 +20,5 @@ jobs:
         node-version: 12.19.0
     - run: npm ci
     - run: npm run build:all
-    - run: npm run test
+    - run: npm t
+    - run: npm run e2e

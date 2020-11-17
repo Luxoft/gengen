@@ -25,11 +25,11 @@ export class DownloadFileService extends BaseHttpService {
       method === 'get'
         ? this.http.get(`${this.path}/${url}`, {
             observe: 'response',
-            responseType: 'blob'
+            responseType: 'blob',
           })
         : this.http.post(`${this.path}/${url}`, data, {
             observe: 'response',
-            responseType: 'blob'
+            responseType: 'blob',
           });
 
     const response = await request.toPromise();
