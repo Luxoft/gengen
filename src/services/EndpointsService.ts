@@ -1,4 +1,4 @@
-import { OpenAPIService } from '../swagger/OpenAPI.service';
+import { OpenAPIService } from '../swagger/OpenAPIService';
 import { first, last } from '../utils';
 
 const IGNORE_LIST = [undefined, '{id}'];

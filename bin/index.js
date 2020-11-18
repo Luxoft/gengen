@@ -4,12 +4,12 @@ const program = require('commander');
 
 const generate = require('../lib/generate').default;
 const generateConfig = require('../lib/generate-config').default;
-const initConfig = require('../lib/init-config').default;
+const init = require('../lib/init').default;
 
 program
-  .command('init-config')
+  .command('init')
   .description('Creates file to select endpoints for generation')
-  .action(() => initConfig());
+  .action(() => init());
 
 program
   .command('generate-config')

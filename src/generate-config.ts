@@ -1,7 +1,7 @@
 import { defaultOptions, IOptions } from './options';
 import { render } from './render';
-import { EndpointsService } from './services/Endpoints.service';
-import { OpenAPIService } from './swagger/OpenAPI.service';
+import { EndpointsService } from './services/EndpointsService';
+import { OpenAPIService } from './swagger/OpenAPIService';
 import { getSwaggerJson } from './utils';
 
 export default async function main(options: IOptions): Promise<void> {
