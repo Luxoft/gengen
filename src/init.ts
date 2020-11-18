@@ -1,20 +1,18 @@
-import { IOptions, defaultOptions } from './options';
-
-import { writeFile, mkdir } from 'fs';
+import { mkdir, writeFile } from 'fs';
 import { promisify } from 'util';
+
+import { defaultOptions, IOptions } from './options';
 
 const writeFileAsync = promisify(writeFile);
 const mkdirAsync = promisify(mkdir);
 
 const TEMPLATE = `
-import { Facade } from './facade';
+import { Endpoints } from './endpoints';
 
 export default new Set([]);
 `;
 
 export default async function init(options: IOptions = defaultOptions): Promise<void> {
-    const text = TEMPLATE;
     await mkdirAsync(options.configOutput, { recursive: true });
-    const outputFile = `${options.configOutput}/facade.config.ts`;
-    await writeFileAsync(outputFile, text, 'utf8');
+    await writeFileAsync(`${options.configOutput}/endpoints.config.ts`, TEMPLATE, 'utf8');
 }

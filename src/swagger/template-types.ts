@@ -27,14 +27,6 @@ export interface ITemplateServiceDescription {
     methods: ITemplateMethodDescription[];
 }
 
-
-export interface IControllers {
-    /**
-     * @description map of controllerName to MethodNames
-     */
-    [controller: string]: string[];
-}
-
 export interface ITemplateTypeDescriptor {
     isOut: boolean;
     isIn: boolean;
