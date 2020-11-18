@@ -1,5 +1,5 @@
-import { OpenAPIService } from '../../src/swagger/OpenAPI.service';
-import { EndpointsService } from '../../src/services/Endpoints.service';
+import { OpenAPIService } from '../../src/swagger/OpenAPIService';
+import { EndpointsService } from '../../src/services/EndpointsService';
 
 describe('EndpointsService tests', () => {
     describe('getGroupedActionsByController', () => {
