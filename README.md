@@ -19,7 +19,7 @@ First of all you make sure that swagger.json is accessable.
 
 1. Initialize empty rule set
    ```shell
-   gengen init-config
+   gengen init
    ```
 
 2. Generate list of available routes
