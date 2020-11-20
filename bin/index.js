@@ -8,6 +8,7 @@ const init = require('../lib/init').default;
 
 program
   .command('init')
+  .option('--configOutput <string>')
   .description('Creates file to select endpoints for generation')
   .action(() => init());
 
@@ -16,13 +17,17 @@ program
   .description('Generates endpoints list')
   .alias('g:c')
   .option('--file <string>')
+  .option('--url <string>')
+  .option('--configOutput <string>')
   .action((params) => generateConfig(params));
 
 program
   .command('generate')
   .alias('g')
   .option('--file <string>')
+  .option('--url <string>')
   .option('--output <string>')
+  .option('--configOutput <string>')
   .option('--all')
   .description('Generates models and services')
   .action((params) => generate(params));
