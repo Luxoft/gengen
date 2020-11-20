@@ -1,6 +1,3 @@
-import fs from 'fs';
-import util from 'util';
-
 export function distinct(value: string[]): string[] {
     return [...new Set(value)];
 }
@@ -9,7 +6,6 @@ export function lowerFirst(value: string): string {
     const [first, ...other] = value;
     return first.toLocaleLowerCase() + other.join('');
 }
-export const readFile = util.promisify(fs.readFile);
 export function sortBy<T>(fn: (value: T) => string): (a: T, b: T) => number {
     return (a: T, b: T) => (fn(a) || '').localeCompare((fn(b) || ''))
 }

@@ -11,7 +11,7 @@ export default async function main(options: IOptions): Promise<void> {
     const openAPIService = new OpenAPIService(swaggerJson);
     const endpointsService = new EndpointsService(openAPIService);
 
-    const controllers = endpointsService.getGroupedActionsByController();
+    const controllers = endpointsService.getActionsGroupedByController();
 
     render({ controllers }, './templates/endpoints.ejs', `${settings.configOutput}/endpoints.ts`);
 }

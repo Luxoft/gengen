@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'fs';
 import { promisify } from 'util';
 
-import { defaultOptions, IOptions } from './options';
+import { CONFIG_FILENAME, defaultOptions, IOptions } from './options';
 
 const writeFileAsync = promisify(writeFile);
 const mkdirAsync = promisify(mkdir);
@@ -14,5 +14,5 @@ export default new Set([]);
 
 export default async function init(options: IOptions = defaultOptions): Promise<void> {
     await mkdirAsync(options.configOutput, { recursive: true });
-    await writeFileAsync(`${options.configOutput}/endpoints.config.ts`, TEMPLATE, 'utf8');
+    await writeFileAsync(`${options.configOutput}/${CONFIG_FILENAME}`, TEMPLATE, 'utf8');
 }
