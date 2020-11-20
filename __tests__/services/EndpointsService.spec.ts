@@ -70,8 +70,7 @@ describe('EndpointsService tests', () => {
             const openApiService = new OpenAPIService(JSON.stringify(spec));
             const service = new EndpointsService(openApiService);
 
-            const result = service.getActions();
-            expect(result).toEqual(new Set(['Category/AddCategory', 'Product/GetProducts', 'Product/SearchProducts']));
+            expect(service.getActions()).toEqual(new Set(['Category/AddCategory', 'Product/GetProducts', 'Product/SearchProducts']));
         });
     });
 });
