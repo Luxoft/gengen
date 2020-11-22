@@ -10,6 +10,6 @@ export interface IOpenAPI3 {
     components: {
         schemas: {
             [key: string]: IOpenAPI3ObjectSchema | IOpenAPI3EnumSchema;
-        }
+        };
     };
 }

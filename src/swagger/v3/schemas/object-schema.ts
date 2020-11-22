@@ -8,5 +8,5 @@ export interface IOpenAPI3ObjectSchema extends IOpenAPI3BaseSchema {
     type: 'object';
     properties: {
         [key: string]: IOpenAPI3SimpleSchema | IOpenAPI3ArraySchema | IOpenAPI3Reference | IOpenAPI3AllOfSchema;
-    }
+    };
 }

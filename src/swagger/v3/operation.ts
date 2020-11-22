@@ -14,16 +14,16 @@ export interface IOpenAPI3Operation {
                     schema: IOpenAPI3ArraySchema | IOpenAPI3Reference;
                 };
                 'application/octet-stream': {
-                    schema: IOpenAPI3BinarySchema
+                    schema: IOpenAPI3BinarySchema;
                 };
-            }
-        }
+            };
+        };
     };
     requestBody?: {
         content: {
             'application/json': {
                 schema: IOpenAPI3ArraySchema | IOpenAPI3Reference;
-            }
-        }
-    }
+            };
+        };
+    };
 }
