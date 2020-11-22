@@ -1,5 +1,7 @@
-import { defaultOptions, IOptions } from './options';
-import { render } from './render';
+import { Project } from 'ts-morph';
+
+import { ConfigMorphService } from './morph/ConfigMorphService';
+import { configOptions, defaultOptions, IOptions, morphOptions } from './options';
 import { EndpointsService } from './services/EndpointsService';
 import { OpenAPIService } from './swagger/OpenAPIService';
 import { getSwaggerJson } from './utils';
@@ -10,8 +12,15 @@ export default async function main(options: IOptions): Promise<void> {
 
     const openAPIService = new OpenAPIService(swaggerJson);
     const endpointsService = new EndpointsService(openAPIService);
-
     const controllers = endpointsService.getActionsGroupedByController();
 
-    render({ controllers }, './templates/endpoints.ejs', `${settings.configOutput}/endpoints.ts`);
+    const project = new Project(morphOptions);
+    const morphService = new ConfigMorphService();
+    project.createSourceFile(
+        `${settings.configOutput}/${configOptions.className.toLowerCase()}.ts`,
+        { statements: [morphService.getEndpointsStatement(controllers)] },
+        { overwrite: true }
+    );
+
+    await project.save();
 }

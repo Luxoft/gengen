@@ -1,7 +1,4 @@
-export const SWAGGER_URL = 'https://localhost:5001/swagger/v1/swagger.json';
-export const DEFAULT_TEMP_OUT_DIR = './.generated';
-export const DEFAULT_OUT_DIR = './src/generated';
-export const CONFIG_FILENAME = 'endpoints.config.ts';
+import { ModuleKind, ProjectOptions, ScriptTarget } from 'ts-morph';
 
 export interface IOptions {
     all?: boolean;
@@ -12,7 +9,21 @@ export interface IOptions {
 }
 
 export const defaultOptions: IOptions = {
-    configOutput: DEFAULT_TEMP_OUT_DIR,
-    output: DEFAULT_OUT_DIR,
-    url: SWAGGER_URL
+    configOutput: './.generated',
+    output: './src/generated',
+    url: 'https://localhost:5001/swagger/v1/swagger.json'
+};
+
+export const morphOptions: ProjectOptions = {
+    compilerOptions: {
+        target: ScriptTarget.ES2018,
+        module: ModuleKind.CommonJS,
+        strict: true,
+        esModuleInterop: true
+    }
+};
+
+export const configOptions = {
+    filename: 'endpoints.config.ts',
+    className: 'Endpoints'
 };

@@ -1,4 +1,4 @@
-import { CONFIG_FILENAME, IOptions } from '../options';
+import { configOptions, IOptions } from '../options';
 
 export class EndpointsConfigReader {
     constructor(private readonly options: IOptions) { }
@@ -13,6 +13,6 @@ export class EndpointsConfigReader {
             }
         });
 
-        return require(process.cwd() + `/${this.options.configOutput}/${CONFIG_FILENAME}`).default;
+        return require(process.cwd() + `/${this.options.configOutput}/${configOptions.filename}`).default;
     }
 }
