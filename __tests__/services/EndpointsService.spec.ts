@@ -1,8 +1,8 @@
-import { OpenAPIService } from '../../src/swagger/OpenAPIService';
 import { EndpointsService } from '../../src/services/EndpointsService';
+import { OpenAPIService } from '../../src/swagger/OpenAPIService';
 
 describe('EndpointsService tests', () => {
-    describe('getGroupedActionsByController', () => {
+    describe('getActionsGroupedByController', () => {
         test('group actions', () => {
             const spec = {
                 openapi: '3.0.1',
@@ -27,7 +27,7 @@ describe('EndpointsService tests', () => {
             const openApiService = new OpenAPIService(JSON.stringify(spec));
             const service = new EndpointsService(openApiService);
 
-            const result = service.getGroupedActionsByController();
+            const result = service.getActionsGroupedByController();
 
             expect(Object.keys(result)).toEqual(['Category', 'Product']);
             expect(result).toEqual(expected);
@@ -46,7 +46,31 @@ describe('EndpointsService tests', () => {
             const openApiService = new OpenAPIService(JSON.stringify(spec));
             const service = new EndpointsService(openApiService);
 
-            expect(service.getGroupedActionsByController()).toEqual({});
+            expect(service.getActionsGroupedByController()).toEqual({});
+        });
+    });
+
+    describe('getActions', () => {
+        test('sort actions', () => {
+            const spec = {
+                openapi: '3.0.1',
+                paths: {
+                    '/Product/SearchProducts': {
+                        get: { tags: ['Product'] }
+                    },
+                    '/api/v1/Category/AddCategory': {
+                        get: { tags: ['Category'] }
+                    },
+                    '/Product/GetProducts': {
+                        get: { tags: ['Product'] }
+                    }
+                }
+            };
+
+            const openApiService = new OpenAPIService(JSON.stringify(spec));
+            const service = new EndpointsService(openApiService);
+
+            expect(service.getActions()).toEqual(new Set(['Category/AddCategory', 'Product/GetProducts', 'Product/SearchProducts']));
         });
     });
 });

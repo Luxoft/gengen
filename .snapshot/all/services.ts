@@ -34,6 +34,10 @@ export class ProductService extends DownloadFileService {
     super('/Product', http);
   }
 
+  public download(saveAs?: string): Promise<IDownloadResult> {
+    return this.downloadFile(`download`, `get`, undefined, saveAs);
+  }
+
   public getProducts(): Observable<$models.Product[]> {
     return this.get<$models.IProduct[]>(`getProducts`).pipe(
       mapCollection($models.Product)
@@ -44,9 +48,5 @@ export class ProductService extends DownloadFileService {
     return this.get<$models.IProduct[]>(
       `searchProducts?name=${encodeURIComponent(name)}`
     ).pipe(mapCollection($models.Product));
-  }
-
-  public download(saveAs?: string): Promise<IDownloadResult> {
-    return this.downloadFile(`download`, `get`, undefined, saveAs);
   }
 }
