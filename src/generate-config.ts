@@ -1,7 +1,7 @@
 import { Project } from 'ts-morph';
 
-import { ConfigMorphService } from './morph/ConfigMorphService';
-import { configOptions, defaultOptions, IOptions, morphOptions } from './options';
+import { ConfigGenerator } from './generators/ConfigGenerator';
+import { configOptions, defaultOptions, generatorsOptions, IOptions } from './options';
 import { EndpointsService } from './services/EndpointsService';
 import { OpenAPIService } from './swagger/OpenAPIService';
 import { getSwaggerJson } from './utils';
@@ -14,11 +14,11 @@ export default async function main(options: IOptions): Promise<void> {
     const endpointsService = new EndpointsService(openAPIService);
     const controllers = endpointsService.getActionsGroupedByController();
 
-    const project = new Project(morphOptions);
-    const morphService = new ConfigMorphService();
+    const project = new Project(generatorsOptions);
+    const generator = new ConfigGenerator();
     project.createSourceFile(
         `${settings.configOutput}/${configOptions.className.toLowerCase()}.ts`,
-        { statements: [morphService.getEndpointsStatement(controllers)] },
+        { statements: generator.getEndpointsCodeStructure(controllers) },
         { overwrite: true }
     );
 

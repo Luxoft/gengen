@@ -14,7 +14,7 @@ export const defaultOptions: IOptions = {
     url: 'https://localhost:5001/swagger/v1/swagger.json'
 };
 
-export const morphOptions: ProjectOptions = {
+export const generatorsOptions: ProjectOptions = {
     compilerOptions: {
         target: ScriptTarget.ES2018,
         module: ModuleKind.CommonJS,

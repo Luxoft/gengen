@@ -2,8 +2,8 @@ import { OptionalKind, PropertyDeclarationStructure, Scope, StatementStructures,
 
 import { configOptions } from '../options';
 
-export class ConfigMorphService {
-    public getConfigStatements(): StatementStructures[] {
+export class ConfigGenerator {
+    public getConfigCodeStructure(): StatementStructures[] {
         return [
             {
                 kind: StructureKind.ImportDeclaration,
@@ -18,13 +18,15 @@ export class ConfigMorphService {
         ];
     }
 
-    public getEndpointsStatement(controllers: Record<string, string[]>): StatementStructures {
-        return {
-            kind: StructureKind.Class,
-            isExported: true,
-            name: configOptions.className,
-            properties: this.getProperties(controllers)
-        };
+    public getEndpointsCodeStructure(controllers: Record<string, string[]>): StatementStructures[] {
+        return [
+            {
+                kind: StructureKind.Class,
+                isExported: true,
+                name: configOptions.className,
+                properties: this.getProperties(controllers)
+            }
+        ];
     }
 
     private getProperties(controllers: Record<string, string[]>): OptionalKind<PropertyDeclarationStructure>[] {

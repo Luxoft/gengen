@@ -1,15 +1,15 @@
 import { Project } from 'ts-morph';
 
-import { ConfigMorphService } from './morph/ConfigMorphService';
-import { configOptions, defaultOptions, IOptions, morphOptions } from './options';
+import { ConfigGenerator } from './generators/ConfigGenerator';
+import { configOptions, defaultOptions, generatorsOptions, IOptions } from './options';
 
 export default async function init(options: IOptions = defaultOptions): Promise<void> {
-    const morphService = new ConfigMorphService();
-    const project = new Project(morphOptions);
+    const generator = new ConfigGenerator();
+    const project = new Project(generatorsOptions);
 
     project.createSourceFile(
         `${options.configOutput}/${configOptions.filename}`,
-        { statements: morphService.getConfigStatements() },
+        { statements: generator.getConfigCodeStructure() },
         { overwrite: true }
     );
 
