@@ -56,4 +56,18 @@ describe('OpenAPITypesGuard tests', () => {
             expect(OpenAPITypesGuard.isAllOf({ type: 'string' })).toBeFalsy();
         });
     });
+
+    describe('isEnum', () => {
+        test('undefined', () => {
+            expect(OpenAPITypesGuard.isEnum(undefined)).toBeFalsy();
+        });
+
+        test('enum', () => {
+            expect(OpenAPITypesGuard.isEnum({ enum: [1], type: 'integer', format: 'int32', 'x-enumNames': ['Test1'] })).toBeTruthy();
+        });
+
+        test('string schema', () => {
+            expect(OpenAPITypesGuard.isEnum({ type: 'string' })).toBeFalsy();
+        });
+    });
 });

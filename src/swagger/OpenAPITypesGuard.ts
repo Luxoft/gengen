@@ -32,4 +32,15 @@ export class OpenAPITypesGuard {
     public static isAllOf(schema: SchemaType): schema is IOpenAPI3AllOfSchema {
         return Boolean((schema as IOpenAPI3AllOfSchema)?.allOf);
     }
+
+    public static isEnum(schema: SchemaType): schema is IOpenAPI3EnumSchema {
+        const enumSchema = schema as IOpenAPI3EnumSchema;
+        if (!schema) {
+            return false;
+        }
+
+        return (
+            enumSchema.type === 'integer' && enumSchema.format === 'int32' && Boolean(enumSchema.enum) && Boolean(enumSchema['x-enumNames'])
+        );
+    }
 }

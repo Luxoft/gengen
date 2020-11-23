@@ -33,12 +33,12 @@ export class OpenAPIService {
         return this.getOperationByEndpoint(endpoint)?.tags ?? [];
     }
 
-    public getSchemasByEndpoints(endpoints: string[]): IOpenAPI3SchemaContainer {
-        if (!endpoints?.length) {
+    public getSchemasByEndpoints(endpoints: Set<string>): IOpenAPI3SchemaContainer {
+        if (!endpoints?.size) {
             return {};
         }
 
-        return [...new Set<string>(endpoints)]
+        return [...endpoints]
             .map((z) => this.getOperationByEndpoint(z))
             .reduce((store, operation) => {
                 if (!operation) {
@@ -63,11 +63,12 @@ export class OpenAPIService {
             return undefined;
         }
 
-        const pathItem = this.spec.paths[endpoint];
-        if (!pathItem) {
+        const path = Object.entries(this.spec.paths).find(([key]) => key.endsWith(endpoint));
+        if (!path) {
             return undefined;
         }
 
+        const [, pathItem] = path;
         return pathItem.get || pathItem.post || pathItem.put || pathItem.delete;
     }
 
@@ -80,8 +81,8 @@ export class OpenAPIService {
             }
         });
 
-        this.getSchemaFromContent(refs, operation.requestBody?.content['application/json'].schema);
-        this.getSchemaFromContent(refs, operation.responses[200].content?.['application/json'].schema);
+        this.getSchemaFromContent(refs, operation.requestBody?.content['application/json']?.schema);
+        this.getSchemaFromContent(refs, operation.responses[200].content?.['application/json']?.schema);
 
         return refs;
     }
@@ -89,7 +90,7 @@ export class OpenAPIService {
     private getReferencesByObject(object: IOpenAPI3ObjectSchema): IOpenAPI3Reference[] {
         let refs: IOpenAPI3Reference[] = [];
 
-        Object.values(object.properties).forEach((z) => {
+        Object.values(object.properties || []).forEach((z) => {
             let propertyRefs: IOpenAPI3Reference[] = [];
             if (OpenAPITypesGuard.isCollection(z)) {
                 propertyRefs.push(z.items);

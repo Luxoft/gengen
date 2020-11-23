@@ -57,7 +57,7 @@ describe('OpenAPIService tests', () => {
         test('undefined', () => {
             const spec = { openapi: '3.0.1', paths: { '/product/SearchProducts': {} } };
             const service = new OpenAPIService(JSON.stringify(spec));
-            expect(service.getSchemasByEndpoints([])).toEqual({});
+            expect(service.getSchemasByEndpoints(new Set<string>())).toEqual({});
         });
 
         test('all', () => {
@@ -161,6 +161,24 @@ describe('OpenAPIService tests', () => {
                                 }
                             }
                         }
+                    },
+                    '/product/DeleteEmpty': {
+                        delete: {
+                            requestBody: {
+                                content: {
+                                    'application/json-patch+json': {
+                                        schema: {
+                                            $ref: '#/components/schemas/SimpleObject'
+                                        }
+                                    }
+                                }
+                            },
+                            responses: {
+                                200: {
+                                    description: 'Success'
+                                }
+                            }
+                        }
                     }
                 },
                 components: {
@@ -181,7 +199,8 @@ describe('OpenAPIService tests', () => {
                             type: 'object',
                             properties: {
                                 id: { type: 'string', format: 'uuid' },
-                                mode: { $ref: '#/components/schemas/FistEnum' }
+                                mode: { $ref: '#/components/schemas/FistEnum' },
+                                empty: { $ref: '#/components/schemas/EmptyObject' }
                             }
                         },
                         SecondLayerObject: {
@@ -212,6 +231,10 @@ describe('OpenAPIService tests', () => {
                         SimpleObject: {
                             type: 'object',
                             properties: { id: { type: 'string', format: 'uuid' } }
+                        },
+                        EmptyObject: {
+                            type: 'object',
+                            additionalProperties: false
                         }
                     }
                 }
@@ -219,7 +242,7 @@ describe('OpenAPIService tests', () => {
 
             const service = new OpenAPIService(JSON.stringify(spec));
             const endpoints = service.getEndpoints();
-            expect(service.getSchemasByEndpoints(endpoints)).toMatchObject(spec.components.schemas);
+            expect(service.getSchemasByEndpoints(new Set<string>(endpoints))).toMatchObject(spec.components.schemas);
         });
     });
 });
