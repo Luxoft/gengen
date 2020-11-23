@@ -1,4 +1,4 @@
-import { OptionalKind, PropertyDeclarationStructure, Scope, StatementStructures, StructureKind } from 'ts-morph';
+import { OptionalKind, PropertyDeclarationStructure, Scope, StatementStructures, StructureKind, Writers } from 'ts-morph';
 
 import { configOptions } from '../options';
 
@@ -32,7 +32,7 @@ export class ConfigGenerator {
     private getProperties(controllers: Record<string, string[]>): OptionalKind<PropertyDeclarationStructure>[] {
         return Object.entries(controllers).map(([controller, actions]) => {
             const propertyValue = actions.reduce<Record<string, string>>((store, action) => {
-                store[action] = `${controller}/${action}`;
+                store[action] = `'${controller}/${action}'`;
                 return store;
             }, {});
 
@@ -40,7 +40,7 @@ export class ConfigGenerator {
                 name: `${controller}Service`,
                 scope: Scope.Public,
                 isStatic: true,
-                initializer: JSON.stringify(propertyValue)
+                initializer: Writers.object(propertyValue)
             };
         });
     }

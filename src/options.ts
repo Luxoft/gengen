@@ -1,4 +1,4 @@
-import { ModuleKind, ProjectOptions, ScriptTarget } from 'ts-morph';
+import { IndentationText, ModuleKind, ProjectOptions, QuoteKind, ScriptTarget } from 'ts-morph';
 
 export interface IOptions {
     all?: boolean;
@@ -20,6 +20,11 @@ export const generatorsOptions: ProjectOptions = {
         module: ModuleKind.CommonJS,
         strict: true,
         esModuleInterop: true
+    },
+    manipulationSettings: {
+        quoteKind: QuoteKind.Single,
+        insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
+        indentationText: IndentationText.FourSpaces
     }
 };
 
