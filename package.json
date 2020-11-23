@@ -15,6 +15,7 @@
     "g:a": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/all",
     "debug:all": "node --inspect-brk ./bin/index.js g --all --file=./swagger.json --output=./dist",
     "debug": "node --inspect-brk ./bin/index.js g --file=./swagger.json --output=./dist",
+    "debug:tests": "node --inspect-brk ./node_modules/jest/bin/jest.js -i",
     "e2e": "npm run generate && npm run generate:all && ts-node ./e2e/e2e.ts",
     "test": "jest"
   },
