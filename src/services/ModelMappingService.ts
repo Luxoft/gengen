@@ -7,21 +7,23 @@ import { IOpenAPI3SchemaContainer } from '../swagger/v3/schemas/schema';
 import { sortBy } from '../utils';
 
 export class ModelMappingService {
-    public static ToModelsContainer(schemas: IOpenAPI3SchemaContainer): IModelsContainer {
+    constructor(private readonly typesGuard: OpenAPITypesGuard) { }
+
+    public toModelsContainer(schemas: IOpenAPI3SchemaContainer): IModelsContainer {
         const enums: IEnumModel[] = [];
         const identities: IIdentityModel[] = [];
 
         Object.entries(schemas).forEach(([name, schema]) => {
-            if (OpenAPITypesGuard.isEnum(schema)) {
-                enums.push(this.ToEnumModel(name, schema));
+            if (this.typesGuard.isEnum(schema)) {
+                enums.push(this.toEnumModel(name, schema));
                 return;
             }
 
             if (
-                OpenAPITypesGuard.isObject(schema) &&
+                this.typesGuard.isObject(schema) &&
                 schema.properties &&
                 Object.keys(schema.properties)?.length === 1 &&
-                OpenAPITypesGuard.isGuid(schema.properties['id'])
+                this.typesGuard.isGuid(schema.properties['id'])
             ) {
                 identities.push({ name });
                 return;
@@ -30,11 +32,12 @@ export class ModelMappingService {
 
         return {
             enums: enums.sort(sortBy((z) => z.name)),
-            identities: identities.sort(sortBy((z) => z.name))
+            identities: identities.sort(sortBy((z) => z.name)),
+            objects: []
         };
     }
 
-    private static ToEnumModel(name: string, schema: IOpenAPI3EnumSchema): IEnumModel {
+    private toEnumModel(name: string, schema: IOpenAPI3EnumSchema): IEnumModel {
         return {
             name,
             items: schema.enum.map((value, index) => ({

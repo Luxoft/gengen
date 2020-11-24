@@ -16,30 +16,30 @@ type SchemaType =
     | undefined;
 
 export class OpenAPITypesGuard {
-    public static isReference(schema: SchemaType): schema is IOpenAPI3Reference {
+    public isReference(schema: SchemaType): schema is IOpenAPI3Reference {
         return Boolean((schema as IOpenAPI3Reference)?.$ref);
     }
 
-    public static isGuid(schema: SchemaType): schema is IOpenAPI3GuidSchema {
+    public isGuid(schema: SchemaType): schema is IOpenAPI3GuidSchema {
         const guidSchema = schema as IOpenAPI3GuidSchema;
         return guidSchema?.type === 'string' && guidSchema.format === 'uuid';
     }
 
-    public static isCollection(schema: SchemaType): schema is IOpenAPI3ArraySchema {
+    public isCollection(schema: SchemaType): schema is IOpenAPI3ArraySchema {
         const arraySchema = schema as IOpenAPI3ArraySchema;
-        return arraySchema?.type === 'array' && OpenAPITypesGuard.isReference(arraySchema.items);
+        return arraySchema?.type === 'array' && this.isReference(arraySchema.items);
     }
 
-    public static isObject(schema: SchemaType): schema is IOpenAPI3ObjectSchema {
+    public isObject(schema: SchemaType): schema is IOpenAPI3ObjectSchema {
         const objectSchema = schema as IOpenAPI3ObjectSchema;
         return objectSchema?.type === 'object';
     }
 
-    public static isAllOf(schema: SchemaType): schema is IOpenAPI3AllOfSchema {
+    public isAllOf(schema: SchemaType): schema is IOpenAPI3AllOfSchema {
         return Boolean((schema as IOpenAPI3AllOfSchema)?.allOf);
     }
 
-    public static isEnum(schema: SchemaType): schema is IOpenAPI3EnumSchema {
+    public isEnum(schema: SchemaType): schema is IOpenAPI3EnumSchema {
         const enumSchema = schema as IOpenAPI3EnumSchema;
         if (!schema) {
             return false;

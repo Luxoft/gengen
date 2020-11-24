@@ -12,7 +12,7 @@ const SUPPORTED_VERSION = 3;
 export class OpenAPIService {
     private readonly spec: IOpenAPI3;
 
-    constructor(json: string) {
+    constructor(json: string, private readonly typesGuard: OpenAPITypesGuard) {
         this.spec = JSON.parse(json);
 
         const majorVersion = this.majorVersion;
@@ -76,7 +76,7 @@ export class OpenAPIService {
         const refs: IOpenAPI3Reference[] = [];
 
         operation.parameters?.forEach((z) => {
-            if (OpenAPITypesGuard.isReference(z.schema)) {
+            if (this.typesGuard.isReference(z.schema)) {
                 refs.push(z.schema);
             }
         });
@@ -92,18 +92,18 @@ export class OpenAPIService {
 
         Object.values(object.properties || []).forEach((z) => {
             let propertyRefs: IOpenAPI3Reference[] = [];
-            if (OpenAPITypesGuard.isCollection(z)) {
+            if (this.typesGuard.isCollection(z)) {
                 propertyRefs.push(z.items);
-            } else if (OpenAPITypesGuard.isReference(z)) {
+            } else if (this.typesGuard.isReference(z)) {
                 propertyRefs.push(z);
-            } else if (OpenAPITypesGuard.isAllOf(z)) {
+            } else if (this.typesGuard.isAllOf(z)) {
                 propertyRefs = z.allOf;
             }
 
             propertyRefs.forEach((x) => {
                 refs.push(x);
                 const schema = this.spec.components.schemas[this.getSchemaKey(x)];
-                if (OpenAPITypesGuard.isObject(schema)) {
+                if (this.typesGuard.isObject(schema)) {
                     refs = refs.concat(this.getReferencesByObject(schema));
                 }
             });
@@ -113,9 +113,9 @@ export class OpenAPIService {
     }
 
     private getSchemaFromContent(refs: IOpenAPI3Reference[], schema: IOpenAPI3ArraySchema | IOpenAPI3Reference | undefined): void {
-        if (OpenAPITypesGuard.isCollection(schema)) {
+        if (this.typesGuard.isCollection(schema)) {
             refs.push(schema.items);
-        } else if (OpenAPITypesGuard.isReference(schema)) {
+        } else if (this.typesGuard.isReference(schema)) {
             refs.push(schema);
         }
     }
@@ -126,7 +126,7 @@ export class OpenAPIService {
         const keysFromObjects = new Set<string>();
         keys.forEach((z) => {
             const schema = this.spec.components.schemas[z];
-            if (OpenAPITypesGuard.isObject(schema)) {
+            if (this.typesGuard.isObject(schema)) {
                 this.getReferencesByObject(schema).forEach((x) => {
                     keysFromObjects.add(this.getSchemaKey(x));
                 });
