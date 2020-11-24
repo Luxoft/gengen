@@ -1,4 +1,4 @@
-import { IObjectPropertyModel } from './ObjectPropertyModel';
+import { IObjectPropertyModel } from './ObjectModel';
 
 export interface IIdentityModel {
     name: string;

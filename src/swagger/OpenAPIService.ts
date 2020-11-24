@@ -92,7 +92,7 @@ export class OpenAPIService {
 
         Object.values(object.properties || []).forEach((z) => {
             let propertyRefs: IOpenAPI3Reference[] = [];
-            if (this.typesGuard.isCollection(z)) {
+            if (this.typesGuard.isCollection(z) && this.typesGuard.isReference(z.items)) {
                 propertyRefs.push(z.items);
             } else if (this.typesGuard.isReference(z)) {
                 propertyRefs.push(z);
@@ -113,7 +113,7 @@ export class OpenAPIService {
     }
 
     private getSchemaFromContent(refs: IOpenAPI3Reference[], schema: IOpenAPI3ArraySchema | IOpenAPI3Reference | undefined): void {
-        if (this.typesGuard.isCollection(schema)) {
+        if (this.typesGuard.isCollection(schema) && this.typesGuard.isReference(schema.items)) {
             refs.push(schema.items);
         } else if (this.typesGuard.isReference(schema)) {
             refs.push(schema);

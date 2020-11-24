@@ -37,7 +37,7 @@ describe('OpenAPITypesGuard tests', () => {
     });
 
     test('isCollection', () => {
-        expect(guard.isCollection({ type: 'array', items: { $ref: '#/components/schemas/Product' } })).toBeTruthy();
+        expect(guard.isCollection({ type: 'array', items: { type: 'string' } })).toBeTruthy();
     });
 
     test('isAllOf', () => {

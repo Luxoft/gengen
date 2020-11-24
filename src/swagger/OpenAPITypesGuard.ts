@@ -29,8 +29,7 @@ export class OpenAPITypesGuard {
     }
 
     public isCollection(schema: SchemaType): schema is IOpenAPI3ArraySchema {
-        const arraySchema = schema as IOpenAPI3ArraySchema;
-        return arraySchema?.type === 'array' && this.isReference(arraySchema?.items);
+        return (schema as IOpenAPI3ArraySchema)?.type === 'array';
     }
 
     public isObject(schema: SchemaType): schema is IOpenAPI3ObjectSchema {
