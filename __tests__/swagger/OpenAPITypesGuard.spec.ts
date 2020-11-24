@@ -70,4 +70,18 @@ describe('OpenAPITypesGuard tests', () => {
             expect(OpenAPITypesGuard.isEnum({ type: 'string' })).toBeFalsy();
         });
     });
+
+    describe('isGuid', () => {
+        test('undefined', () => {
+            expect(OpenAPITypesGuard.isGuid(undefined)).toBeFalsy();
+        });
+
+        test('enum', () => {
+            expect(OpenAPITypesGuard.isGuid({ type: 'string', format: 'uuid' })).toBeTruthy();
+        });
+
+        test('string schema', () => {
+            expect(OpenAPITypesGuard.isGuid({ type: 'string' })).toBeFalsy();
+        });
+    });
 });

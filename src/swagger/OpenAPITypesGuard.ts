@@ -2,6 +2,7 @@ import { IOpenAPI3Reference } from './v3/reference';
 import { IOpenAPI3AllOfSchema } from './v3/schemas/all-of-schema';
 import { IOpenAPI3ArraySchema } from './v3/schemas/array-schema';
 import { IOpenAPI3EnumSchema } from './v3/schemas/enum-schema';
+import { IOpenAPI3GuidSchema } from './v3/schemas/guid-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
 import { IOpenAPI3SimpleSchema } from './v3/schemas/schema';
 
@@ -17,6 +18,11 @@ type SchemaType =
 export class OpenAPITypesGuard {
     public static isReference(schema: SchemaType): schema is IOpenAPI3Reference {
         return Boolean((schema as IOpenAPI3Reference)?.$ref);
+    }
+
+    public static isGuid(schema: SchemaType): schema is IOpenAPI3GuidSchema {
+        const guidSchema = schema as IOpenAPI3GuidSchema;
+        return guidSchema?.type === 'string' && guidSchema.format === 'uuid';
     }
 
     public static isCollection(schema: SchemaType): schema is IOpenAPI3ArraySchema {
