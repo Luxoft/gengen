@@ -1,10 +1,14 @@
 import { IOpenAPI3Reference } from './v3/reference';
 import { IOpenAPI3AllOfSchema } from './v3/schemas/all-of-schema';
 import { IOpenAPI3ArraySchema } from './v3/schemas/array-schema';
+import { IOpenAPI3BooleanSchema } from './v3/schemas/boolean-schema';
+import { IOpenAPI3DateSchema } from './v3/schemas/date-schema';
 import { IOpenAPI3EnumSchema } from './v3/schemas/enum-schema';
 import { IOpenAPI3GuidSchema } from './v3/schemas/guid-schema';
+import { IOpenAPI3NumberSchema } from './v3/schemas/number-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
 import { IOpenAPI3SimpleSchema } from './v3/schemas/schema';
+import { IOpenAPI3StringSchema } from './v3/schemas/string-schema';
 
 type SchemaType =
     | IOpenAPI3SimpleSchema
@@ -21,18 +25,16 @@ export class OpenAPITypesGuard {
     }
 
     public isGuid(schema: SchemaType): schema is IOpenAPI3GuidSchema {
-        const guidSchema = schema as IOpenAPI3GuidSchema;
-        return guidSchema?.type === 'string' && guidSchema.format === 'uuid';
+        return this.isString(schema) && (schema as IOpenAPI3GuidSchema)?.format === 'uuid';
     }
 
     public isCollection(schema: SchemaType): schema is IOpenAPI3ArraySchema {
         const arraySchema = schema as IOpenAPI3ArraySchema;
-        return arraySchema?.type === 'array' && this.isReference(arraySchema.items);
+        return arraySchema?.type === 'array' && this.isReference(arraySchema?.items);
     }
 
     public isObject(schema: SchemaType): schema is IOpenAPI3ObjectSchema {
-        const objectSchema = schema as IOpenAPI3ObjectSchema;
-        return objectSchema?.type === 'object';
+        return (schema as IOpenAPI3ObjectSchema)?.type === 'object';
     }
 
     public isAllOf(schema: SchemaType): schema is IOpenAPI3AllOfSchema {
@@ -48,5 +50,25 @@ export class OpenAPITypesGuard {
         return (
             enumSchema.type === 'integer' && enumSchema.format === 'int32' && Boolean(enumSchema.enum) && Boolean(enumSchema['x-enumNames'])
         );
+    }
+
+    public isNumber(schema: SchemaType): schema is IOpenAPI3NumberSchema {
+        return Boolean(['integer', 'number'].includes((schema as IOpenAPI3NumberSchema)?.type));
+    }
+
+    public isString(schema: SchemaType): schema is IOpenAPI3StringSchema {
+        return (schema as IOpenAPI3StringSchema)?.type === 'string';
+    }
+
+    public isDate(schema: SchemaType): schema is IOpenAPI3DateSchema {
+        return this.isString(schema) && (schema as IOpenAPI3DateSchema)?.format === 'date-time';
+    }
+
+    public isBoolean(schema: SchemaType): schema is IOpenAPI3BooleanSchema {
+        return (schema as IOpenAPI3BooleanSchema)?.type === 'boolean';
+    }
+
+    public isSimple(schema: SchemaType): schema is IOpenAPI3SimpleSchema {
+        return this.isGuid(schema) || this.isNumber(schema) || this.isString(schema) || this.isDate(schema) || this.isBoolean(schema);
     }
 }
