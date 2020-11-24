@@ -7,11 +7,11 @@ import { IOpenAPI3EnumSchema } from './v3/schemas/enum-schema';
 import { IOpenAPI3GuidSchema } from './v3/schemas/guid-schema';
 import { IOpenAPI3NumberSchema } from './v3/schemas/number-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
-import { IOpenAPI3SimpleSchema } from './v3/schemas/schema';
+import { OpenAPI3SimpleSchema } from './v3/schemas/schema';
 import { IOpenAPI3StringSchema } from './v3/schemas/string-schema';
 
 type SchemaType =
-    | IOpenAPI3SimpleSchema
+    | OpenAPI3SimpleSchema
     | IOpenAPI3Reference
     | IOpenAPI3ArraySchema
     | IOpenAPI3ObjectSchema
@@ -68,7 +68,7 @@ export class OpenAPITypesGuard {
         return (schema as IOpenAPI3BooleanSchema)?.type === 'boolean';
     }
 
-    public isSimple(schema: SchemaType): schema is IOpenAPI3SimpleSchema {
+    public isSimple(schema: SchemaType): schema is OpenAPI3SimpleSchema {
         return this.isGuid(schema) || this.isNumber(schema) || this.isString(schema) || this.isDate(schema) || this.isBoolean(schema);
     }
 }

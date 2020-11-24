@@ -5,7 +5,7 @@ import { IOpenAPI3Operation } from './v3/operation';
 import { IOpenAPI3Reference } from './v3/reference';
 import { IOpenAPI3ArraySchema } from './v3/schemas/array-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
-import { IOpenAPI3SchemaContainer } from './v3/schemas/schema';
+import { OpenAPI3SchemaContainer } from './v3/schemas/schema';
 
 const SUPPORTED_VERSION = 3;
 
@@ -33,7 +33,7 @@ export class OpenAPIService {
         return this.getOperationByEndpoint(endpoint)?.tags ?? [];
     }
 
-    public getSchemasByEndpoints(endpoints: Set<string>): IOpenAPI3SchemaContainer {
+    public getSchemasByEndpoints(endpoints: Set<string>): OpenAPI3SchemaContainer {
         if (!endpoints?.size) {
             return {};
         }
@@ -120,7 +120,7 @@ export class OpenAPIService {
         }
     }
 
-    private getSchemas(refs: IOpenAPI3Reference[]): IOpenAPI3SchemaContainer {
+    private getSchemas(refs: IOpenAPI3Reference[]): OpenAPI3SchemaContainer {
         const keys = new Set<string>(refs.map((z) => this.getSchemaKey(z)));
 
         const keysFromObjects = new Set<string>();
@@ -133,7 +133,7 @@ export class OpenAPIService {
             }
         });
 
-        return [...new Set<string>([...keys, ...keysFromObjects])].reduce<IOpenAPI3SchemaContainer>((store, key) => {
+        return [...new Set<string>([...keys, ...keysFromObjects])].reduce<OpenAPI3SchemaContainer>((store, key) => {
             store[key] = this.spec.components.schemas[key];
             return store;
         }, {});

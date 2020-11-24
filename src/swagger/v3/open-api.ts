@@ -1,5 +1,5 @@
 import { IOpenAPI3PathItem } from './path-item';
-import { IOpenAPI3SchemaContainer } from './schemas/schema';
+import { OpenAPI3SchemaContainer } from './schemas/schema';
 
 export interface IOpenAPI3 {
     openapi: string;
@@ -7,6 +7,6 @@ export interface IOpenAPI3 {
         [key: string]: IOpenAPI3PathItem;
     };
     components: {
-        schemas: IOpenAPI3SchemaContainer;
+        schemas: OpenAPI3SchemaContainer;
     };
 }
