@@ -3,6 +3,7 @@ import { IIdentityModel } from '../models/IdentityModel';
 import { IInterfaceModel } from '../models/InterfaceModel';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
+import { PropertyKind } from '../models/PropertyKind';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3EnumSchema } from '../swagger/v3/schemas/enum-schema';
@@ -28,8 +29,8 @@ export class ModelMappingService {
             }
 
             if (this.typesGuard.isObject(schema)) {
-                if (schema.properties && Object.keys(schema.properties)?.length === 1 && this.typesGuard.isGuid(schema.properties['id'])) {
-                    identities.push({ name, property: this.getGuidProperty('id') });
+                if (this.isIdentity(schema)) {
+                    identities.push({ name, property: this.getGuidProperty('id', true) });
                 } else {
                     objects.push(this.toObjectModel(schemas, name, schema));
                 }
@@ -55,7 +56,7 @@ export class ModelMappingService {
     }
 
     private toObjectModel(schemas: OpenAPI3SchemaContainer, name: string, schema: IOpenAPI3ObjectSchema): IObjectModel {
-        const model: IObjectModel = { name, properties: [] };
+        const model: IObjectModel = { name, dtoType: this.getInterfaceName(name), properties: [] };
         if (!schema.properties) {
             return model;
         }
@@ -74,8 +75,8 @@ export class ModelMappingService {
             return;
         }
 
+        let property: IObjectPropertyModel | undefined;
         if (this.typesGuard.isCollection(schema)) {
-            let property: IObjectPropertyModel | undefined;
             if (this.typesGuard.isSimple(schema.items)) {
                 property = this.getSimpleProperty(name, schema.items);
             } else if (this.typesGuard.isReference(schema.items)) {
@@ -83,58 +84,96 @@ export class ModelMappingService {
             }
 
             if (property) {
-                property.type = `${property.type}[]`;
-                property.dtoType = `${property.dtoType}[]`;
+                property.isCollection = true;
                 model.properties.push(property);
                 return;
             }
         }
 
-        let property: IOpenAPI3Reference | undefined;
         if (this.typesGuard.isReference(schema)) {
-            property = schema;
+            property = this.getReferenceProperty(schemas, name, schema);
         } else if (this.typesGuard.isAllOf(schema)) {
-            property = first(schema.allOf);
+            property = this.getReferenceProperty(schemas, name, first(schema.allOf));
         }
 
         if (property) {
-            model.properties.push(this.getReferenceProperty(schemas, name, property));
+            model.properties.push(property);
             return;
         }
     }
 
     private getSimpleProperty(name: string, schema: OpenAPI3SimpleSchema): IObjectPropertyModel {
+        const common = { name, isCollection: false, isNullable: Boolean(schema.nullable) };
         if (this.typesGuard.isGuid(schema)) {
-            return this.getGuidProperty(name, schema.nullable);
+            return this.getGuidProperty(name, common.isNullable);
         }
 
         if (this.typesGuard.isDate(schema)) {
-            return { name, isNullable: Boolean(schema.nullable), type: 'Date', dtoType: 'string' };
+            return {
+                ...common,
+                kind: PropertyKind.Date,
+                type: 'Date',
+                dtoType: 'string'
+            };
         }
 
         if (this.typesGuard.isBoolean(schema)) {
-            return { name, isNullable: Boolean(schema.nullable), type: 'boolean', dtoType: 'boolean' };
+            return {
+                ...common,
+                kind: PropertyKind.None,
+                type: 'boolean',
+                dtoType: 'boolean'
+            };
         }
 
         if (this.typesGuard.isNumber(schema)) {
-            return { name, isNullable: Boolean(schema.nullable), type: 'number', dtoType: 'number' };
+            return {
+                ...common,
+                kind: PropertyKind.None,
+                type: 'number',
+                dtoType: 'number'
+            };
         }
 
-        return { name, isNullable: Boolean(schema.nullable), type: 'string', dtoType: 'string' };
+        return {
+            ...common,
+            kind: PropertyKind.None,
+            type: 'string',
+            dtoType: 'string'
+        };
     }
 
-    private getGuidProperty(name: string, nullable: boolean | undefined = true): IObjectPropertyModel {
-        return { name, isNullable: Boolean(nullable), type: 'Guid', dtoType: 'string' };
+    private getGuidProperty(name: string, isNullable: boolean): IObjectPropertyModel {
+        return { kind: PropertyKind.Guid, isCollection: false, name, isNullable, type: 'Guid', dtoType: 'string' };
     }
 
     private getReferenceProperty(schemas: OpenAPI3SchemaContainer, name: string, schema: IOpenAPI3Reference): IObjectPropertyModel {
         const schemaKey = last(schema.$ref.split('/'));
         const referenceSchema = schemas[schemaKey];
         if (this.typesGuard.isEnum(referenceSchema)) {
-            return { name, isNullable: false, type: schemaKey, dtoType: schemaKey };
+            return {
+                kind: PropertyKind.None,
+                isCollection: false,
+                name,
+                isNullable: false,
+                type: schemaKey,
+                dtoType: schemaKey
+            };
         }
 
-        return { name, isNullable: true, type: schemaKey, dtoType: this.getInterfaceName(schemaKey) };
+        let kind = PropertyKind.Object;
+        if (this.isIdentity(referenceSchema)) {
+            kind = PropertyKind.Identity;
+        }
+
+        return {
+            kind,
+            isCollection: false,
+            name,
+            isNullable: true,
+            type: schemaKey,
+            dtoType: this.getInterfaceName(schemaKey)
+        };
     }
 
     private getInterfaces(identities: IIdentityModel[], objects: IObjectModel[]): IInterfaceModel[] {
@@ -143,19 +182,23 @@ export class ModelMappingService {
             const identityModel = first(identities);
             interfaces.push({
                 name: this.getInterfaceName(COMMON_IDENTITY_NAME),
-                properties: [{ name: identityModel.property.name, dtoType: identityModel.property.dtoType }]
+                properties: [{ name: identityModel.property.name, dtoType: identityModel.property.dtoType, isCollection: false }]
             });
         }
 
         return interfaces.concat(
             objects.map((z) => ({
                 name: this.getInterfaceName(z.name),
-                properties: z.properties.map((x) => ({ name: x.name, dtoType: x.dtoType }))
+                properties: z.properties.map((x) => ({ name: x.name, dtoType: x.dtoType, isCollection: x.isCollection }))
             }))
         );
     }
 
     private getInterfaceName(name: string): string {
         return `I${name}`;
+    }
+
+    private isIdentity(schema: IOpenAPI3ObjectSchema): boolean {
+        return schema.properties && Object.keys(schema.properties)?.length === 1 && this.typesGuard.isGuid(schema.properties['id']);
     }
 }
