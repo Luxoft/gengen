@@ -13,10 +13,10 @@ const FROM_DTO_METHOD = 'fromDTO';
 export class ModelsGenerator {
     public getModelsCodeStructure(models: IModelsContainer): StatementStructures[] {
         return [
-            // ...this.getImports(),
-            // ...this.getEnums(models.enums),
-            // ...this.getInterfaces(models.interfaces),
-            // ...this.getIdentities(models.identities, models.interfaces),
+            ...this.getImports(),
+            ...this.getEnums(models.enums),
+            ...this.getInterfaces(models.interfaces),
+            ...this.getIdentities(models.identities, models.interfaces),
             ...this.getObjects(models.objects)
         ];
     }
@@ -61,7 +61,9 @@ export class ModelsGenerator {
             name: z.name,
             ctors: [
                 {
-                    parameters: [{ name: z.property.name, initializer: this.nullString, type: `${z.property.type} | ${z.property.dtoType}` }],
+                    parameters: [
+                        { name: z.property.name, initializer: this.nullString, type: `${z.property.type} | ${z.property.dtoType}` }
+                    ],
                     statements: `this.${z.property.name} = new ${z.property.type}(${z.property.name});`
                 }
             ],
