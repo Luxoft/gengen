@@ -27,19 +27,6 @@ export interface ITemplateServiceDescription {
     methods: ITemplateMethodDescription[];
 }
 
-export interface ITemplateTypeDescriptor {
-    isOut: boolean;
-    isIn: boolean;
-    isIdentity: boolean;
-    name: string;
-    properties: ITemplatePropertyDescriptor[];
-}
-
-export interface ITemplateEnumDescriptor {
-    name: string;
-    data: { key: string; value: number }[];
-}
-
 export interface ITemplatePropertyDescriptor {
     name: string;
     typeNameDto: string;

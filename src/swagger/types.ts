@@ -137,8 +137,6 @@ export type SimplePropertyType =
     IGuidProperty |
     IDateProperty;
 
-export type ObjectTypes = 'object';
-
 export type TypeDefinition = IObjectDefinition | IEnumDefinition;
 
 export function isObjectDefinition(x: TypeDefinition): x is IObjectDefinition {

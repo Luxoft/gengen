@@ -1,7 +1,11 @@
 import { EndpointsService } from '../../src/services/EndpointsService';
 import { OpenAPIService } from '../../src/swagger/OpenAPIService';
+import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 
 describe('EndpointsService tests', () => {
+    let guard: OpenAPITypesGuard;
+    beforeEach(() => (guard = new OpenAPITypesGuard()));
+
     describe('getActionsGroupedByController', () => {
         test('group actions', () => {
             const spec = {
@@ -24,7 +28,7 @@ describe('EndpointsService tests', () => {
                 Product: ['GetProducts', 'SearchProducts']
             };
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec));
+            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
             const service = new EndpointsService(openApiService);
 
             const result = service.getActionsGroupedByController();
@@ -43,7 +47,7 @@ describe('EndpointsService tests', () => {
                 }
             };
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec));
+            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
             const service = new EndpointsService(openApiService);
 
             expect(service.getActionsGroupedByController()).toEqual({});
@@ -67,7 +71,7 @@ describe('EndpointsService tests', () => {
                 }
             };
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec));
+            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
             const service = new EndpointsService(openApiService);
 
             expect(service.getActions()).toEqual(new Set(['Category/AddCategory', 'Product/GetProducts', 'Product/SearchProducts']));

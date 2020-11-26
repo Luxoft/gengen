@@ -25,3 +25,7 @@ export async function getSwaggerJson(options: IOptions): Promise<string> {
 
     throw new Error('Specify file or url');
 }
+
+export function sortBy<T>(fn: (value: T) => string): (a: T, b: T) => number {
+    return (a: T, b: T) => (fn(a) || '').localeCompare(fn(b) || '');
+}
