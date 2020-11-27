@@ -18,11 +18,13 @@ export default async function main(options: IOptions): Promise<void> {
 
     const project = new Project(generatorsOptions);
     const generator = new ConfigGenerator();
-    project.createSourceFile(
+    const sourceFile = project.createSourceFile(
         `${settings.configOutput}/${configOptions.className.toLowerCase()}.ts`,
         { statements: generator.getEndpointsCodeStructure(controllers) },
         { overwrite: true }
     );
+
+    sourceFile.formatText();
 
     await project.save();
 }
