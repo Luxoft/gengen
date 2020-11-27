@@ -1,10 +1,10 @@
 export class Endpoints {
     public static CategoryService = {
-            AddCategory: 'Category/AddCategory'
-        };
+        AddCategory: 'Category/AddCategory'
+    };
     public static ProductService = {
-            Download: 'Product/Download',
-            GetProducts: 'Product/GetProducts',
-            SearchProducts: 'Product/SearchProducts'
-        };
+        Download: 'Product/Download',
+        GetProducts: 'Product/GetProducts',
+        SearchProducts: 'Product/SearchProducts'
+    };
 }
