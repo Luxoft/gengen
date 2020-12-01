@@ -49,7 +49,7 @@ export class EndpointsService {
         return {
             name: controller,
             tail: last(parts),
-            relativePath: first(parts).slice(1)
+            relativePath: `${first(parts)}/${controller}`
         };
     }
 

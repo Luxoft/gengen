@@ -30,7 +30,8 @@ export class OpenAPIService {
     }
 
     public getTagsByEndpoint(endpoint: string): string[] {
-        return this.getOperationByEndpoint(endpoint)?.tags ?? [];
+        const [, operation] = this.getOperationByEndpoint(endpoint);
+        return operation?.tags ?? [];
     }
 
     public getSchemasByEndpoints(endpoints: Set<string>): OpenAPI3SchemaContainer {
@@ -40,7 +41,7 @@ export class OpenAPIService {
 
         return [...endpoints]
             .map((z) => this.getOperationByEndpoint(z))
-            .reduce((store, operation) => {
+            .reduce((store, [, operation]) => {
                 if (!operation) {
                     return store;
                 }
@@ -56,12 +57,12 @@ export class OpenAPIService {
         }
 
         return [...endpoints].reduce<IOpenAPI3OperationContainer>((store, endpoint) => {
-            const operation = this.getOperationByEndpoint(endpoint);
-            if (!operation) {
+            const [key, operation] = this.getOperationByEndpoint(endpoint);
+            if (!key || !operation) {
                 return store;
             }
 
-            store[endpoint] = operation;
+            store[key] = operation;
             return store;
         }, {});
     }
@@ -74,18 +75,18 @@ export class OpenAPIService {
         return first(this.spec.openapi.split('.'));
     }
 
-    private getOperationByEndpoint(endpoint: string): IOpenAPI3Operation | undefined {
+    private getOperationByEndpoint(endpoint: string): [string | undefined, IOpenAPI3Operation | undefined] {
         if (!this.spec.paths) {
-            return undefined;
+            return [undefined, undefined];
         }
 
         const path = Object.entries(this.spec.paths).find(([key]) => key.endsWith(endpoint));
         if (!path) {
-            return undefined;
+            return [undefined, undefined];
         }
 
-        const [, pathItem] = path;
-        return pathItem.get || pathItem.post || pathItem.put || pathItem.delete;
+        const [name, pathItem] = path;
+        return [name, pathItem.get || pathItem.post || pathItem.put || pathItem.delete];
     }
 
     private getReferencesByOperation(operation: IOpenAPI3Operation): IOpenAPI3Reference[] {
