@@ -57,6 +57,32 @@ describe('OpenAPIService tests', () => {
         });
     });
 
+    describe('getOperationsByEndpoints', () => {
+        test('not found path', () => {
+            const spec = { openapi: '3.0.1' };
+            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            expect(service.getOperationsByEndpoints(new Set('test'))).toEqual({});
+        });
+
+        test('not found path item', () => {
+            const spec = { openapi: '3.0.1', paths: { '/product/SearchProducts': {} } };
+            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            expect(service.getOperationsByEndpoints(new Set('test'))).toEqual({});
+        });
+
+        test.each(['get', 'post', 'put', 'delete'])('find', (operation) => {
+            const operationObject: Record<string, { tags: string[] }> = {};
+            operationObject[operation] = { tags: ['1', '2'] };
+
+            const spec = { openapi: '3.0.1', paths: { test: operationObject, test2: operationObject } };
+            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            expect(service.getOperationsByEndpoints(new Set(['test', 'test2']))).toMatchObject({
+                test: operationObject[operation],
+                test2: operationObject[operation]
+            });
+        });
+    });
+
     describe('getSchemasByEndpoints', () => {
         test('undefined', () => {
             const spec = { openapi: '3.0.1', paths: { '/product/SearchProducts': {} } };

@@ -77,4 +77,50 @@ describe('EndpointsService tests', () => {
             expect(service.getActions()).toEqual(new Set(['Category/AddCategory', 'Product/GetProducts', 'Product/SearchProducts']));
         });
     });
+
+    describe('parse', () => {
+        test('short endpoint', () => {
+            const spec = {
+                openapi: '3.0.1',
+                paths: { '/Product/SearchProducts': { get: { tags: ['Product'] } } }
+            };
+
+            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
+            const service = new EndpointsService(openApiService);
+
+            expect(service.parse('/Product/SearchProducts')).toMatchObject({ name: 'Product', tail: 'SearchProducts', relativePath: '' });
+        });
+
+        test('version endpoint', () => {
+            const spec = {
+                openapi: '3.0.1',
+                paths: { '/api/v1/Product/SearchProducts': { get: { tags: ['Product'] } } }
+            };
+
+            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
+            const service = new EndpointsService(openApiService);
+
+            expect(service.parse('/api/v1/Product/SearchProducts')).toMatchObject({
+                name: 'Product',
+                tail: 'SearchProducts',
+                relativePath: 'api/v1'
+            });
+        });
+
+        test('long endpoint', () => {
+            const spec = {
+                openapi: '3.0.1',
+                paths: { '/api/v1/Product/Download/{id}': { get: { tags: ['Product'] } } }
+            };
+
+            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
+            const service = new EndpointsService(openApiService);
+
+            expect(service.parse('/api/v1/Product/Download/{id}')).toMatchObject({
+                name: 'Product',
+                tail: 'Download/{id}',
+                relativePath: 'api/v1'
+            });
+        });
+    });
 });

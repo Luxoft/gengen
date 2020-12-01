@@ -4,6 +4,12 @@ import { first, last } from '../utils';
 const IGNORE_LIST = [undefined, '{id}'];
 const SEPARATOR = '/';
 
+export interface IEndpointInfo {
+    name: string;
+    relativePath: string;
+    tail: string;
+}
+
 export class EndpointsService {
     constructor(private readonly openAPIService: OpenAPIService) { }
 
@@ -33,19 +39,31 @@ export class EndpointsService {
         return new Set(actions.sort());
     }
 
+    public parse(endpoint: string): IEndpointInfo | undefined {
+        const controller = first(this.openAPIService.getTagsByEndpoint(endpoint));
+        if (!controller) {
+            return undefined;
+        }
+
+        const parts = endpoint.split(`${SEPARATOR}${controller}${SEPARATOR}`);
+        return {
+            name: controller,
+            tail: last(parts),
+            relativePath: first(parts).slice(1)
+        };
+    }
+
     private getControllers(): Record<string, string[]> {
         const endpoints = this.openAPIService.getEndpoints();
 
         return endpoints.reduce<Record<string, string[]>>((store, endpoint) => {
-            const controller = first(this.openAPIService.getTagsByEndpoint(endpoint));
-            if (!controller) {
+            const info = this.parse(endpoint);
+            if (!info) {
                 return store;
             }
 
-            const fullAction = last(endpoint.split(`${SEPARATOR}${controller}${SEPARATOR}`));
-
-            store[controller] = store[controller] || [];
-            store[controller].push(fullAction);
+            store[info.name] = store[info.name] || [];
+            store[info.name].push(info.tail);
             return store;
         }, {});
     }

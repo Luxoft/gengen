@@ -1,7 +1,7 @@
 import { first, last } from '../utils';
 import { OpenAPITypesGuard } from './OpenAPITypesGuard';
 import { IOpenAPI3 } from './v3/open-api';
-import { IOpenAPI3Operation } from './v3/operation';
+import { IOpenAPI3Operation, IOpenAPI3OperationContainer } from './v3/operation';
 import { IOpenAPI3Reference } from './v3/reference';
 import { IOpenAPI3ArraySchema } from './v3/schemas/array-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
@@ -48,6 +48,22 @@ export class OpenAPIService {
                 const refs = this.getReferencesByOperation(operation);
                 return { ...store, ...this.getSchemas(refs) };
             }, {});
+    }
+
+    public getOperationsByEndpoints(endpoints: Set<string>): IOpenAPI3OperationContainer {
+        if (!endpoints?.size) {
+            return {};
+        }
+
+        return [...endpoints].reduce<IOpenAPI3OperationContainer>((store, endpoint) => {
+            const operation = this.getOperationByEndpoint(endpoint);
+            if (!operation) {
+                return store;
+            }
+
+            store[endpoint] = operation;
+            return store;
+        }, {});
     }
 
     private get majorVersion(): string | undefined {
