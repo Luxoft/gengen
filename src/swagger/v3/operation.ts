@@ -27,3 +27,5 @@ export interface IOpenAPI3Operation {
         };
     };
 }
+
+export type IOpenAPI3OperationContainer = { [key: string]: IOpenAPI3Operation };
