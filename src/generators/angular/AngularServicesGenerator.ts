@@ -3,6 +3,7 @@ import { Scope, StatementStructures, StructureKind, Writers } from 'ts-morph';
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { IReturnType } from '../../models/MethodModel';
 import { IServiceModel } from '../../models/ServiceModel';
+import { IType } from '../../models/TypeModel';
 
 const BASE_SERVICE = 'BaseHttpService';
 const DOWNLOAD_SERVICE = 'DownloadFileService';
@@ -86,6 +87,10 @@ export class AngularServicesGenerator {
             methods: z.methods.map((x) => ({
                 scope: Scope.Public,
                 name: x.name,
+                parameters: x.parameters.map((p) => ({
+                    name: p.name,
+                    type: this.getFullTypeName(p.dtoType, p.isCollection)
+                })),
                 returnType:
                     x.kind === MethodKind.Download
                         ? `Promise<${x.returnType?.type.type}>`
@@ -99,7 +104,11 @@ export class AngularServicesGenerator {
             return 'void';
         }
 
-        const arraySymbol = returnType.isCollection ? '[]' : '';
-        return `${MODELS_NAMESPACE}.${returnType.type.type}${arraySymbol}`;
+        return this.getFullTypeName(returnType.type.type, returnType.isCollection);
+    }
+
+    private getFullTypeName(type: string, isCollection: boolean): string {
+        const arraySymbol = isCollection ? '[]' : '';
+        return `${MODELS_NAMESPACE}.${type}${arraySymbol}`;
     }
 }

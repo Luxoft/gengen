@@ -86,7 +86,7 @@ export class ServiceMappingService {
         return (
             parameters?.map((z) => {
                 const parameter = {
-                    name: z.name,
+                    name: lowerFirst(z.name),
                     optional: !z.required,
                     place: MethodPlace.Query,
                     isCollection: false,
@@ -126,7 +126,7 @@ export class ServiceMappingService {
         }
 
         return {
-            name: model.name,
+            name: lowerFirst(model.name),
             place: MethodPlace.Body,
             optional: false,
             dtoType: model.dtoType,
