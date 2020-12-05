@@ -14,7 +14,6 @@ import { first, last, sortBy } from '../utils';
 import { TypesService } from './TypesService';
 
 const IGNORE_PROPERTIES = ['startRow', 'rowCount'];
-const COMMON_IDENTITY_NAME = 'IdentityDTO';
 
 export class ModelMappingService {
     constructor(private readonly typesGuard: OpenAPITypesGuard, private readonly typesService: TypesService) { }
@@ -34,6 +33,7 @@ export class ModelMappingService {
                 if (this.isIdentity(schema)) {
                     identities.push({
                         name,
+                        dtoType: this.getInterfaceName(name),
                         property: {
                             ...this.typesService.getSimpleType(schema.properties['id'] as IOpenAPI3GuidSchema),
                             isCollection: false,
@@ -151,14 +151,10 @@ export class ModelMappingService {
     }
 
     private getInterfaces(identities: IIdentityModel[], objects: IObjectModel[]): IInterfaceModel[] {
-        const interfaces: IInterfaceModel[] = [];
-        if (identities.length) {
-            const identityModel = first(identities);
-            interfaces.push({
-                name: this.getInterfaceName(COMMON_IDENTITY_NAME),
-                properties: [{ name: identityModel.property.name, dtoType: identityModel.property.dtoType, isCollection: false }]
-            });
-        }
+        const interfaces = identities.map((z) => ({
+            name: this.getInterfaceName(z.name),
+            properties: [{ name: z.property.name, dtoType: z.property.dtoType, isCollection: false }]
+        }));
 
         return interfaces.concat(
             objects.map((z) => ({

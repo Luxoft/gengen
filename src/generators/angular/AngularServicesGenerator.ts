@@ -91,7 +91,8 @@ export class AngularServicesGenerator {
                 name: x.name,
                 parameters: x.parameters.map((p) => ({
                     name: p.name,
-                    type: this.getFullTypeName(p.dtoType, p.isCollection, p.isModel)
+                    type: this.getFullTypeName(p.dtoType, p.isCollection, p.isModel),
+                    initializer: p.optional ? `${undefined}` : undefined
                 })),
                 returnType:
                     x.kind === MethodKind.Download

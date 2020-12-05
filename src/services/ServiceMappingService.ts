@@ -4,7 +4,6 @@ import { MethodPlace } from '../models/kinds/MethodPlace';
 import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IMethodModel, IMethodParameterModel, IReturnType } from '../models/MethodModel';
 import { IModelsContainer } from '../models/ModelsContainer';
-import { IObjectModel } from '../models/ObjectModel';
 import { IServiceModel } from '../models/ServiceModel';
 import { IOpenAPI3Operations } from '../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
@@ -122,7 +121,7 @@ export class ServiceMappingService {
         schema: IOpenAPI3ArraySchema | IOpenAPI3Reference | undefined,
         models: IModelsContainer
     ): IMethodParameterModel | undefined {
-        let model: IObjectModel | undefined;
+        let model: { name: string; dtoType: string } | undefined;
         let isCollection = false;
         if (this.typesGuard.isReference(schema)) {
             model = this.findModel(models, schema.$ref);
@@ -149,7 +148,7 @@ export class ServiceMappingService {
         schema: IOpenAPI3ArraySchema | IOpenAPI3Reference | undefined,
         models: IModelsContainer
     ): IReturnType | undefined {
-        let model: IObjectModel | undefined;
+        let model: { name: string; dtoType: string } | undefined;
         let isCollection = false;
         if (this.typesGuard.isReference(schema)) {
             model = this.findModel(models, schema.$ref);
@@ -176,7 +175,12 @@ export class ServiceMappingService {
         return Boolean(operation.responses[200].content?.['application/octet-stream']);
     }
 
-    private findModel(models: IModelsContainer, ref: string): IObjectModel | undefined {
-        return models.objects.find((z) => ref.endsWith(z.name));
+    private findModel(models: IModelsContainer, ref: string): { name: string; dtoType: string } | undefined {
+        const model = models.objects.find((z) => ref.endsWith(z.name));
+        if (model) {
+            return model;
+        }
+
+        return models.identities.find((z) => ref.endsWith(z.name));
     }
 }
