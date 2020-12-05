@@ -94,7 +94,7 @@ export class ServiceMappingService {
             parameters?.map((z) => {
                 const parameter = {
                     name: lowerFirst(z.name),
-                    optional: !z.required,
+                    optional: z.required === undefined ? false : !z.required,
                     place: MethodPlace.Query,
                     isCollection: false,
                     dtoType: '',
