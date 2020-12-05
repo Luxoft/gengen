@@ -1,9 +1,11 @@
-import { Scope, StatementStructures, StructureKind, Writers } from 'ts-morph';
+import { CodeBlockWriter, Scope, StatementStructures, StructureKind, Writers } from 'ts-morph';
 
 import { MethodKind } from '../../models/kinds/MethodKind';
-import { IReturnType } from '../../models/MethodModel';
+import { MethodOperation } from '../../models/kinds/MethodOperation';
+import { MethodPlace } from '../../models/kinds/MethodPlace';
+import { IMethodModel, IReturnType } from '../../models/MethodModel';
 import { IServiceModel } from '../../models/ServiceModel';
-import { IType } from '../../models/TypeModel';
+import { first } from '../../utils';
 
 const BASE_SERVICE = 'BaseHttpService';
 const DOWNLOAD_SERVICE = 'DownloadFileService';
@@ -89,12 +91,15 @@ export class AngularServicesGenerator {
                 name: x.name,
                 parameters: x.parameters.map((p) => ({
                     name: p.name,
-                    type: this.getFullTypeName(p.dtoType, p.isCollection)
+                    type: this.getFullTypeName(p.dtoType, p.isCollection, p.isModel)
                 })),
                 returnType:
                     x.kind === MethodKind.Download
                         ? `Promise<${x.returnType?.type.type}>`
-                        : `Observable<${this.getReturnTypeName(x.returnType)}>`
+                        : `Observable<${this.getReturnTypeName(x.returnType)}>`,
+                statements: (w) => {
+                    x.kind === MethodKind.Download ? this.createDownloadMethod(w, x) : this.createMethod(w);
+                }
             }))
         }));
     }
@@ -104,11 +109,41 @@ export class AngularServicesGenerator {
             return 'void';
         }
 
-        return this.getFullTypeName(returnType.type.type, returnType.isCollection);
+        return this.getFullTypeName(returnType.type.type, returnType.isCollection, returnType.isModel);
     }
 
-    private getFullTypeName(type: string, isCollection: boolean): string {
+    private getFullTypeName(type: string, isCollection: boolean, isModel: boolean): string {
         const arraySymbol = isCollection ? '[]' : '';
-        return `${MODELS_NAMESPACE}.${type}${arraySymbol}`;
+        return `${isModel ? `${MODELS_NAMESPACE}.` : ''}${type}${arraySymbol}`;
     }
+
+    private getFullMethodName(model: IMethodModel): string {
+        const pairs = model.parameters
+            .filter((z) => z.place === MethodPlace.Query)
+            .map((z) => `${z.name}=\${encodeURIComponent(${z.name})}`);
+
+        if (!pairs.length) {
+            return `${model.name}`;
+        }
+
+        return `${model.name}?${pairs.join('&')}`;
+    }
+
+    private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel): void {
+        const parameter = first(model.parameters.filter((z) => z.place === MethodPlace.Body));
+
+        if (!model.parameters.find((z) => z.name === 'saveAs')) {
+            throw new Error(`Cannot find 'saveAs' parameter for method ${model.name}`);
+        }
+
+        writer.writeLine('return this.downloadFile(');
+        writer.withIndentationLevel(3, () => writer.writeLine(`'${this.getFullMethodName(model)}',`));
+        writer.withIndentationLevel(3, () => writer.writeLine(`'${MethodOperation[model.operation].toLowerCase()}',`));
+        writer.withIndentationLevel(3, () => writer.writeLine(`${parameter?.name ?? `${undefined}`},`));
+        writer.withIndentationLevel(3, () => writer.writeLine('saveAs'));
+
+        writer.writeLine(');');
+    }
+
+    private createMethod(writer: CodeBlockWriter): void { }
 }

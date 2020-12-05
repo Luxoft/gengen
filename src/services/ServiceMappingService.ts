@@ -73,10 +73,18 @@ export class ServiceMappingService {
         if (model.kind == MethodKind.Download) {
             model.returnType = {
                 isCollection: false,
+                isModel: false,
                 type: { kind: PropertyKind.Object, type: 'IDownloadResult', dtoType: 'IDownloadResult' }
             };
 
-            model.parameters.push({ name: 'saveAs', place: MethodPlace.Body, optional: true, dtoType: 'string', isCollection: false });
+            model.parameters.push({
+                name: 'saveAs',
+                place: MethodPlace.Body,
+                optional: true,
+                dtoType: 'string',
+                isCollection: false,
+                isModel: false
+            });
         }
 
         return model;
@@ -90,7 +98,8 @@ export class ServiceMappingService {
                     optional: !z.required,
                     place: MethodPlace.Query,
                     isCollection: false,
-                    dtoType: ''
+                    dtoType: '',
+                    isModel: false
                 };
 
                 if (this.typesGuard.isSimple(z.schema)) {
@@ -100,6 +109,7 @@ export class ServiceMappingService {
 
                 if (this.typesGuard.isReference(z.schema)) {
                     parameter.dtoType = this.findModel(models, z.schema.$ref)?.dtoType ?? '';
+                    parameter.isModel = true;
                     return parameter;
                 }
 
@@ -130,7 +140,8 @@ export class ServiceMappingService {
             place: MethodPlace.Body,
             optional: false,
             dtoType: model.dtoType,
-            isCollection
+            isCollection,
+            isModel: true
         };
     }
 
@@ -146,7 +157,7 @@ export class ServiceMappingService {
             isCollection = true;
 
             if (this.typesGuard.isSimple(schema.items)) {
-                return { isCollection, type: this.typesService.getSimpleType(schema.items) };
+                return { isCollection, isModel: false, type: this.typesService.getSimpleType(schema.items) };
             }
 
             if (this.typesGuard.isReference(schema.items)) {
@@ -158,7 +169,7 @@ export class ServiceMappingService {
             return undefined;
         }
 
-        return { isCollection, type: { kind: PropertyKind.Object, dtoType: model.dtoType, type: model.name } };
+        return { isCollection, isModel: true, type: { kind: PropertyKind.Object, dtoType: model.dtoType, type: model.name } };
     }
 
     private hasDownloadResponse(operation: IOpenAPI3Operation): boolean {

@@ -9,11 +9,13 @@ export interface IMethodParameterModel {
     dtoType: string;
     place: MethodPlace;
     optional: boolean;
+    isModel: boolean;
 }
 
 export interface IReturnType {
     isCollection: boolean;
     type: IType;
+    isModel: boolean;
 }
 
 export interface IMethodModel {
