@@ -1,8 +1,7 @@
-export interface ITypeModel {
-    name: string;
-    dtoType: string;
-}
+import { PropertyKind } from './kinds/PropertyKind';
 
-export interface IFullTypeModel extends ITypeModel {
+export interface IType {
+    kind: PropertyKind;
     type: string;
+    dtoType: string;
 }

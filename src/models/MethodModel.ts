@@ -1,11 +1,19 @@
 import { MethodKind } from './kinds/MethodKind';
 import { MethodOperation } from './kinds/MethodOperation';
 import { MethodPlace } from './kinds/MethodPlace';
-import { IFullTypeModel, ITypeModel } from './TypeModel';
+import { IType } from './TypeModel';
 
-export interface IMethodParameterModel extends ITypeModel {
+export interface IMethodParameterModel {
+    name: string;
+    isCollection: boolean;
+    dtoType: string;
     place: MethodPlace;
     optional: boolean;
+}
+
+export interface IReturnType {
+    isCollection: boolean;
+    type: IType;
 }
 
 export interface IMethodModel {
@@ -13,5 +21,5 @@ export interface IMethodModel {
     operation: MethodOperation;
     name: string;
     parameters: IMethodParameterModel[];
-    returnType: IFullTypeModel;
+    returnType: IReturnType | undefined;
 }

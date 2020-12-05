@@ -1,7 +1,7 @@
-import { ITypeModel } from './TypeModel';
-
-export interface IInterfacePropertyModel extends ITypeModel {
+export interface IInterfacePropertyModel {
     isCollection: boolean;
+    name: string;
+    dtoType: string;
 }
 
 export interface IInterfaceModel {

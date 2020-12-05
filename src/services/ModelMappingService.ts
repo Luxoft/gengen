@@ -7,15 +7,17 @@ import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3EnumSchema } from '../swagger/v3/schemas/enum-schema';
+import { IOpenAPI3GuidSchema } from '../swagger/v3/schemas/guid-schema';
 import { IOpenAPI3ObjectSchema, OpenAPI3ObjectPropertySchema } from '../swagger/v3/schemas/object-schema';
 import { OpenAPI3SchemaContainer, OpenAPI3SimpleSchema } from '../swagger/v3/schemas/schema';
 import { first, last, sortBy } from '../utils';
+import { TypesService } from './TypesService';
 
 const IGNORE_PROPERTIES = ['startRow', 'rowCount'];
 const COMMON_IDENTITY_NAME = 'IdentityDTO';
 
 export class ModelMappingService {
-    constructor(private readonly typesGuard: OpenAPITypesGuard) { }
+    constructor(private readonly typesGuard: OpenAPITypesGuard, private readonly typesService: TypesService) { }
 
     public toModelsContainer(schemas: OpenAPI3SchemaContainer): IModelsContainer {
         const enums: IEnumModel[] = [];
@@ -30,7 +32,15 @@ export class ModelMappingService {
 
             if (this.typesGuard.isObject(schema)) {
                 if (this.isIdentity(schema)) {
-                    identities.push({ name, property: this.getGuidProperty('id', true) });
+                    identities.push({
+                        name,
+                        property: {
+                            ...this.typesService.getSimpleType(schema.properties['id'] as IOpenAPI3GuidSchema),
+                            isCollection: false,
+                            name: 'id',
+                            isNullable: true
+                        }
+                    });
                 } else {
                     objects.push(this.toObjectModel(schemas, name, schema));
                 }
@@ -103,48 +113,12 @@ export class ModelMappingService {
     }
 
     private getSimpleProperty(name: string, schema: OpenAPI3SimpleSchema): IObjectPropertyModel {
-        const common = { name, isCollection: false, isNullable: Boolean(schema.nullable) };
-        if (this.typesGuard.isGuid(schema)) {
-            return this.getGuidProperty(name, common.isNullable);
-        }
-
-        if (this.typesGuard.isDate(schema)) {
-            return {
-                ...common,
-                kind: PropertyKind.Date,
-                type: 'Date',
-                dtoType: 'string'
-            };
-        }
-
-        if (this.typesGuard.isBoolean(schema)) {
-            return {
-                ...common,
-                kind: PropertyKind.None,
-                type: 'boolean',
-                dtoType: 'boolean'
-            };
-        }
-
-        if (this.typesGuard.isNumber(schema)) {
-            return {
-                ...common,
-                kind: PropertyKind.None,
-                type: 'number',
-                dtoType: 'number'
-            };
-        }
-
         return {
-            ...common,
-            kind: PropertyKind.None,
-            type: 'string',
-            dtoType: 'string'
+            ...this.typesService.getSimpleType(schema),
+            name,
+            isCollection: false,
+            isNullable: Boolean(schema.nullable)
         };
-    }
-
-    private getGuidProperty(name: string, isNullable: boolean): IObjectPropertyModel {
-        return { kind: PropertyKind.Guid, isCollection: false, name, isNullable, type: 'Guid', dtoType: 'string' };
     }
 
     private getReferenceProperty(schemas: OpenAPI3SchemaContainer, name: string, schema: IOpenAPI3Reference): IObjectPropertyModel {
