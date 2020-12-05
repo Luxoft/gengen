@@ -1,5 +1,6 @@
 import { StatementStructures, StructureKind, Writers } from 'ts-morph';
 
+import { MethodKind } from '../../models/kinds/MethodKind';
 import { IServiceModel } from '../../models/ServiceModel';
 
 const BASE_SERVICE = 'BaseHttpService';
@@ -66,7 +67,7 @@ export class AngularServicesGenerator {
             kind: StructureKind.Class,
             isExported: true,
             name: `${z.name}Service`,
-            extends: z.hasDownloadMethods ? DOWNLOAD_SERVICE : BASE_SERVICE,
+            extends: z.methods.some((x) => x.kind === MethodKind.Download) ? DOWNLOAD_SERVICE : BASE_SERVICE,
             decorators: [
                 {
                     kind: StructureKind.Decorator,
