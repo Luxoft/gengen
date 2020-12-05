@@ -1,13 +1,22 @@
+import { MethodOperation } from '../models/kinds/MethodOperation';
 import { first, last } from '../utils';
 import { OpenAPITypesGuard } from './OpenAPITypesGuard';
 import { IOpenAPI3 } from './v3/open-api';
-import { IOpenAPI3Operation, IOpenAPI3OperationContainer } from './v3/operation';
+import { IOpenAPI3Operation } from './v3/operation';
 import { IOpenAPI3Reference } from './v3/reference';
 import { IOpenAPI3ArraySchema } from './v3/schemas/array-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
 import { OpenAPI3SchemaContainer } from './v3/schemas/schema';
 
 const SUPPORTED_VERSION = 3;
+
+interface IOperation {
+    key: string;
+    operation: IOpenAPI3Operation;
+    method: MethodOperation;
+}
+
+export type IOpenAPI3Operations = { [key: string]: { method: MethodOperation; operation: IOpenAPI3Operation } };
 
 export class OpenAPIService {
     private readonly spec: IOpenAPI3;
@@ -30,8 +39,8 @@ export class OpenAPIService {
     }
 
     public getTagsByEndpoint(endpoint: string): string[] {
-        const [, operation] = this.getOperationByEndpoint(endpoint);
-        return operation?.tags ?? [];
+        const result = this.getOperationByEndpoint(endpoint);
+        return result?.operation.tags ?? [];
     }
 
     public getSchemasByEndpoints(endpoints: Set<string>): OpenAPI3SchemaContainer {
@@ -41,28 +50,28 @@ export class OpenAPIService {
 
         return [...endpoints]
             .map((z) => this.getOperationByEndpoint(z))
-            .reduce((store, [, operation]) => {
-                if (!operation) {
+            .reduce((store, model) => {
+                if (!model) {
                     return store;
                 }
 
-                const refs = this.getReferencesByOperation(operation);
+                const refs = this.getReferencesByOperation(model.operation);
                 return { ...store, ...this.getSchemas(refs) };
             }, {});
     }
 
-    public getOperationsByEndpoints(endpoints: Set<string>): IOpenAPI3OperationContainer {
+    public getOperationsByEndpoints(endpoints: Set<string>): IOpenAPI3Operations {
         if (!endpoints?.size) {
             return {};
         }
 
-        return [...endpoints].reduce<IOpenAPI3OperationContainer>((store, endpoint) => {
-            const [key, operation] = this.getOperationByEndpoint(endpoint);
-            if (!key || !operation) {
+        return [...endpoints].reduce<IOpenAPI3Operations>((store, endpoint) => {
+            const model = this.getOperationByEndpoint(endpoint);
+            if (!model) {
                 return store;
             }
 
-            store[key] = operation;
+            store[model.key] = { method: model.method, operation: model.operation };
             return store;
         }, {});
     }
@@ -75,18 +84,34 @@ export class OpenAPIService {
         return first(this.spec.openapi.split('.'));
     }
 
-    private getOperationByEndpoint(endpoint: string): [string | undefined, IOpenAPI3Operation | undefined] {
+    private getOperationByEndpoint(endpoint: string): IOperation | undefined {
         if (!this.spec.paths) {
-            return [undefined, undefined];
+            return undefined;
         }
 
         const path = Object.entries(this.spec.paths).find(([key]) => key.endsWith(endpoint));
         if (!path) {
-            return [undefined, undefined];
+            return undefined;
         }
 
         const [name, pathItem] = path;
-        return [name, pathItem.get || pathItem.post || pathItem.put || pathItem.delete];
+        if (pathItem.get) {
+            return { key: name, operation: pathItem.get, method: MethodOperation.GET };
+        }
+
+        if (pathItem.post) {
+            return { key: name, operation: pathItem.post, method: MethodOperation.POST };
+        }
+
+        if (pathItem.put) {
+            return { key: name, operation: pathItem.put, method: MethodOperation.PUT };
+        }
+
+        if (pathItem.delete) {
+            return { key: name, operation: pathItem.delete, method: MethodOperation.DELETE };
+        }
+
+        return undefined;
     }
 
     private getReferencesByOperation(operation: IOpenAPI3Operation): IOpenAPI3Reference[] {
