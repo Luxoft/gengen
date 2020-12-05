@@ -179,6 +179,7 @@ export class ModelsGenerator {
 
     private getFromDtoPropertyInitializer(property: IObjectPropertyModel): string {
         const dtoProperty = `dto.${property.name}`;
+
         switch (property.kind) {
             case PropertyKind.Date:
                 return `toDateIn(${dtoProperty})`;
@@ -196,7 +197,7 @@ export class ModelsGenerator {
 
             case PropertyKind.Identity:
                 if (property.isCollection) {
-                    return `${dtoProperty} ? ${dtoProperty}.map(x => new ${property.type}.${FROM_DTO_METHOD}(x.id)) : []`;
+                    return `${dtoProperty} ? ${dtoProperty}.map(x => new ${property.type}(x.id)) : []`;
                 }
 
                 return `${dtoProperty} ? new ${property.type}(${dtoProperty}.id) : ${this.undefinedString}`;
