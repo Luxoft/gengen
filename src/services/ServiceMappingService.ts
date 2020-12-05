@@ -62,10 +62,10 @@ export class ServiceMappingService {
             name: lowerFirst(endpointInfo.action.name),
             operation: method,
             parameters: this.getQueryParameters(operation.parameters, models),
-            returnType: this.getReturnType(operation.responses[200].content?.['application/json'].schema, models)
+            returnType: this.getReturnType(operation.responses[200].content?.['application/json']?.schema, models)
         };
 
-        const bodyParameter = this.getBodyParameter(operation.requestBody?.content['application/json'].schema, models);
+        const bodyParameter = this.getBodyParameter(operation.requestBody?.content['application/json']?.schema, models);
         if (bodyParameter) {
             model.parameters.push(bodyParameter);
         }

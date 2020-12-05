@@ -1,11 +1,13 @@
 import { Scope, StatementStructures, StructureKind, Writers } from 'ts-morph';
 
 import { MethodKind } from '../../models/kinds/MethodKind';
+import { IReturnType } from '../../models/MethodModel';
 import { IServiceModel } from '../../models/ServiceModel';
 
 const BASE_SERVICE = 'BaseHttpService';
 const DOWNLOAD_SERVICE = 'DownloadFileService';
 const HTTP_CLIENT = 'HttpClient';
+const MODELS_NAMESPACE = '$models';
 
 export class AngularServicesGenerator {
     public getServicesCodeStructure(services: IServiceModel[]): StatementStructures[] {
@@ -57,7 +59,7 @@ export class AngularServicesGenerator {
             {
                 kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: './models',
-                namespaceImport: '$models'
+                namespaceImport: MODELS_NAMESPACE
             }
         ];
     }
@@ -83,8 +85,21 @@ export class AngularServicesGenerator {
             ],
             methods: z.methods.map((x) => ({
                 scope: Scope.Public,
-                name: x.name
+                name: x.name,
+                returnType:
+                    x.kind === MethodKind.Download
+                        ? `Promise<${x.returnType?.type.type}>`
+                        : `Observable<${this.getReturnTypeName(x.returnType)}>`
             }))
         }));
+    }
+
+    private getReturnTypeName(returnType: IReturnType | undefined): string {
+        if (!returnType) {
+            return 'void';
+        }
+
+        const arraySymbol = returnType.isCollection ? '[]' : '';
+        return `${MODELS_NAMESPACE}.${returnType.type.type}${arraySymbol}`;
     }
 }
