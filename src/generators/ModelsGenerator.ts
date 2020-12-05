@@ -6,6 +6,7 @@ import { IInterfaceModel } from '../models/InterfaceModel';
 import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
+import { lowerFirst } from '../utils';
 
 const TO_DTO_METHOD = 'toDTO';
 const FROM_DTO_METHOD = 'fromDTO';
@@ -136,7 +137,7 @@ export class ModelsGenerator {
         return {
             kind: StructureKind.Property,
             scope: Scope.Private,
-            name: `__${name[0].toLowerCase()}${name.slice(1)}`,
+            name: `__${lowerFirst(name)}`,
             type: 'string'
         };
     }

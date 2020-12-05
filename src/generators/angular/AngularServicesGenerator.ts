@@ -1,4 +1,4 @@
-import { StatementStructures, StructureKind, Writers } from 'ts-morph';
+import { Scope, StatementStructures, StructureKind, Writers } from 'ts-morph';
 
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { IServiceModel } from '../../models/ServiceModel';
@@ -80,7 +80,11 @@ export class AngularServicesGenerator {
                     parameters: [{ name: 'http', type: HTTP_CLIENT }],
                     statements: `super('${z.relativePath}', http);`
                 }
-            ]
+            ],
+            methods: z.methods.map((x) => ({
+                scope: Scope.Public,
+                name: x.name
+            }))
         }));
     }
 }
