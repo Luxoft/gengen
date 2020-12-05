@@ -3,9 +3,9 @@ import { PropertyDeclarationStructure, Scope, StatementStructures, StructureKind
 import { IEnumModel } from '../models/EnumModel';
 import { IIdentityModel } from '../models/IdentityModel';
 import { IInterfaceModel } from '../models/InterfaceModel';
+import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
-import { PropertyKind } from '../models/PropertyKind';
 
 const TO_DTO_METHOD = 'toDTO';
 const FROM_DTO_METHOD = 'fromDTO';

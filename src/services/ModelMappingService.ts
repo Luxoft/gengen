@@ -1,9 +1,9 @@
 import { IEnumModel } from '../models/EnumModel';
 import { IIdentityModel } from '../models/IdentityModel';
 import { IInterfaceModel } from '../models/InterfaceModel';
+import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
-import { PropertyKind } from '../models/PropertyKind';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3EnumSchema } from '../swagger/v3/schemas/enum-schema';

@@ -21,7 +21,8 @@ export class ServiceMappingService {
             store.push({
                 name: info.name,
                 relativePath: info.relativePath,
-                hasDownloadMethods: Boolean(operation.responses[200].content?.['application/octet-stream'])
+                hasDownloadMethods: Boolean(operation.responses[200].content?.['application/octet-stream']),
+                methods: []
             });
             return store;
         }, []);

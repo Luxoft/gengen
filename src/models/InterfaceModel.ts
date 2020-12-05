@@ -1,6 +1,6 @@
-export interface IInterfacePropertyModel {
-    name: string;
-    dtoType: string;
+import { ITypeModel } from './TypeModel';
+
+export interface IInterfacePropertyModel extends ITypeModel {
     isCollection: boolean;
 }
 

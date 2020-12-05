@@ -1,16 +1,12 @@
-import { PropertyKind } from './PropertyKind';
+import { PropertyKind } from './kinds/PropertyKind';
+import { IFullTypeModel, ITypeModel } from './TypeModel';
 
-export interface IObjectPropertyModel {
+export interface IObjectPropertyModel extends IFullTypeModel {
     kind: PropertyKind;
-    name: string;
-    type: string;
-    dtoType: string;
     isNullable: boolean;
     isCollection: boolean;
 }
 
-export interface IObjectModel {
-    name: string;
-    dtoType: string;
+export interface IObjectModel extends ITypeModel {
     properties: IObjectPropertyModel[];
 }
