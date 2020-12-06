@@ -13,8 +13,14 @@ import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3ArraySchema } from '../swagger/v3/schemas/array-schema';
 import { OpenAPI3ResponseSchema } from '../swagger/v3/schemas/schema';
 import { lowerFirst, sortBy } from '../utils';
-import { EndpointsService, IEndpointInfo } from './EndpointsService';
+import { EndpointsService } from './EndpointsService';
 import { TypesService } from './TypesService';
+
+interface IModel {
+    name: string;
+    dtoType: string;
+    kind: PropertyKind;
+}
 
 export class ServiceMappingService {
     constructor(
@@ -120,7 +126,7 @@ export class ServiceMappingService {
         schema: IOpenAPI3ArraySchema | IOpenAPI3Reference | undefined,
         models: IModelsContainer
     ): IMethodParameterModel | undefined {
-        let model: { name: string; dtoType: string } | undefined;
+        let model: IModel | undefined;
         let isCollection = false;
         if (this.typesGuard.isReference(schema)) {
             model = this.findModel(models, schema);
@@ -144,7 +150,7 @@ export class ServiceMappingService {
     }
 
     private getReturnType(schema: OpenAPI3ResponseSchema | undefined, models: IModelsContainer): IReturnType | undefined {
-        let model: { name: string; dtoType: string } | undefined;
+        let model: IModel | undefined;
         let isCollection = false;
 
         if (this.typesGuard.isSimple(schema)) {
@@ -169,20 +175,31 @@ export class ServiceMappingService {
             return undefined;
         }
 
-        return { isCollection, isModel: true, type: { kind: PropertyKind.Object, dtoType: model.dtoType, type: model.name } };
+        return { isCollection, isModel: true, type: { kind: model.kind, dtoType: model.dtoType, type: model.name } };
     }
 
     private hasDownloadResponse(operation: IOpenAPI3Operation): boolean {
         return Boolean(operation.responses[200].content?.['application/octet-stream']);
     }
 
-    private findModel(models: IModelsContainer, ref: IOpenAPI3Reference): { name: string; dtoType: string } | undefined {
+    private findModel(models: IModelsContainer, ref: IOpenAPI3Reference): IModel | undefined {
         const name = this.openAPIService.getSchemaKey(ref);
-        const model = models.objects.find((z) => z.name === name);
-        if (model) {
-            return model;
+
+        const objectModel = models.objects.find((z) => z.name === name);
+        if (objectModel) {
+            return { kind: PropertyKind.Object, name, dtoType: objectModel.dtoType };
         }
 
-        return models.identities.find((z) => z.name === name);
+        const identityModel = models.identities.find((z) => z.name === name);
+        if (identityModel) {
+            return { kind: PropertyKind.Identity, name, dtoType: identityModel.dtoType };
+        }
+
+        const enumModel = models.enums.find((z) => z.name === name);
+        if (enumModel) {
+            return { kind: PropertyKind.Enum, name, dtoType: name };
+        }
+
+        return undefined;
     }
 }

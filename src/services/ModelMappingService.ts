@@ -126,7 +126,7 @@ export class ModelMappingService {
         const referenceSchema = schemas[schemaKey];
         if (this.typesGuard.isEnum(referenceSchema)) {
             return {
-                kind: PropertyKind.None,
+                kind: PropertyKind.Enum,
                 isCollection: false,
                 name,
                 isNullable: false,

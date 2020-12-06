@@ -170,12 +170,12 @@ export class AngularServicesGenerator {
                 writer.withIndentationLevel(3, () => writer.writeLine(`${z.name},`));
             });
 
-        if (!model.returnType?.isModel) {
-            writer.writeLine(');');
+        if (model.returnType?.type.kind == PropertyKind.Object || model.returnType?.type.kind == PropertyKind.Identity) {
+            writer.writeLine(`).pipe(${this.createPipe(model.returnType)});`);
             return;
         }
 
-        writer.writeLine(`).pipe(${this.createPipe(model.returnType)});`);
+        writer.writeLine(');');
     }
 
     private createPipe(returnType: IReturnType): string {
