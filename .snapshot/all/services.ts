@@ -40,6 +40,12 @@ export class ProductService extends DownloadFileService {
         );
     }
 
+    public get(id: string): Observable<$models.Product> {
+        return this.get<$models.IProduct>(
+            `get?id=${encodeURIComponent(id)}`,
+        ).pipe(mapSingle($models.Product));
+    }
+
     public getProducts(): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `getProducts`,
