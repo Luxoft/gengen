@@ -3,6 +3,7 @@ import { CodeBlockWriter, Scope, StatementStructures, StructureKind, Writers } f
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { MethodOperation } from '../../models/kinds/MethodOperation';
 import { MethodPlace } from '../../models/kinds/MethodPlace';
+import { PropertyKind } from '../../models/kinds/PropertyKind';
 import { IMethodModel, IReturnType } from '../../models/MethodModel';
 import { IServiceModel } from '../../models/ServiceModel';
 import { first } from '../../utils';
@@ -160,6 +161,28 @@ export class AngularServicesGenerator {
                 writer.withIndentationLevel(3, () => writer.writeLine(`${z.name},`));
             });
 
-        writer.writeLine(');');
+        if (!model.returnType?.isModel) {
+            writer.writeLine(');');
+            return;
+        }
+
+        writer.writeLine(`).pipe(${this.createPipe(model.returnType)});`);
+    }
+
+    private createPipe(returnType: IReturnType): string {
+        const type = `${MODELS_NAMESPACE}.${returnType.type.type}`;
+        if (returnType.isCollection) {
+            if (returnType.type.kind === PropertyKind.Identity) {
+                return `mapIdentityCollection(${type})`;
+            }
+
+            return `mapCollection(${type})`;
+        }
+
+        if (returnType.type.kind === PropertyKind.Identity) {
+            return `mapIdentitySingle(${type})`;
+        }
+
+        return `mapSingle(${type})`;
     }
 }

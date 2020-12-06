@@ -11,6 +11,7 @@ import { IOpenAPI3Operation } from '../swagger/v3/operation';
 import { IOpenAPI3Parameter } from '../swagger/v3/parameter';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3ArraySchema } from '../swagger/v3/schemas/array-schema';
+import { OpenAPI3ResponseSchema } from '../swagger/v3/schemas/schema';
 import { lowerFirst, sortBy } from '../utils';
 import { EndpointsService, IEndpointInfo } from './EndpointsService';
 import { TypesService } from './TypesService';
@@ -144,12 +145,14 @@ export class ServiceMappingService {
         };
     }
 
-    private getReturnType(
-        schema: IOpenAPI3ArraySchema | IOpenAPI3Reference | undefined,
-        models: IModelsContainer
-    ): IReturnType | undefined {
+    private getReturnType(schema: OpenAPI3ResponseSchema | undefined, models: IModelsContainer): IReturnType | undefined {
         let model: { name: string; dtoType: string } | undefined;
         let isCollection = false;
+
+        if (this.typesGuard.isSimple(schema)) {
+            return { isCollection, isModel: false, type: this.typesService.getSimpleType(schema) };
+        }
+
         if (this.typesGuard.isReference(schema)) {
             model = this.findModel(models, schema.$ref);
         } else if (this.typesGuard.isCollection(schema)) {

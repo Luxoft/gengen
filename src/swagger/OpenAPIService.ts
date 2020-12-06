@@ -4,9 +4,8 @@ import { OpenAPITypesGuard } from './OpenAPITypesGuard';
 import { IOpenAPI3 } from './v3/open-api';
 import { IOpenAPI3Operation } from './v3/operation';
 import { IOpenAPI3Reference } from './v3/reference';
-import { IOpenAPI3ArraySchema } from './v3/schemas/array-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
-import { OpenAPI3SchemaContainer } from './v3/schemas/schema';
+import { OpenAPI3ResponseSchema, OpenAPI3SchemaContainer } from './v3/schemas/schema';
 
 const SUPPORTED_VERSION = 3;
 
@@ -154,7 +153,7 @@ export class OpenAPIService {
         return refs;
     }
 
-    private getSchemaFromContent(refs: IOpenAPI3Reference[], schema: IOpenAPI3ArraySchema | IOpenAPI3Reference | undefined): void {
+    private getSchemaFromContent(refs: IOpenAPI3Reference[], schema: OpenAPI3ResponseSchema | undefined): void {
         if (this.typesGuard.isCollection(schema) && this.typesGuard.isReference(schema.items)) {
             refs.push(schema.items);
         } else if (this.typesGuard.isReference(schema)) {
