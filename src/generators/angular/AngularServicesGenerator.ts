@@ -141,7 +141,7 @@ export class AngularServicesGenerator {
     }
 
     private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel): void {
-        const parameter = first(model.parameters.filter((z) => z.place === MethodPlace.Body));
+        const parameter = first(model.parameters.filter((z) => z.name !== 'saveAs' && z.place === MethodPlace.Body));
 
         if (!model.parameters.find((z) => z.name === 'saveAs')) {
             throw new Error(`Cannot find 'saveAs' parameter for method ${model.name}`);
