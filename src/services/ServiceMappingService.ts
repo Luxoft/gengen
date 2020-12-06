@@ -5,7 +5,7 @@ import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IMethodModel, IMethodParameterModel, IReturnType } from '../models/MethodModel';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IServiceModel } from '../models/ServiceModel';
-import { IOpenAPI3Operations } from '../swagger/OpenAPIService';
+import { IOpenAPI3Operations, OpenAPIService } from '../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Operation } from '../swagger/v3/operation';
 import { IOpenAPI3Parameter } from '../swagger/v3/parameter';
@@ -19,6 +19,7 @@ import { TypesService } from './TypesService';
 export class ServiceMappingService {
     constructor(
         private readonly endpointsService: EndpointsService,
+        private readonly openAPIService: OpenAPIService,
         private readonly typesService: TypesService,
         private readonly typesGuard: OpenAPITypesGuard
     ) { }
@@ -108,7 +109,7 @@ export class ServiceMappingService {
                 }
 
                 if (this.typesGuard.isReference(z.schema)) {
-                    parameter.dtoType = this.findModel(models, z.schema.$ref)?.dtoType ?? '';
+                    parameter.dtoType = this.findModel(models, z.schema)?.dtoType ?? '';
                     parameter.isModel = true;
                     return parameter;
                 }
@@ -125,10 +126,10 @@ export class ServiceMappingService {
         let model: { name: string; dtoType: string } | undefined;
         let isCollection = false;
         if (this.typesGuard.isReference(schema)) {
-            model = this.findModel(models, schema.$ref);
+            model = this.findModel(models, schema);
         } else if (this.typesGuard.isCollection(schema) && this.typesGuard.isReference(schema.items)) {
             isCollection = true;
-            model = this.findModel(models, schema.items.$ref);
+            model = this.findModel(models, schema.items);
         }
 
         if (!model) {
@@ -154,7 +155,7 @@ export class ServiceMappingService {
         }
 
         if (this.typesGuard.isReference(schema)) {
-            model = this.findModel(models, schema.$ref);
+            model = this.findModel(models, schema);
         } else if (this.typesGuard.isCollection(schema)) {
             isCollection = true;
 
@@ -163,7 +164,7 @@ export class ServiceMappingService {
             }
 
             if (this.typesGuard.isReference(schema.items)) {
-                model = this.findModel(models, schema.items.$ref);
+                model = this.findModel(models, schema.items);
             }
         }
 
@@ -178,12 +179,13 @@ export class ServiceMappingService {
         return Boolean(operation.responses[200].content?.['application/octet-stream']);
     }
 
-    private findModel(models: IModelsContainer, ref: string): { name: string; dtoType: string } | undefined {
-        const model = models.objects.find((z) => ref.endsWith(z.name));
+    private findModel(models: IModelsContainer, ref: IOpenAPI3Reference): { name: string; dtoType: string } | undefined {
+        const name = this.openAPIService.getSchemaKey(ref);
+        const model = models.objects.find((z) => z.name === name);
         if (model) {
             return model;
         }
 
-        return models.identities.find((z) => ref.endsWith(z.name));
+        return models.identities.find((z) => z.name === name);
     }
 }

@@ -75,6 +75,10 @@ export class OpenAPIService {
         }, {});
     }
 
+    public getSchemaKey(reference: IOpenAPI3Reference): string {
+        return last(reference.$ref.split('/'));
+    }
+
     private get majorVersion(): string | undefined {
         if (!this.spec.openapi) {
             return undefined;
@@ -178,9 +182,5 @@ export class OpenAPIService {
             store[key] = this.spec.components.schemas[key];
             return store;
         }, {});
-    }
-
-    private getSchemaKey(reference: IOpenAPI3Reference): string {
-        return last(reference.$ref.split('/'));
     }
 }

@@ -18,6 +18,12 @@ describe('OpenAPIService tests', () => {
         });
     });
 
+    test('getSchemaKey', () => {
+        const spec = { openapi: '3.0.1' };
+        const service = new OpenAPIService(JSON.stringify(spec), guard);
+        expect(service.getSchemaKey({ $ref: '#/components/schemas/Product' })).toEqual('Product');
+    });
+
     describe('getEndpoints', () => {
         test('not found', () => {
             const spec = { openapi: '3.0.1' };

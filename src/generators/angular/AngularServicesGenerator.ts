@@ -98,12 +98,21 @@ export class AngularServicesGenerator {
                 returnType:
                     x.kind === MethodKind.Download
                         ? `Promise<${x.returnType?.type.type}>`
-                        : `Observable<${this.getReturnTypeName(x.returnType, x.returnType?.type.type)}>`,
+                        : `Observable<${this.getReturnTypeName(x.returnType, this.getCorrectReturnType(x.returnType))}>`,
                 statements: (w) => {
                     x.kind === MethodKind.Download ? this.createDownloadMethod(w, x) : this.createMethod(w, x);
                 }
             }))
         }));
+    }
+
+    private getCorrectReturnType(returnType: IReturnType | undefined): string | undefined {
+        if (!returnType) {
+            return undefined;
+        }
+
+        // TODO Losing a type for Guid & Date. Need fix it later
+        return returnType.isModel ? returnType.type.type : returnType.type.dtoType;
     }
 
     private getReturnTypeName(returnType: IReturnType | undefined, targetType: string | undefined): string {
