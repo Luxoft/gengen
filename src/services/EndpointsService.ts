@@ -1,11 +1,10 @@
 import { OpenAPIService } from '../swagger/OpenAPIService';
 import { first, last } from '../utils';
 
-const IGNORE_LIST = [undefined, '{id}'];
 const SEPARATOR = '/';
 
 export interface IAction {
-    name: string;
+    name: string | undefined;
     origin: string;
 }
 
@@ -16,6 +15,8 @@ export interface IEndpointInfo {
 }
 
 export class EndpointsService {
+    private queryParameterRegExp = new RegExp('^{(.*)}$');
+
     constructor(private readonly openAPIService: OpenAPIService) { }
 
     public getActionsGroupedByController(): Record<string, string[]> {
@@ -25,7 +26,10 @@ export class EndpointsService {
         Object.keys(controllers)
             .sort()
             .forEach((key) => {
-                result[key] = controllers[key].map((x) => x.name).sort();
+                result[key] = controllers[key]
+                    .filter((x) => x.name)
+                    .map((x) => x.name as string)
+                    .sort();
             });
 
         return result;
@@ -53,7 +57,7 @@ export class EndpointsService {
             name: controller,
             action: {
                 origin: action,
-                name: last(action.split(SEPARATOR).filter((z) => !IGNORE_LIST.includes(z)))
+                name: last(action.split(SEPARATOR).filter((z) => z && !this.queryParameterRegExp.test(z)))
             },
             relativePath: `${first(parts)}/${controller}`
         };

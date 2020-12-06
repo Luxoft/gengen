@@ -131,5 +131,21 @@ describe('EndpointsService tests', () => {
                 relativePath: '/api/v1/Product'
             });
         });
+
+        test('empty action', () => {
+            const spec = {
+                openapi: '3.0.1',
+                paths: { '/api/v1/Product/{test}': { get: { tags: ['Product'] } } }
+            };
+
+            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
+            const service = new EndpointsService(openApiService);
+
+            expect(service.parse('/api/v1/Product/{test}')).toMatchObject({
+                name: 'Product',
+                action: { origin: '{test}', name: undefined },
+                relativePath: '/api/v1/Product'
+            });
+        });
     });
 });

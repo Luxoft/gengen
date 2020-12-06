@@ -27,20 +27,22 @@ export class ServiceMappingService {
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
             const info = this.endpointsService.parse(endpoint);
-            if (!info) {
+
+            // TODO Handle paths without methods
+            if (!info || !info.action.name) {
                 return store;
             }
 
             const service = store.find((z) => z.name === info.name);
             if (service) {
-                service.methods.push(this.getMethod(info, model.method, model.operation, models));
+                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models));
                 return store;
             }
 
             store.push({
                 name: info.name,
                 relativePath: info.relativePath,
-                methods: [this.getMethod(info, model.method, model.operation, models)]
+                methods: [this.getMethod(info.action.name, model.method, model.operation, models)]
             });
             return store;
         }, []);
@@ -52,15 +54,10 @@ export class ServiceMappingService {
         return services.sort(sortBy((z) => z.name));
     }
 
-    private getMethod(
-        endpointInfo: IEndpointInfo,
-        method: MethodOperation,
-        operation: IOpenAPI3Operation,
-        models: IModelsContainer
-    ): IMethodModel {
+    private getMethod(actionName: string, method: MethodOperation, operation: IOpenAPI3Operation, models: IModelsContainer): IMethodModel {
         const model: IMethodModel = {
             kind: this.hasDownloadResponse(operation) ? MethodKind.Download : MethodKind.None,
-            name: lowerFirst(endpointInfo.action.name),
+            name: lowerFirst(actionName),
             operation: method,
             parameters: this.getQueryParameters(operation.parameters, models),
             returnType: this.getReturnType(operation.responses[200].content?.['application/json']?.schema, models)
