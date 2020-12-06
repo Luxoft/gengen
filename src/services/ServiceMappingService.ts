@@ -28,7 +28,7 @@ export class ServiceMappingService {
         private readonly openAPIService: OpenAPIService,
         private readonly typesService: TypesService,
         private readonly typesGuard: OpenAPITypesGuard
-    ) { }
+    ) {}
 
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
