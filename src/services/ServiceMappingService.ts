@@ -1,6 +1,6 @@
 import { MethodKind } from '../models/kinds/MethodKind';
 import { MethodOperation } from '../models/kinds/MethodOperation';
-import { MethodPlace } from '../models/kinds/MethodPlace';
+import { ParameterPlace } from '../models/kinds/ParameterPlace';
 import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IMethodModel, IMethodParameterModel, IReturnType } from '../models/MethodModel';
 import { IModelsContainer } from '../models/ModelsContainer';
@@ -62,7 +62,7 @@ export class ServiceMappingService {
 
     private getMethod(actionName: string, method: MethodOperation, operation: IOpenAPI3Operation, models: IModelsContainer): IMethodModel {
         const model: IMethodModel = {
-            kind: this.hasDownloadResponse(operation) ? MethodKind.Download : MethodKind.None,
+            kind: this.hasDownloadResponse(operation) ? MethodKind.Download : MethodKind.Default,
             name: lowerFirst(actionName),
             operation: method,
             parameters: this.getQueryParameters(operation.parameters, models),
@@ -83,7 +83,7 @@ export class ServiceMappingService {
 
             model.parameters.push({
                 name: 'saveAs',
-                place: MethodPlace.Body,
+                place: ParameterPlace.Body,
                 optional: true,
                 dtoType: 'string',
                 isCollection: false,
@@ -100,7 +100,7 @@ export class ServiceMappingService {
                 const parameter = {
                     name: lowerFirst(z.name),
                     optional: z.required === undefined ? false : !z.required,
-                    place: MethodPlace.Query,
+                    place: ParameterPlace.Query,
                     isCollection: false,
                     dtoType: '',
                     isModel: false
@@ -141,7 +141,7 @@ export class ServiceMappingService {
 
         return {
             name: lowerFirst(model.name),
-            place: MethodPlace.Body,
+            place: ParameterPlace.Body,
             optional: false,
             dtoType: model.dtoType,
             isCollection,

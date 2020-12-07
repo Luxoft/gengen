@@ -1,13 +1,13 @@
 import { MethodKind } from './kinds/MethodKind';
 import { MethodOperation } from './kinds/MethodOperation';
-import { MethodPlace } from './kinds/MethodPlace';
+import { ParameterPlace } from './kinds/ParameterPlace';
 import { IType } from './TypeModel';
 
 export interface IMethodParameterModel {
     name: string;
     isCollection: boolean;
     dtoType: string;
-    place: MethodPlace;
+    place: ParameterPlace;
     optional: boolean;
     isModel: boolean;
 }

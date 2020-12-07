@@ -2,7 +2,7 @@ import { CodeBlockWriter, Scope, StatementStructures, StructureKind, Writers } f
 
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { MethodOperation } from '../../models/kinds/MethodOperation';
-import { MethodPlace } from '../../models/kinds/MethodPlace';
+import { ParameterPlace } from '../../models/kinds/ParameterPlace';
 import { PropertyKind } from '../../models/kinds/PropertyKind';
 import { IMethodModel, IReturnType } from '../../models/MethodModel';
 import { IServiceModel } from '../../models/ServiceModel';
@@ -130,7 +130,7 @@ export class AngularServicesGenerator {
 
     private getFullMethodName(model: IMethodModel): string {
         const pairs = model.parameters
-            .filter((z) => z.place === MethodPlace.Query)
+            .filter((z) => z.place === ParameterPlace.Query)
             .map((z) => `${z.name}=\${encodeURIComponent(${z.name})}`);
 
         if (!pairs.length) {
@@ -141,7 +141,7 @@ export class AngularServicesGenerator {
     }
 
     private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel): void {
-        const parameter = first(model.parameters.filter((z) => z.name !== 'saveAs' && z.place === MethodPlace.Body));
+        const parameter = first(model.parameters.filter((z) => z.name !== 'saveAs' && z.place === ParameterPlace.Body));
 
         if (!model.parameters.find((z) => z.name === 'saveAs')) {
             throw new Error(`Cannot find 'saveAs' parameter for method ${model.name}`);
@@ -165,7 +165,7 @@ export class AngularServicesGenerator {
         );
         writer.withIndentationLevel(3, () => writer.writeLine(`${this.getFullMethodName(model)},`));
         model.parameters
-            .filter((z) => z.place === MethodPlace.Body)
+            .filter((z) => z.place === ParameterPlace.Body)
             .forEach((z) => {
                 writer.withIndentationLevel(3, () => writer.writeLine(`${z.name},`));
             });

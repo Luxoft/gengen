@@ -1,4 +1,4 @@
 export enum MethodKind {
-    None,
+    Default,
     Download
 }
