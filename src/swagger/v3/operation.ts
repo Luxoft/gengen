@@ -2,6 +2,7 @@ import { IOpenAPI3Parameter } from './parameter';
 import { IOpenAPI3Reference } from './reference';
 import { IOpenAPI3ArraySchema } from './schemas/array-schema';
 import { IOpenAPI3BinarySchema } from './schemas/binary-schema';
+import { OpenAPI3ResponseSchema } from './schemas/schema';
 
 export interface IOpenAPI3Operation {
     tags: string[];
@@ -11,7 +12,7 @@ export interface IOpenAPI3Operation {
             description: 'Success';
             content?: {
                 'application/json': {
-                    schema: IOpenAPI3ArraySchema | IOpenAPI3Reference;
+                    schema: OpenAPI3ResponseSchema;
                 };
                 'application/octet-stream': {
                     schema: IOpenAPI3BinarySchema;

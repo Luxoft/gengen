@@ -3,9 +3,10 @@ import { PropertyDeclarationStructure, Scope, StatementStructures, StructureKind
 import { IEnumModel } from '../models/EnumModel';
 import { IIdentityModel } from '../models/IdentityModel';
 import { IInterfaceModel } from '../models/InterfaceModel';
+import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
-import { PropertyKind } from '../models/PropertyKind';
+import { lowerFirst } from '../utils';
 
 const TO_DTO_METHOD = 'toDTO';
 const FROM_DTO_METHOD = 'fromDTO';
@@ -136,7 +137,7 @@ export class ModelsGenerator {
         return {
             kind: StructureKind.Property,
             scope: Scope.Private,
-            name: `__${name[0].toLowerCase()}${name.slice(1)}`,
+            name: `__${lowerFirst(name)}`,
             type: 'string'
         };
     }
@@ -178,6 +179,7 @@ export class ModelsGenerator {
 
     private getFromDtoPropertyInitializer(property: IObjectPropertyModel): string {
         const dtoProperty = `dto.${property.name}`;
+
         switch (property.kind) {
             case PropertyKind.Date:
                 return `toDateIn(${dtoProperty})`;
@@ -195,7 +197,7 @@ export class ModelsGenerator {
 
             case PropertyKind.Identity:
                 if (property.isCollection) {
-                    return `${dtoProperty} ? ${dtoProperty}.map(x => new ${property.type}.${FROM_DTO_METHOD}(x.id)) : []`;
+                    return `${dtoProperty} ? ${dtoProperty}.map(x => new ${property.type}(x.id)) : []`;
                 }
 
                 return `${dtoProperty} ? new ${property.type}(${dtoProperty}.id) : ${this.undefinedString}`;

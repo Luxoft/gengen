@@ -1,3 +1,4 @@
+import { MethodOperation } from '../../src/models/kinds/MethodOperation';
 import { OpenAPIService } from '../../src/swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 
@@ -15,6 +16,12 @@ describe('OpenAPIService tests', () => {
             const spec = { openapi: '4.0.1' };
             expect(() => new OpenAPIService(JSON.stringify(spec), guard)).toThrow('Only OpenApi version 3 supported yet.');
         });
+    });
+
+    test('getSchemaKey', () => {
+        const spec = { openapi: '3.0.1' };
+        const service = new OpenAPIService(JSON.stringify(spec), guard);
+        expect(service.getSchemaKey({ $ref: '#/components/schemas/Product' })).toEqual('Product');
     });
 
     describe('getEndpoints', () => {
@@ -70,15 +77,20 @@ describe('OpenAPIService tests', () => {
             expect(service.getOperationsByEndpoints(new Set('test'))).toEqual({});
         });
 
-        test.each(['get', 'post', 'put', 'delete'])('find', (operation) => {
+        test.each([
+            ['get', MethodOperation.GET],
+            ['post', MethodOperation.POST],
+            ['put', MethodOperation.PUT],
+            ['delete', MethodOperation.DELETE]
+        ])('find', (operation, method) => {
             const operationObject: Record<string, { tags: string[] }> = {};
             operationObject[operation] = { tags: ['1', '2'] };
 
             const spec = { openapi: '3.0.1', paths: { test: operationObject, test2: operationObject } };
             const service = new OpenAPIService(JSON.stringify(spec), guard);
             expect(service.getOperationsByEndpoints(new Set(['test', 'test2']))).toMatchObject({
-                test: operationObject[operation],
-                test2: operationObject[operation]
+                test: { operation: operationObject[operation], method: method },
+                test2: { operation: operationObject[operation], method: method }
             });
         });
     });

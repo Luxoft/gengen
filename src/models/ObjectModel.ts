@@ -1,10 +1,7 @@
-import { PropertyKind } from './PropertyKind';
+import { IType } from './TypeModel';
 
-export interface IObjectPropertyModel {
-    kind: PropertyKind;
+export interface IObjectPropertyModel extends IType {
     name: string;
-    type: string;
-    dtoType: string;
     isNullable: boolean;
     isCollection: boolean;
 }

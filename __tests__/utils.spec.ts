@@ -1,4 +1,4 @@
-import { first, last, sortBy } from '../src/utils';
+import { first, last, lowerFirst, sortBy } from '../src/utils';
 
 describe('utils tests', () => {
     test('first', () => {
@@ -12,5 +12,9 @@ describe('utils tests', () => {
     test('sortBy', () => {
         const array = [{ name: 'b' }, { name: 'a' }];
         expect(array.sort(sortBy((z) => z.name))).toEqual([{ name: 'a' }, { name: 'b' }]);
+    });
+
+    test('lowerFirst', () => {
+        expect(lowerFirst('TestMethodName')).toEqual('testMethodName');
     });
 });

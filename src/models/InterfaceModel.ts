@@ -1,7 +1,7 @@
 export interface IInterfacePropertyModel {
+    isCollection: boolean;
     name: string;
     dtoType: string;
-    isCollection: boolean;
 }
 
 export interface IInterfaceModel {

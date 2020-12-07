@@ -3,5 +3,6 @@ export enum PropertyKind {
     Date,
     Guid,
     Object,
+    Enum,
     Identity
 }

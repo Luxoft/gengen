@@ -67,14 +67,19 @@ describe('EndpointsService tests', () => {
                     },
                     '/Product/GetProducts': {
                         get: { tags: ['Product'] }
+                    },
+                    '/api/v1/Product/Product/{id}': {
+                        get: { tags: ['Product'] }
                     }
                 }
             };
 
+            const expected = new Set(['Category/AddCategory', 'Product/GetProducts', 'Product/Product/{id}', 'Product/SearchProducts']);
+
             const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
             const service = new EndpointsService(openApiService);
 
-            expect(service.getActions()).toEqual(new Set(['Category/AddCategory', 'Product/GetProducts', 'Product/SearchProducts']));
+            expect(service.getActions()).toEqual(expected);
         });
     });
 
@@ -90,7 +95,7 @@ describe('EndpointsService tests', () => {
 
             expect(service.parse('/Product/SearchProducts')).toMatchObject({
                 name: 'Product',
-                tail: 'SearchProducts',
+                action: { origin: 'SearchProducts', name: 'SearchProducts' },
                 relativePath: '/Product'
             });
         });
@@ -106,7 +111,7 @@ describe('EndpointsService tests', () => {
 
             expect(service.parse('/api/v1/Product/SearchProducts')).toMatchObject({
                 name: 'Product',
-                tail: 'SearchProducts',
+                action: { origin: 'SearchProducts', name: 'SearchProducts' },
                 relativePath: '/api/v1/Product'
             });
         });
@@ -122,7 +127,23 @@ describe('EndpointsService tests', () => {
 
             expect(service.parse('/api/v1/Product/Download/{id}')).toMatchObject({
                 name: 'Product',
-                tail: 'Download/{id}',
+                action: { origin: 'Download/{id}', name: 'Download' },
+                relativePath: '/api/v1/Product'
+            });
+        });
+
+        test('empty action', () => {
+            const spec = {
+                openapi: '3.0.1',
+                paths: { '/api/v1/Product/{test}': { get: { tags: ['Product'] } } }
+            };
+
+            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
+            const service = new EndpointsService(openApiService);
+
+            expect(service.parse('/api/v1/Product/{test}')).toMatchObject({
+                name: 'Product',
+                action: { origin: '{test}', name: undefined },
                 relativePath: '/api/v1/Product'
             });
         });
