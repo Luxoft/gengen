@@ -52,10 +52,7 @@ export class Guid {
             return false;
         }
 
-        const valueToCompare = typeof value === 'string'
-            ? value.toLowerCase()
-            : value.toString();
-
+        const valueToCompare = typeof value === 'string' ? value.toLowerCase() : value.toString();
         return this.id === valueToCompare;
     }
 

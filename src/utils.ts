@@ -34,3 +34,11 @@ export async function getSwaggerJson(options: IOptions): Promise<string> {
 export function sortBy<T>(fn: (value: T) => string): (a: T, b: T) => number {
     return (a: T, b: T) => (fn(a) || '').localeCompare(fn(b) || '');
 }
+
+export function copyFile(src: string, destination: string): void {
+    fs.copyFile(src, destination, (err) => {
+        if (err) {
+            throw err;
+        }
+    });
+}

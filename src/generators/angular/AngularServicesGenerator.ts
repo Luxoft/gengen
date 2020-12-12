@@ -47,7 +47,7 @@ export class AngularServicesGenerator {
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './download-service',
+                moduleSpecifier: './download.service',
                 namedImports: [{ name: DOWNLOAD_SERVICE }, { name: 'IDownloadResult' }]
             },
             {

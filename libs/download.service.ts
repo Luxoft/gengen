@@ -3,22 +3,28 @@ import { HttpClient, HttpResponseBase } from '@angular/common/http';
 import { BaseHttpService } from './base-http.service';
 
 export interface IDownloadResult {
-    filename: string,
+    filename: string;
 
-    response: HttpResponseBase
+    response: HttpResponseBase;
 }
 
 export class DownloadFileService extends BaseHttpService {
     private readonly fileNameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
 
-    constructor(relativePath: string, http: HttpClient) { 
+    constructor(relativePath: string, http: HttpClient) {
         super(relativePath, http);
     }
 
-    public async downloadFile(url: string, method: 'post' | 'get', data?: {}, saveAs?: string): Promise<IDownloadResult> {
-        const request = method === 'get'
-            ? this.http.get(`${this.path}/${url}`, { observe: 'response', responseType: 'blob' })
-            : this.http.post(`${this.path}/${url}`, data, { observe: 'response', responseType: 'blob' });
+    public async downloadFile(
+        url: string,
+        method: 'post' | 'get',
+        data?: Record<string, unknown>,
+        saveAs?: string
+    ): Promise<IDownloadResult> {
+        const request =
+            method === 'get'
+                ? this.http.get(`${this.path}/${url}`, { observe: 'response', responseType: 'blob' })
+                : this.http.post(`${this.path}/${url}`, data, { observe: 'response', responseType: 'blob' });
 
         const response = await request.toPromise();
         const filename = this.getFileName(response, saveAs);

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Guid } from './Guid';
 import { BaseHttpService } from './base-http.service';
-import { DownloadFileService, IDownloadResult } from './download-service';
+import { DownloadFileService, IDownloadResult } from './download.service';
 import { mapCollection, mapSingle, mapIdentityCollection, mapIdentitySingle } from './mappers';
 import * as $models from './models';
 
