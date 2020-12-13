@@ -1,16 +1,13 @@
 #!/usr/bin/env node
 
 const program = require('commander');
-
-const generate = require('../lib/generate').default;
-const generateConfig = require('../lib/generate-config').default;
-const init = require('../lib/init').default;
+const gengen = require('../lib/gengen');
 
 program
   .command('init')
   .option('--configOutput <string>')
   .description('Creates file to select endpoints for generation')
-  .action(() => init());
+  .action(() => gengen.init());
 
 program
   .command('generate-config')
@@ -19,7 +16,7 @@ program
   .option('--file <string>')
   .option('--url <string>')
   .option('--configOutput <string>')
-  .action((params) => generateConfig(params));
+  .action((params) =>gengen.config(params));
 
 program
   .command('generate')
@@ -30,6 +27,6 @@ program
   .option('--configOutput <string>')
   .option('--all')
   .description('Generates models and services')
-  .action((params) => generate(params));
+  .action((params) => gengen.main(params));
 
 program.parse(process.argv);
