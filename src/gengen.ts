@@ -1,3 +1,4 @@
+import { promises } from 'fs';
 import { Project } from 'ts-morph';
 
 import { AngularServicesGenerator } from './generators/angular/AngularServicesGenerator';
@@ -11,7 +12,7 @@ import { ServiceMappingService } from './services/ServiceMappingService';
 import { TypesService } from './services/TypesService';
 import { OpenAPIService } from './swagger/OpenAPIService';
 import { OpenAPITypesGuard } from './swagger/OpenAPITypesGuard';
-import { copyFile, getSwaggerJson } from './utils';
+import { getSwaggerJson } from './utils';
 
 export async function init(options: IOptions = defaultOptions): Promise<void> {
     const generator = new ConfigGenerator();
@@ -81,9 +82,9 @@ export async function main(options: IOptions): Promise<void> {
 
     await project.save();
 
-    copyFile('./libs/Guid.ts', `${settings.output}/Guid.ts`);
-    copyFile('./libs/mappers.ts', `${settings.output}/mappers.ts`);
-    copyFile('./libs/date-converters.ts', `${settings.output}/date-converters.ts`);
-    copyFile('./libs/base-http.service.ts', `${settings.output}/base-http.service.ts`);
-    copyFile('./libs/download.service.ts', `${settings.output}/download.service.ts`);
+    promises.copyFile('./libs/Guid.ts', `${settings.output}/Guid.ts`);
+    promises.copyFile('./libs/mappers.ts', `${settings.output}/mappers.ts`);
+    promises.copyFile('./libs/date-converters.ts', `${settings.output}/date-converters.ts`);
+    promises.copyFile('./libs/base-http.service.ts', `${settings.output}/base-http.service.ts`);
+    promises.copyFile('./libs/download.service.ts', `${settings.output}/download.service.ts`);
 }
