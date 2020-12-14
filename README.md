@@ -22,12 +22,12 @@ First of all you make sure that swagger.json is accessable.
    gengen init
    ```
 
-2. Generate list of available routes
+2. Generate list of available endpoints
    ```shell
    gengen g:c
    ```
 
-3. Describe routes who will be generated
+3. Describe endpoints who will be generated
    ```ts
    import { Endpoints } from './endpoints';
 
