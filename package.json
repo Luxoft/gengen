@@ -1,5 +1,5 @@
 {
-  "name": "@gengen/cli",
+  "name": "@luxbss/gengen",
   "version": "0.0.0-alpha.12",
   "description": "Tool for generating models and Angular services based on OpenAPIs and Swagger's JSON",
   "bin": {
