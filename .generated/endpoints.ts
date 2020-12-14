@@ -4,6 +4,7 @@ export class Endpoints {
     };
     public static ProductService = {
         Download: 'Product/Download',
+        Get: 'Product/Get',
         GetProducts: 'Product/GetProducts',
         SearchProducts: 'Product/SearchProducts'
     };

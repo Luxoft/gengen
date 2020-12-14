@@ -1,7 +1,7 @@
 const HOUR_COEFF = 3600000;
 const MINUTS_IN_HOUR = 60;
 
-export function toDateOut(value: Date): string {
+export function toDateOut(value: Date): string | undefined {
     if (!value) {
         return undefined;
     }
