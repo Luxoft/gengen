@@ -1,36 +1,32 @@
 #!/usr/bin/env node
 
-const program = require("commander");
-
-const generate = require("../lib/generate").default;
-const generateFacade = require("../lib/generate-facade").default;
-const init = require("../lib/init").default;
+const program = require('commander');
+const gengen = require('../lib/gengen');
 
 program
-  .command("init")
-  .description("Create configs needed to generate")
-  .action(() => {
-    init();
-  });
+  .command('init')
+  .option('--configOutput <string>')
+  .description('Creates file to select endpoints for generation')
+  .action(() => gengen.init());
 
 program
-  .command("generate")
-  .alias("g")
-  .option("--file <string>")
-  .option("--output <string>")
-  .option("--all")
-  .description("Generates models and services")
-  .action((params) => {
-    generate(params);
-  });
+  .command('generate-config')
+  .description('Generates endpoints list')
+  .alias('g:c')
+  .option('--file <string>')
+  .option('--url <string>')
+  .option('--configOutput <string>')
+  .action((params) =>gengen.config(params));
 
 program
-  .command("generate-facade")
-  .alias("g:f")
-  .option("--file <string>")
-  .description("Generated all facade methods to select")
-  .action((params) => {
-    generateFacade(params);
-  });
+  .command('generate')
+  .alias('g')
+  .option('--file <string>')
+  .option('--url <string>')
+  .option('--output <string>')
+  .option('--configOutput <string>')
+  .option('--all')
+  .description('Generates models and services')
+  .action((params) => gengen.main(params));
 
 program.parse(process.argv);

@@ -1,4 +1,6 @@
 {
+    "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+    "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
     "typescript.tsdk": "node_modules\\typescript\\lib",
     "peacock.color": "#3ab3da",
     "workbench.colorCustomizations": {

@@ -22,18 +22,18 @@ First of all you make sure that swagger.json is accessable.
    gengen init
    ```
 
-2. Generate list of available routes
+2. Generate list of available endpoints
    ```shell
-   gengen g:f
+   gengen g:c
    ```
 
-3. Describe routes who will be generated
+3. Describe endpoints who will be generated
    ```ts
-   import { Facade } from './facade';
-   
+   import { Endpoints } from './endpoints';
+
    export default new Set([
-       Facade.ProductService.GetProducts,
-       Facade.CategoryService.AddCategory
+      Endpoints.ProductService.GetProducts,
+      Endpoints.CategoryService.AddCategory
    ]);
    ```
 
