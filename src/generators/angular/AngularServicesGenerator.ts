@@ -12,6 +12,7 @@ const BASE_SERVICE = 'BaseHttpService';
 const DOWNLOAD_SERVICE = 'DownloadFileService';
 const HTTP_CLIENT = 'HttpClient';
 const MODELS_NAMESPACE = '$models';
+const MAPPERS_NAMESPACE = '$mappers';
 
 export class AngularServicesGenerator {
     public getServicesCodeStructure(services: IServiceModel[]): StatementStructures[] {
@@ -53,12 +54,7 @@ export class AngularServicesGenerator {
             {
                 kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: './mappers',
-                namedImports: [
-                    { name: 'mapCollection' },
-                    { name: 'mapSingle' },
-                    { name: 'mapIdentityCollection' },
-                    { name: 'mapIdentitySingle' }
-                ]
+                namespaceImport: MAPPERS_NAMESPACE
             },
             {
                 kind: StructureKind.ImportDeclaration,
@@ -98,21 +94,12 @@ export class AngularServicesGenerator {
                 returnType:
                     x.kind === MethodKind.Download
                         ? `Promise<${x.returnType?.type.type}>`
-                        : `Observable<${this.getReturnTypeName(x.returnType, this.getCorrectReturnType(x.returnType))}>`,
+                        : `Observable<${this.getReturnTypeName(x.returnType, x.returnType?.type.type)}>`,
                 statements: (w) => {
                     x.kind === MethodKind.Download ? this.createDownloadMethod(w, x) : this.createMethod(w, x);
                 }
             }))
         }));
-    }
-
-    private getCorrectReturnType(returnType: IReturnType | undefined): string | undefined {
-        if (!returnType) {
-            return undefined;
-        }
-
-        // TODO Losing a type for Guid & Date. Need fix it later
-        return returnType.isModel ? returnType.type.type : returnType.type.dtoType;
     }
 
     private getReturnTypeName(returnType: IReturnType | undefined, targetType: string | undefined): string {
@@ -170,7 +157,7 @@ export class AngularServicesGenerator {
                 writer.withIndentationLevel(3, () => writer.writeLine(`${z.name},`));
             });
 
-        if (model.returnType?.type.kind == PropertyKind.Object || model.returnType?.type.kind == PropertyKind.Identity) {
+        if (this.needPipe(model.returnType)) {
             writer.writeLine(`).pipe(${this.createPipe(model.returnType)});`);
             return;
         }
@@ -178,20 +165,36 @@ export class AngularServicesGenerator {
         writer.writeLine(');');
     }
 
+    private needPipe(returnType: IReturnType | undefined): returnType is IReturnType {
+        if (!returnType) {
+            return false;
+        }
+
+        return [PropertyKind.Object, PropertyKind.Identity, PropertyKind.Guid, PropertyKind.Date].includes(returnType.type.kind);
+    }
+
     private createPipe(returnType: IReturnType): string {
+        if (returnType.type.kind === PropertyKind.Guid) {
+            return `${MAPPERS_NAMESPACE}.mapGuid()`;
+        }
+
+        if (returnType.type.kind === PropertyKind.Date) {
+            return `${MAPPERS_NAMESPACE}.mapDate()`;
+        }
+
         const type = `${MODELS_NAMESPACE}.${returnType.type.type}`;
         if (returnType.isCollection) {
             if (returnType.type.kind === PropertyKind.Identity) {
-                return `mapIdentityCollection(${type})`;
+                return `${MAPPERS_NAMESPACE}.mapIdentityCollection(${type})`;
             }
 
-            return `mapCollection(${type})`;
+            return `${MAPPERS_NAMESPACE}.mapCollection(${type})`;
         }
 
         if (returnType.type.kind === PropertyKind.Identity) {
-            return `mapIdentitySingle(${type})`;
+            return `${MAPPERS_NAMESPACE}.mapIdentitySingle(${type})`;
         }
 
-        return `mapSingle(${type})`;
+        return `${MAPPERS_NAMESPACE}.mapSingle(${type})`;
     }
 }
