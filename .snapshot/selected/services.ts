@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Guid } from './Guid';
 import { BaseHttpService } from './base-http.service';
 import { DownloadFileService, IDownloadResult } from './download.service';
-import { mapCollection, mapSingle, mapIdentityCollection, mapIdentitySingle } from './mappers';
+import * as $mappers from './mappers';
 import * as $models from './models';
 
 @Injectable({
@@ -15,11 +15,11 @@ export class CategoryService extends BaseHttpService {
         super('/api/v1/Category', http);
     }
 
-    public addCategory(category: $models.ICategory): Observable<string> {
+    public addCategory(category: $models.ICategory): Observable<Guid> {
         return this.post<string>(
             `addCategory`,
             category,
-        );
+        ).pipe($mappers.mapGuid());
     }
 }
 
@@ -34,6 +34,6 @@ export class ProductService extends BaseHttpService {
     public getProducts(): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `getProducts`,
-        ).pipe(mapCollection($models.Product));
+        ).pipe($mappers.mapCollection($models.Product));
     }
 }
