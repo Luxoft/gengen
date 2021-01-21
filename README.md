@@ -54,6 +54,6 @@ First of all you make sure that swagger.json is accessable.
 
 # License and copyright
 
-Copyright (c) 2020 Luxoft
+Copyright (c) 2020-2021 Luxoft
 
 Licensed under the MIT license
