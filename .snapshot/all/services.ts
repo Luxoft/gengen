@@ -21,6 +21,13 @@ export class CategoryService extends BaseHttpService {
             category,
         ).pipe($mappers.mapGuid());
     }
+
+    public upload(data: FormData): Observable<Guid> {
+        return this.post<string>(
+            `upload`,
+            data,
+        ).pipe($mappers.mapGuid());
+    }
 }
 
 @Injectable({
