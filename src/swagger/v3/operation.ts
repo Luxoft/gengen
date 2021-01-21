@@ -2,6 +2,7 @@ import { IOpenAPI3Parameter } from './parameter';
 import { IOpenAPI3Reference } from './reference';
 import { IOpenAPI3ArraySchema } from './schemas/array-schema';
 import { IOpenAPI3BinarySchema } from './schemas/binary-schema';
+import { IOpenAPI3ObjectSchema } from './schemas/object-schema';
 import { OpenAPI3ResponseSchema } from './schemas/schema';
 
 export interface IOpenAPI3Operation {
@@ -24,6 +25,9 @@ export interface IOpenAPI3Operation {
         content: {
             'application/json': {
                 schema: IOpenAPI3ArraySchema | IOpenAPI3Reference;
+            };
+            'multipart/form-data': {
+                schema: IOpenAPI3ObjectSchema
             };
         };
     };

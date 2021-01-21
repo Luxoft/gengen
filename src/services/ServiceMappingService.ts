@@ -74,6 +74,17 @@ export class ServiceMappingService {
             model.parameters.push(bodyParameter);
         }
 
+        if (operation.requestBody?.content['multipart/form-data']?.schema) {
+            model.parameters.push({
+                name: 'data',
+                place: ParameterPlace.Body,
+                dtoType: 'FormData',
+                optional: false,
+                isCollection: false,
+                isModel: false
+            });
+        }
+
         if (model.kind == MethodKind.Download) {
             model.returnType = {
                 isCollection: false,
