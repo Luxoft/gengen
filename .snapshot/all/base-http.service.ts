@@ -17,7 +17,7 @@ export abstract class BaseHttpService {
         return this.http.get<TResult>(`${this.relativePath}/${url}`);
     }
 
-    protected post<TResult, TData = Record<string, unknown>>(
+    protected post<TResult, TData = {}>(
         url: string,
         data?: TData,
         options?: IAngularHttpRequestOptions
