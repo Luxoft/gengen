@@ -5,7 +5,7 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/v1/Product/Get/{id}": {
+    "/api/v1/Product/GetById/{id}": {
       "get": {
         "tags": [
           "Product"
@@ -315,6 +315,20 @@
         },
         "additionalProperties": false
       },
+      "ProductStatus": {
+        "enum": [
+          0,
+          -1,
+          1
+        ],
+        "type": "integer",
+        "format": "int32",
+        "x-enumNames": [
+          "InStock",
+          "OutOfStock",
+          "UnderTheOrder"
+        ]
+      },
       "Product": {
         "type": "object",
         "properties": {
@@ -332,6 +346,14 @@
           },
           "category": {
             "$ref": "#/components/schemas/Category"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductStatus"
+              }
+            ],
+            "nullable": true
           }
         },
         "additionalProperties": false
