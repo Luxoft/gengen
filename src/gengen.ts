@@ -1,4 +1,5 @@
 import { promises } from 'fs';
+import { resolve } from 'path';
 import { Project } from 'ts-morph';
 
 import { AngularServicesGenerator } from './generators/angular/AngularServicesGenerator';
@@ -82,9 +83,9 @@ export async function main(options: IOptions): Promise<void> {
 
     await project.save();
 
-    promises.copyFile('./libs/Guid.ts', `${settings.output}/Guid.ts`);
-    promises.copyFile('./libs/mappers.ts', `${settings.output}/mappers.ts`);
-    promises.copyFile('./libs/date-converters.ts', `${settings.output}/date-converters.ts`);
-    promises.copyFile('./libs/base-http.service.ts', `${settings.output}/base-http.service.ts`);
-    promises.copyFile('./libs/download.service.ts', `${settings.output}/download.service.ts`);
+    promises.copyFile(resolve(__dirname, '../libs/Guid.ts'), `${settings.output}/Guid.ts`);
+    promises.copyFile(resolve(__dirname, '../libs/mappers.ts'), `${settings.output}/mappers.ts`);
+    promises.copyFile(resolve(__dirname, '../libs/date-converters.ts'), `${settings.output}/date-converters.ts`);
+    promises.copyFile(resolve(__dirname, '../libs/base-http.service.ts'), `${settings.output}/base-http.service.ts`);
+    promises.copyFile(resolve(__dirname, '../libs/download.service.ts'), `${settings.output}/download.service.ts`);
 }

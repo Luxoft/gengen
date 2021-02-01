@@ -18,7 +18,7 @@ export class DownloadFileService extends BaseHttpService {
     public async downloadFile(
         url: string,
         method: 'post' | 'get',
-        data?: Record<string, unknown>,
+        data?: {},
         saveAs?: string
     ): Promise<IDownloadResult> {
         const request =

@@ -5,7 +5,7 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/v1/Product/Get/{id}": {
+    "/api/v1/Product/GetById/{id}": {
       "get": {
         "tags": [
           "Product"
