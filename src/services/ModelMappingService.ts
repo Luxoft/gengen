@@ -58,10 +58,10 @@ export class ModelMappingService {
     private toEnumModel(name: string, schema: IOpenAPI3EnumSchema): IEnumModel {
         return {
             name,
-            items: schema.enum.sort().map((value, index) => ({
+            items: schema.enum.map((value, index) => ({
                 key: schema['x-enumNames'][index],
                 value
-            }))
+            })).sort(sortBy((z) => z.key))
         };
     }
 

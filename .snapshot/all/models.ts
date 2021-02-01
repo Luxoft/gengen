@@ -1,6 +1,12 @@
 import { Guid } from './Guid';
 import { toDateIn, toDateOut } from './date-converters';
 
+export enum ProductStatus {
+    InStock = 0,
+    OutOfStock = -1,
+    UnderTheOrder = 1
+}
+
 export interface ICategory {
     name: string;
 }
@@ -10,6 +16,7 @@ export interface IProduct {
     expireDate: string;
     id: string;
     name: string;
+    status: ProductStatus;
 }
 
 export class Category {
@@ -34,6 +41,7 @@ export class Product {
     public expireDate: Date = undefined;
     public id: Guid = undefined;
     public name: string = undefined;
+    public status: ProductStatus = undefined;
     private __product: string;
 
     public static toDTO(model: Partial<Product>): IProduct {
@@ -42,6 +50,7 @@ export class Product {
             expireDate: toDateOut(model.expireDate),
             id: model.id ? model.id.toString() : Guid.empty.toString(),
             name: model.name,
+            status: model.status,
         };
     }
 
@@ -51,6 +60,7 @@ export class Product {
         model.expireDate = toDateIn(dto.expireDate);
         model.id = new Guid(dto.id);
         model.name = dto.name;
+        model.status = dto.status;
         return model;
     }
 }
