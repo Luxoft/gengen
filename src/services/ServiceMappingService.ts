@@ -2,7 +2,13 @@ import { MethodKind } from '../models/kinds/MethodKind';
 import { MethodOperation } from '../models/kinds/MethodOperation';
 import { ParameterPlace } from '../models/kinds/ParameterPlace';
 import { PropertyKind } from '../models/kinds/PropertyKind';
-import { IMethodModel, IMethodParameterModel, IReturnType } from '../models/MethodModel';
+import { IBodyParameter } from "../models/method-parameter/IBodyParameter";
+import { IMethodModel } from '../models/method-parameter/IMethodModel';
+import { IPathParameter } from "../models/method-parameter/IPathParameter";
+import { IQueryParameter } from "../models/method-parameter/IQueryParameter";
+import { IReturnType } from '../models/method-parameter/IReturnType';
+import { PathMethodParameterModel } from '../models/method-parameter/PathMethodParameterModel';
+import { QueryMethodParameterModel } from '../models/method-parameter/QueryMethodParameterModel';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IServiceModel } from '../models/ServiceModel';
 import { IOpenAPI3Operations, OpenAPIService } from '../swagger/OpenAPIService';
@@ -41,14 +47,14 @@ export class ServiceMappingService {
 
             const service = store.find((z) => z.name === info.name);
             if (service) {
-                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models));
+                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin));
                 return store;
             }
 
             store.push({
                 name: info.name,
                 relativePath: info.relativePath,
-                methods: [this.getMethod(info.action.name, model.method, model.operation, models)]
+                methods: [this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin)]
             });
             return store;
         }, []);
@@ -60,13 +66,14 @@ export class ServiceMappingService {
         return services.sort(sortBy((z) => z.name));
     }
 
-    private getMethod(actionName: string, method: MethodOperation, operation: IOpenAPI3Operation, models: IModelsContainer): IMethodModel {
+    private getMethod(actionName: string, method: MethodOperation, operation: IOpenAPI3Operation, models: IModelsContainer, originUri: string): IMethodModel {
         const model: IMethodModel = {
             kind: this.hasDownloadResponse(operation) ? MethodKind.Download : MethodKind.Default,
             name: lowerFirst(actionName),
             operation: method,
-            parameters: this.getQueryParameters(operation.parameters, models),
-            returnType: this.getReturnType(operation.responses[200].content?.['application/json']?.schema, models)
+            parameters: this.getUriParameters(operation.parameters),
+            returnType: this.getReturnType(operation.responses[200].content?.['application/json']?.schema, models),
+            originUri
         };
 
         const bodyParameter = this.getBodyParameter(operation.requestBody?.content['application/json']?.schema, models);
@@ -105,38 +112,24 @@ export class ServiceMappingService {
         return model;
     }
 
-    private getQueryParameters(parameters: IOpenAPI3Parameter[] | undefined, models: IModelsContainer): IMethodParameterModel[] {
-        return (
-            parameters?.map((z) => {
-                const parameter = {
-                    name: lowerFirst(z.name),
-                    optional: z.required === undefined ? false : !z.required,
-                    place: ParameterPlace.Query,
-                    isCollection: false,
-                    dtoType: '',
-                    isModel: false
-                };
+    private getUriParameters(parameters: IOpenAPI3Parameter[] | undefined): (IQueryParameter | IPathParameter)[] {
+        const result: (IQueryParameter | IPathParameter)[] = [];
 
-                if (this.typesGuard.isSimple(z.schema)) {
-                    parameter.dtoType = this.typesService.getSimpleType(z.schema).dtoType;
-                    return parameter;
-                }
+        parameters?.forEach((z) => {
+            if (z.in === 'query') {
+                result.push(new QueryMethodParameterModel(z, this.typesGuard, this.typesService));
+            } else if (z.in === 'path') {
+                result.push(new PathMethodParameterModel(z, this.typesGuard, this.typesService));
+            }
+        });
 
-                if (this.typesGuard.isReference(z.schema)) {
-                    parameter.dtoType = this.findModel(models, z.schema)?.dtoType ?? '';
-                    parameter.isModel = true;
-                    return parameter;
-                }
-
-                return parameter;
-            }) ?? []
-        );
+        return result;
     }
 
     private getBodyParameter(
         schema: IOpenAPI3ArraySchema | IOpenAPI3Reference | undefined,
         models: IModelsContainer
-    ): IMethodParameterModel | undefined {
+    ): IBodyParameter | undefined {
         let model: IModel | undefined;
         let isCollection = false;
         if (this.typesGuard.isReference(schema)) {

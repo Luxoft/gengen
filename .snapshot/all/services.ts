@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { Guid } from './Guid';
 import { BaseHttpService } from './base-http.service';
 import { DownloadFileService, IDownloadResult } from './download.service';
+import { getBasePath } from './utils';
 import * as $mappers from './mappers';
 import * as $models from './models';
 
@@ -12,12 +13,12 @@ import * as $models from './models';
 })
 export class CategoryService extends BaseHttpService {
     constructor(http: HttpClient) {
-        super('/api/v1/Category', http);
+        super(getBasePath('', '/api/v1/Category'), http);
     }
 
     public addCategory(category: $models.ICategory): Observable<Guid> {
         return this.post<string>(
-            `addCategory`,
+            `AddCategory`,
             category,
         ).pipe($mappers.mapGuid());
     }
@@ -35,7 +36,7 @@ export class CategoryService extends BaseHttpService {
 })
 export class ProductService extends DownloadFileService {
     constructor(http: HttpClient) {
-        super('/Product', http);
+        super(getBasePath('', '/Product'), http);
     }
 
     public download(saveAs: string = undefined): Promise<IDownloadResult> {
@@ -49,13 +50,13 @@ export class ProductService extends DownloadFileService {
 
     public getById(id: string): Observable<$models.Product> {
         return this.get<$models.IProduct>(
-            `getById?id=${encodeURIComponent(id)}`,
+            `getById/${encodeURIComponent(id)}`,
         ).pipe($mappers.mapSingle($models.Product));
     }
 
     public getProducts(): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
-            `getProducts`,
+            `GetProducts`,
         ).pipe($mappers.mapCollection($models.Product));
     }
 
@@ -63,5 +64,11 @@ export class ProductService extends DownloadFileService {
         return this.get<$models.IProduct[]>(
             `searchProducts?name=${encodeURIComponent(name)}`,
         ).pipe($mappers.mapCollection($models.Product));
+    }
+
+    public type(date: string, customer: string, type: string): Observable<$models.Product> {
+        return this.get<$models.IProduct>(
+            `getByCustomer/${encodeURIComponent(customer)}/type/${encodeURIComponent(type)}?date=${encodeURIComponent(date)}`,
+        ).pipe($mappers.mapSingle($models.Product));
     }
 }

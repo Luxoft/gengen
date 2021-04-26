@@ -1,0 +1,7 @@
+import { ParameterPlace } from '../kinds/ParameterPlace';
+
+export interface IParameter {
+    name: string;
+    dtoType: string;
+    place: ParameterPlace;
+}
