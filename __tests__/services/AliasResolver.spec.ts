@@ -2,14 +2,14 @@ import { defaultOptions } from '../../src/options';
 import { AliasResolver } from '../../src/services/AliasResolver';
 
 describe('AliasResolver tests', () => {
-    describe('getAliasSerialized', () => {
+    describe('alias getter', () => {
         it('w/ alias', () => {
             // Arrange
             const aliasResolver = new AliasResolver({ ...defaultOptions, aliasName: 'alias' });
-            const expected = `'alias'`;
+            const expected = 'alias';
 
             // Act
-            const result = aliasResolver.getAliasSerialized();
+            const result = aliasResolver.alias;
 
             // Assert
             expect(result).toEqual(expected);
@@ -18,10 +18,10 @@ describe('AliasResolver tests', () => {
         it('w/o alias', () => {
             // Arrange
             const aliasResolver = new AliasResolver(defaultOptions);
-            const expected = 'undefined';
+            const expected = '';
 
             // Act
-            const result = aliasResolver.getAliasSerialized();
+            const result = aliasResolver.alias;
 
             // Assert
             expect(result).toEqual(expected);

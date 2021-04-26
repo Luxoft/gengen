@@ -4,8 +4,8 @@ import { Observable } from 'rxjs';
 import { Guid } from './Guid';
 import { BaseHttpService } from './base-http.service';
 import { DownloadFileService, IDownloadResult } from './download.service';
-import * as $mappers from './mappers';
 import { getBasePath } from './utils';
+import * as $mappers from './mappers';
 import * as $models from './alias-models';
 
 @Injectable({

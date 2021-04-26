@@ -10,13 +10,13 @@ First of all you make sure that swagger.json is accessable.
 
 > Location by default is https://localhost:5001/swagger/v1/swagger.json. You can override it. See [all options](https://github.com/Luxoft/gengen#all-options)
 
-##### Generate all API
+### Generate all API
 
 ```shell
 gengen g --all
 ```
 
-##### Generate a part of API
+### Generate a part of API
 
 1. Initialize empty rule set
 
@@ -43,25 +43,27 @@ gengen g --all
     gengen g
     ```
 
-##### All options
+### Options
 
-| Option           | Description                                                                     | Type    | Default value                                  |
-| ---------------- | ------------------------------------------------------------------------------- | ------- | ---------------------------------------------- |
-| **all**          | Generate all                                                                    | boolean | false                                          |
-| **url**          | Location of swagger.json                                                        | string  | https://localhost:5001/swagger/v1/swagger.json |
-| **file**         | Local path to swagger.json                                                      | string  |                                                |
-| **output**       | Output directory                                                                | string  | ./src/generated                                |
-| **configOutput** | Output directory using in 'Generate a part of API' scenario                     | string  | ./.generated                                   |
-| **aliasName**    | Specify prefix for models/services filenames and [more info](#Option-aliasName) | string  |                                                |
+| Option           | Description                                                            | Type    | Default value                                  |
+| ---------------- | ---------------------------------------------------------------------- | ------- | ---------------------------------------------- |
+| **all**          | Generate all                                                           | boolean | false                                          |
+| **url**          | Location of swagger.json                                               | string  | https://localhost:5001/swagger/v1/swagger.json |
+| **file**         | Local path to swagger.json                                             | string  |                                                |
+| **output**       | Output directory                                                       | string  | ./src/generated                                |
+| **configOutput** | Output directory using in 'Generate a part of API' scenario            | string  | ./.generated                                   |
+| **aliasName**    | Specify prefix for generated filenames. [more info](#aliasName) | string  |                                                |
 
-##### Option aliasName
+### Option details
+
+#### aliasName
 
 Alias provides:
 
-1. Prefixing of models/services files
-2. A way to specify dynamic basePath for servicesvia
-   So for _aliasName_ **myalias**
+1. Prefixes for model and service files
+2. A way to specify dynamic basePath for services.
 
+Example:
 ```shell
 gengen --aliasName myalias
 ```

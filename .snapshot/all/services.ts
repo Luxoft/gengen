@@ -4,8 +4,8 @@ import { Observable } from 'rxjs';
 import { Guid } from './Guid';
 import { BaseHttpService } from './base-http.service';
 import { DownloadFileService, IDownloadResult } from './download.service';
-import * as $mappers from './mappers';
 import { getBasePath } from './utils';
+import * as $mappers from './mappers';
 import * as $models from './models';
 
 @Injectable({
@@ -13,7 +13,7 @@ import * as $models from './models';
 })
 export class CategoryService extends BaseHttpService {
     constructor(http: HttpClient) {
-        super(getBasePath(undefined, '/api/v1/Category'), http);
+        super(getBasePath('', '/api/v1/Category'), http);
     }
 
     public addCategory(category: $models.ICategory): Observable<Guid> {
@@ -36,7 +36,7 @@ export class CategoryService extends BaseHttpService {
 })
 export class ProductService extends DownloadFileService {
     constructor(http: HttpClient) {
-        super(getBasePath(undefined, '/Product'), http);
+        super(getBasePath('', '/Product'), http);
     }
 
     public download(saveAs: string = undefined): Promise<IDownloadResult> {

@@ -2,11 +2,12 @@ import { IOptions } from '../options';
 
 export class AliasResolver {
     protected readonly typescriptPostfix = '.ts';
-    constructor(private readonly options: IOptions) {}
 
-    public getAliasSerialized(): string {
-        return this.options.aliasName ? `'${this.options.aliasName}'` : `${undefined}`;
+    public get alias(): string {
+        return this.options.aliasName ?? '';
     }
+
+    constructor(private readonly options: IOptions) {}
 
     public getModelsModuleName(): string {
         return this.getFileName('models');

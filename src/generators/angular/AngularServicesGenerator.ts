@@ -5,8 +5,7 @@ import {
     StructureKind,
     Writers,
     ClassDeclarationStructure,
-    ConstructorDeclarationStructure,
-    ts
+    ConstructorDeclarationStructure
 } from 'ts-morph';
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { MethodOperation } from '../../models/kinds/MethodOperation';
@@ -65,13 +64,13 @@ export class AngularServicesGenerator {
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './mappers',
-                namespaceImport: MAPPERS_NAMESPACE
+                moduleSpecifier: './utils',
+                namedImports: [{ name: GET_BASE_PATH_FUNCTION_NAME }]
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './utils',
-                namedImports: [{ name: GET_BASE_PATH_FUNCTION_NAME }]
+                moduleSpecifier: './mappers',
+                namespaceImport: MAPPERS_NAMESPACE
             },
             {
                 kind: StructureKind.ImportDeclaration,
@@ -117,9 +116,7 @@ export class AngularServicesGenerator {
     }
 
     private getConstructorStatement(service: IServiceModel): ConstructorDeclarationStructure {
-        const superStatement = `super(${GET_BASE_PATH_FUNCTION_NAME}(${this.aliasResolver.getAliasSerialized()}, '${
-            service.relativePath
-        }'), ${HTTP_CLIENT_VARIABLE_NAME});`;
+        const superStatement = `super(${GET_BASE_PATH_FUNCTION_NAME}('${this.aliasResolver.alias}', '${service.relativePath}'), ${HTTP_CLIENT_VARIABLE_NAME});`;
         return {
             kind: StructureKind.Constructor,
             parameters: [{ name: HTTP_CLIENT_VARIABLE_NAME, type: HTTP_CLIENT }],
