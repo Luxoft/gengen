@@ -6,6 +6,7 @@ export interface IOptions {
     output: string;
     file?: string;
     url?: string;
+    aliasName?: string;
 }
 
 export const defaultOptions: IOptions = {

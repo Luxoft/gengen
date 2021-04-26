@@ -1,11 +1,19 @@
-import { CodeBlockWriter, Scope, StatementStructures, StructureKind, Writers } from 'ts-morph';
-
+import {
+    CodeBlockWriter,
+    Scope,
+    StatementStructures,
+    StructureKind,
+    Writers,
+    ClassDeclarationStructure,
+    ConstructorDeclarationStructure
+} from 'ts-morph';
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { MethodOperation } from '../../models/kinds/MethodOperation';
 import { ParameterPlace } from '../../models/kinds/ParameterPlace';
 import { PropertyKind } from '../../models/kinds/PropertyKind';
 import { IMethodModel, IReturnType } from '../../models/MethodModel';
 import { IServiceModel } from '../../models/ServiceModel';
+import { AliasResolver } from '../../services/AliasResolver';
 import { first } from '../../utils';
 
 const BASE_SERVICE = 'BaseHttpService';
@@ -13,8 +21,11 @@ const DOWNLOAD_SERVICE = 'DownloadFileService';
 const HTTP_CLIENT = 'HttpClient';
 const MODELS_NAMESPACE = '$models';
 const MAPPERS_NAMESPACE = '$mappers';
+const GET_BASE_PATH_FUNCTION_NAME = 'getBasePath';
+const HTTP_CLIENT_VARIABLE_NAME = 'http';
 
 export class AngularServicesGenerator {
+    constructor(protected aliasResolver: AliasResolver) {}
     public getServicesCodeStructure(services: IServiceModel[]): StatementStructures[] {
         return [...this.getImports(), ...this.getServices(services)];
     }
@@ -53,53 +64,64 @@ export class AngularServicesGenerator {
             },
             {
                 kind: StructureKind.ImportDeclaration,
+                moduleSpecifier: './utils',
+                namedImports: [{ name: GET_BASE_PATH_FUNCTION_NAME }]
+            },
+            {
+                kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: './mappers',
                 namespaceImport: MAPPERS_NAMESPACE
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './models',
+                moduleSpecifier: `./${this.aliasResolver.getModelsModuleName()}`,
                 namespaceImport: MODELS_NAMESPACE
             }
         ];
     }
 
-    private getServices(services: IServiceModel[]): StatementStructures[] {
-        return services.map((z) => ({
-            kind: StructureKind.Class,
-            isExported: true,
-            name: `${z.name}Service`,
-            extends: z.methods.some((x) => x.kind === MethodKind.Download) ? DOWNLOAD_SERVICE : BASE_SERVICE,
-            decorators: [
-                {
-                    kind: StructureKind.Decorator,
-                    name: 'Injectable',
-                    arguments: Writers.object({ providedIn: "'root'" })
-                }
-            ],
-            ctors: [
-                {
-                    parameters: [{ name: 'http', type: HTTP_CLIENT }],
-                    statements: `super('${z.relativePath}', http);`
-                }
-            ],
-            methods: z.methods.map((x) => ({
-                scope: Scope.Public,
-                name: x.name,
-                parameters: x.parameters.map((p) => ({
-                    name: p.name,
-                    type: this.getFullTypeName(p.dtoType, p.isCollection, p.isModel),
-                    initializer: p.optional ? `${undefined}` : undefined
-                })),
-                returnType:
-                    x.kind === MethodKind.Download
-                        ? `Promise<${x.returnType?.type.type}>`
-                        : `Observable<${this.getReturnTypeName(x.returnType, x.returnType?.type.type)}>`,
-                statements: (w) => {
-                    x.kind === MethodKind.Download ? this.createDownloadMethod(w, x) : this.createMethod(w, x);
-                }
-            }))
-        }));
+    private getServices(services: IServiceModel[]): ClassDeclarationStructure[] {
+        return services.map(
+            (z): ClassDeclarationStructure => ({
+                kind: StructureKind.Class,
+                isExported: true,
+                name: `${z.name}Service`,
+                extends: z.methods.some((x) => x.kind === MethodKind.Download) ? DOWNLOAD_SERVICE : BASE_SERVICE,
+                decorators: [
+                    {
+                        kind: StructureKind.Decorator,
+                        name: 'Injectable',
+                        arguments: Writers.object({ providedIn: "'root'" })
+                    }
+                ],
+                ctors: [this.getConstructorStatement(z)],
+                methods: z.methods.map((x) => ({
+                    scope: Scope.Public,
+                    name: x.name,
+                    parameters: x.parameters.map((p) => ({
+                        name: p.name,
+                        type: this.getFullTypeName(p.dtoType, p.isCollection, p.isModel),
+                        initializer: p.optional ? `${undefined}` : undefined
+                    })),
+                    returnType:
+                        x.kind === MethodKind.Download
+                            ? `Promise<${x.returnType?.type.type}>`
+                            : `Observable<${this.getReturnTypeName(x.returnType, x.returnType?.type.type)}>`,
+                    statements: (w) => {
+                        x.kind === MethodKind.Download ? this.createDownloadMethod(w, x) : this.createMethod(w, x);
+                    }
+                }))
+            })
+        );
+    }
+
+    private getConstructorStatement(service: IServiceModel): ConstructorDeclarationStructure {
+        const superStatement = `super(${GET_BASE_PATH_FUNCTION_NAME}('${this.aliasResolver.alias}', '${service.relativePath}'), ${HTTP_CLIENT_VARIABLE_NAME});`;
+        return {
+            kind: StructureKind.Constructor,
+            parameters: [{ name: HTTP_CLIENT_VARIABLE_NAME, type: HTTP_CLIENT }],
+            statements: superStatement
+        };
     }
 
     private getReturnTypeName(returnType: IReturnType | undefined, targetType: string | undefined): string {
