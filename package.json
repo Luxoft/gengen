@@ -12,11 +12,13 @@
     "g:c": "node ./bin/index.js g:c --file=./swagger.json",
     "g": "node ./bin/index.js g --file=./swagger.json --output=./.output/selected",
     "g:a": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/all",
+    "g:alias": "node ./bin/index.js g --file=./swagger.json --aliasName alias --output=./.output/selected",
     "debug:all": "node --inspect-brk ./bin/index.js g --all --file=./swagger.json --output=./dist",
     "debug": "node --inspect-brk ./bin/index.js g --file=./swagger.json --output=./dist",
     "debug:tests": "node --inspect-brk ./node_modules/jest/bin/jest.js -i",
     "e2e": "npm run g && npm run g:a && ts-node ./e2e/e2e.ts",
-    "test": "jest"
+    "test": "jest",
+    "test:w": "jest --watch"
   },
   "keywords": [
     "swagger",

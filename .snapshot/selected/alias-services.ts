@@ -6,14 +6,14 @@ import { BaseHttpService } from './base-http.service';
 import { DownloadFileService, IDownloadResult } from './download.service';
 import * as $mappers from './mappers';
 import { getBasePath } from './utils';
-import * as $models from './models';
+import * as $models from './alias-models';
 
 @Injectable({
     providedIn: 'root'
 })
 export class CategoryService extends BaseHttpService {
     constructor(http: HttpClient) {
-        super(getBasePath(undefined, '/api/v1/Category'), http);
+        super(getBasePath('alias', '/api/v1/Category'), http);
     }
 
     public addCategory(category: $models.ICategory): Observable<Guid> {
@@ -29,7 +29,7 @@ export class CategoryService extends BaseHttpService {
 })
 export class ProductService extends BaseHttpService {
     constructor(http: HttpClient) {
-        super(getBasePath(undefined, '/Product'), http);
+        super(getBasePath('alias', '/Product'), http);
     }
 
     public getProducts(): Observable<$models.Product[]> {
