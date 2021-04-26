@@ -21,6 +21,7 @@ program
 program
   .command('generate')
   .alias('g')
+  .option('--aliasName <string>')
   .option('--file <string>')
   .option('--url <string>')
   .option('--output <string>')

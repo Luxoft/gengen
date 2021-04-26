@@ -6,6 +6,7 @@ import { AngularServicesGenerator } from './generators/angular/AngularServicesGe
 import { ConfigGenerator } from './generators/ConfigGenerator';
 import { ModelsGenerator } from './generators/ModelsGenerator';
 import { configOptions, defaultOptions, generatorsOptions, IOptions } from './options';
+import { AliasResolver } from './services/AliasResolver';
 import { EndpointsConfigReader } from './services/EndpointsConfigReader';
 import { EndpointsService } from './services/EndpointsService';
 import { ModelMappingService } from './services/ModelMappingService';
@@ -61,6 +62,7 @@ export async function main(options: IOptions): Promise<void> {
     const modelMappingService = new ModelMappingService(typesGuard, typesService);
     const serviceMappingService = new ServiceMappingService(endpointsService, openAPIService, typesService, typesGuard);
     const configReader = new EndpointsConfigReader(settings);
+    const aliasResolver = new AliasResolver(settings);
 
     const actions = await (settings.all ? endpointsService.getActions() : configReader.getActions());
     const modelsContainer = modelMappingService.toModelsContainer(openAPIService.getSchemasByEndpoints(actions));
@@ -68,14 +70,14 @@ export async function main(options: IOptions): Promise<void> {
 
     const project = new Project(generatorsOptions);
     project.createSourceFile(
-        `${settings.output}/models.ts`,
+        `${settings.output}/${aliasResolver.getModelsFileName()}`,
         { statements: new ModelsGenerator().getModelsCodeStructure(modelsContainer) },
         { overwrite: true }
     );
 
     const serviceFile = project.createSourceFile(
-        `${settings.output}/services.ts`,
-        { statements: new AngularServicesGenerator().getServicesCodeStructure(newServices) },
+        `${settings.output}/${aliasResolver.getServicesFileName()}`,
+        { statements: new AngularServicesGenerator(aliasResolver).getServicesCodeStructure(newServices) },
         { overwrite: true }
     );
 
@@ -84,6 +86,7 @@ export async function main(options: IOptions): Promise<void> {
     await project.save();
 
     promises.copyFile(resolve(__dirname, '../libs/Guid.ts'), `${settings.output}/Guid.ts`);
+    promises.copyFile(resolve(__dirname, '../libs/utils.ts'), `${settings.output}/utils.ts`);
     promises.copyFile(resolve(__dirname, '../libs/mappers.ts'), `${settings.output}/mappers.ts`);
     promises.copyFile(resolve(__dirname, '../libs/date-converters.ts'), `${settings.output}/date-converters.ts`);
     promises.copyFile(resolve(__dirname, '../libs/base-http.service.ts'), `${settings.output}/base-http.service.ts`);
