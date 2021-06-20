@@ -18,7 +18,7 @@ export class ConfigGenerator {
         ];
     }
 
-    public getEndpointsCodeStructure(controllers: Record<string, string[]>): StatementStructures[] {
+    public getEndpointsCodeStructure(controllers: Record<string, Record<string, string>>): StatementStructures[] {
         return [
             {
                 kind: StructureKind.Class,
@@ -29,10 +29,10 @@ export class ConfigGenerator {
         ];
     }
 
-    private getProperties(controllers: Record<string, string[]>): OptionalKind<PropertyDeclarationStructure>[] {
+    private getProperties(controllers: Record<string, Record<string, string>>): OptionalKind<PropertyDeclarationStructure>[] {
         return Object.entries(controllers).map(([controller, actions]) => {
-            const propertyValue = actions.reduce<Record<string, string>>((store, action) => {
-                store[action] = `'${controller}/${action}'`;
+            const propertyValue = Object.entries(actions).reduce<Record<string, string>>((store, [name, path]) => {
+                store[name ? name : `''`] = `'${path}'`;
                 return store;
             }, {});
 

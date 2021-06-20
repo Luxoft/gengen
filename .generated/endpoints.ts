@@ -1,12 +1,13 @@
 export class Endpoints {
     public static CategoryService = {
-        AddCategory: 'Category/AddCategory',
-        Upload: 'Category/Upload'
+        addCategory: '/api/v1/Category/AddCategory',
+        upload: '/api/v1/Category/Upload'
     };
     public static ProductService = {
-        Download: 'Product/Download',
-        Get: 'Product/Get',
-        GetProducts: 'Product/GetProducts',
-        SearchProducts: 'Product/SearchProducts'
+        '': '/api/v1/Product',
+        download: '/Product/Download',
+        getById: '/api/v1/Product/GetById/{id}',
+        getProducts: '/Product/GetProducts',
+        searchProducts: '/Product/SearchProducts'
     };
 }

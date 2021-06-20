@@ -64,9 +64,9 @@ export async function main(options: IOptions): Promise<void> {
     const configReader = new EndpointsConfigReader(settings);
     const aliasResolver = new AliasResolver(settings);
 
-    const actions = await (settings.all ? endpointsService.getActions() : configReader.getActions());
-    const modelsContainer = modelMappingService.toModelsContainer(openAPIService.getSchemasByEndpoints(actions));
-    const newServices = serviceMappingService.toServiceModels(openAPIService.getOperationsByEndpoints(actions), modelsContainer);
+    const endpoints = await (settings.all ? endpointsService.getEndpoints() : configReader.getEndpoints());
+    const modelsContainer = modelMappingService.toModelsContainer(openAPIService.getSchemasByEndpoints(endpoints));
+    const newServices = serviceMappingService.toServiceModels(openAPIService.getOperationsByEndpoints(endpoints), modelsContainer);
 
     const project = new Project(generatorsOptions);
     project.createSourceFile(
