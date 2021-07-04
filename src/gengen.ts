@@ -5,6 +5,7 @@ import { Project } from 'ts-morph';
 import { AngularServicesGenerator } from './generators/angular/AngularServicesGenerator';
 import { ConfigGenerator } from './generators/ConfigGenerator';
 import { ModelsGenerator } from './generators/ModelsGenerator';
+import { UriBuilder } from './services/UriBuilder';
 import { configOptions, defaultOptions, generatorsOptions, IOptions } from './options';
 import { AliasResolver } from './services/AliasResolver';
 import { EndpointsConfigReader } from './services/EndpointsConfigReader';
@@ -63,6 +64,7 @@ export async function main(options: IOptions): Promise<void> {
     const serviceMappingService = new ServiceMappingService(endpointsService, openAPIService, typesService, typesGuard);
     const configReader = new EndpointsConfigReader(settings);
     const aliasResolver = new AliasResolver(settings);
+    const uriBuilder = new UriBuilder();
 
     const actions = await (settings.all ? endpointsService.getActions() : configReader.getActions());
     const modelsContainer = modelMappingService.toModelsContainer(openAPIService.getSchemasByEndpoints(actions));
@@ -77,7 +79,7 @@ export async function main(options: IOptions): Promise<void> {
 
     const serviceFile = project.createSourceFile(
         `${settings.output}/${aliasResolver.getServicesFileName()}`,
-        { statements: new AngularServicesGenerator(aliasResolver).getServicesCodeStructure(newServices) },
+        { statements: new AngularServicesGenerator(aliasResolver, uriBuilder).getServicesCodeStructure(newServices) },
         { overwrite: true }
     );
 

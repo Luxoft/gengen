@@ -18,7 +18,7 @@ export class CategoryService extends BaseHttpService {
 
     public addCategory(category: $models.ICategory): Observable<Guid> {
         return this.post<string>(
-            `addCategory`,
+            `AddCategory`,
             category,
         ).pipe($mappers.mapGuid());
     }
@@ -50,13 +50,13 @@ export class ProductService extends DownloadFileService {
 
     public getById(id: string): Observable<$models.Product> {
         return this.get<$models.IProduct>(
-            `getById?id=${encodeURIComponent(id)}`,
+            `getById/${encodeURIComponent(id)}`,
         ).pipe($mappers.mapSingle($models.Product));
     }
 
     public getProducts(): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
-            `getProducts`,
+            `GetProducts`,
         ).pipe($mappers.mapCollection($models.Product));
     }
 
@@ -64,5 +64,11 @@ export class ProductService extends DownloadFileService {
         return this.get<$models.IProduct[]>(
             `searchProducts?name=${encodeURIComponent(name)}`,
         ).pipe($mappers.mapCollection($models.Product));
+    }
+
+    public type(date: string, customer: string, type: string): Observable<$models.Product> {
+        return this.get<$models.IProduct>(
+            `getByCustomer/${encodeURIComponent(customer)}/type/${encodeURIComponent(type)}?date=${encodeURIComponent(date)}`,
+        ).pipe($mappers.mapSingle($models.Product));
     }
 }
