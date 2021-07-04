@@ -65,6 +65,7 @@ export async function main(options: IOptions): Promise<void> {
     const aliasResolver = new AliasResolver(settings);
 
     const endpoints = await (settings.all ? endpointsService.getEndpoints() : configReader.getEndpoints());
+    // TODO подкрутить методы getSchemasByEndpoints и getOperationsByEndpoints под новые эндпоинты
     const modelsContainer = modelMappingService.toModelsContainer(openAPIService.getSchemasByEndpoints(endpoints));
     const newServices = serviceMappingService.toServiceModels(openAPIService.getOperationsByEndpoints(endpoints), modelsContainer);
 
