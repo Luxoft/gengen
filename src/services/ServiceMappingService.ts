@@ -2,10 +2,10 @@ import { MethodKind } from '../models/kinds/MethodKind';
 import { MethodOperation } from '../models/kinds/MethodOperation';
 import { ParameterPlace } from '../models/kinds/ParameterPlace';
 import { PropertyKind } from '../models/kinds/PropertyKind';
-import { IBodyParameter } from "../models/method-parameter/IBodyParameter";
+import { IBodyParameter } from '../models/method-parameter/IBodyParameter';
 import { IMethodModel } from '../models/method-parameter/IMethodModel';
-import { IPathParameter } from "../models/method-parameter/IPathParameter";
-import { IQueryParameter } from "../models/method-parameter/IQueryParameter";
+import { IPathParameter } from '../models/method-parameter/IPathParameter';
+import { IQueryParameter } from '../models/method-parameter/IQueryParameter';
 import { IReturnType } from '../models/method-parameter/IReturnType';
 import { PathMethodParameterModel } from '../models/method-parameter/PathMethodParameterModel';
 import { QueryMethodParameterModel } from '../models/method-parameter/QueryMethodParameterModel';
@@ -113,17 +113,22 @@ export class ServiceMappingService {
     }
 
     private getUriParameters(parameters: IOpenAPI3Parameter[] | undefined): (IQueryParameter | IPathParameter)[] {
-        const result: (IQueryParameter | IPathParameter)[] = [];
+        if (!parameters) {
+            return [];
+        }
 
-        parameters?.forEach((z) => {
-            if (z.in === 'query') {
-                result.push(new QueryMethodParameterModel(z, this.typesGuard, this.typesService));
-            } else if (z.in === 'path') {
-                result.push(new PathMethodParameterModel(z, this.typesGuard, this.typesService));
-            }
-        });
+        const pathParams = parameters
+            .filter((z) => z.in === 'path')
+            .map((z) => new PathMethodParameterModel(z, this.typesGuard, this.typesService));
 
-        return result;
+        const queryParams = parameters
+            .filter((z) => z.in === 'query')
+            .map((z) => new QueryMethodParameterModel(z, this.typesGuard, this.typesService));
+
+        return [
+            ...pathParams.sort(sortBy((z) => z.name)),
+            ...queryParams.sort(sortBy((z) => z.name))
+        ];
     }
 
     private getBodyParameter(

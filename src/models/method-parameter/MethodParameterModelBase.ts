@@ -3,7 +3,7 @@ import { OpenAPITypesGuard } from '../../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Parameter } from '../../swagger/v3/parameter';
 import { lowerFirst } from '../../utils';
 import { ParameterPlace } from '../kinds/ParameterPlace';
-import { IParameter } from "./IParameter";
+import { IParameter } from './IParameter';
 
 export abstract class MethodParameterModelBase implements IParameter {
     public name: string;

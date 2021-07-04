@@ -26,8 +26,6 @@ export class UriBuilder {
     }
 
     private getPathParam(params: IParameter[]): string[] {
-        const pathParams = params.filter((z) => z.place === ParameterPlace.Path).map((z) => z.name);
-
-        return pathParams;
+        return params.filter((z) => z.place === ParameterPlace.Path).map((z) => z.name);
     }
 }

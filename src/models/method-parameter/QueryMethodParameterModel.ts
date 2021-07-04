@@ -2,7 +2,7 @@ import { TypesService } from '../../services/TypesService';
 import { OpenAPITypesGuard } from '../../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Parameter } from '../../swagger/v3/parameter';
 import { ParameterPlace } from '../kinds/ParameterPlace';
-import { IQueryParameter } from "./IQueryParameter";
+import { IQueryParameter } from './IQueryParameter';
 import { MethodParameterModelBase } from './MethodParameterModelBase';
 
 export class QueryMethodParameterModel extends MethodParameterModelBase implements IQueryParameter {

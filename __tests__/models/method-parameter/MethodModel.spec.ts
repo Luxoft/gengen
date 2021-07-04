@@ -1,11 +1,11 @@
-import { ParameterPlace } from '../../src/models/kinds/ParameterPlace';
-import { IPathParameter } from '../../src/models/method-parameter/IPathParameter';
-import { IQueryParameter } from '../../src/models/method-parameter/IQueryParameter';
-import { PathMethodParameterModel } from '../../src/models/method-parameter/PathMethodParameterModel';
-import { QueryMethodParameterModel } from '../../src/models/method-parameter/QueryMethodParameterModel';
-import { TypesService } from '../../src/services/TypesService';
-import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
-import { IOpenAPI3Parameter } from '../../src/swagger/v3/parameter';
+import { ParameterPlace } from '../../../src/models/kinds/ParameterPlace';
+import { IPathParameter } from '../../../src/models/method-parameter/IPathParameter';
+import { IQueryParameter } from '../../../src/models/method-parameter/IQueryParameter';
+import { PathMethodParameterModel } from '../../../src/models/method-parameter/PathMethodParameterModel';
+import { QueryMethodParameterModel } from '../../../src/models/method-parameter/QueryMethodParameterModel';
+import { TypesService } from '../../../src/services/TypesService';
+import { OpenAPITypesGuard } from '../../../src/swagger/OpenAPITypesGuard';
+import { IOpenAPI3Parameter } from '../../../src/swagger/v3/parameter';
 
 describe('MethodParameterModel tests', () => {
     let typesGuard: OpenAPITypesGuard;

@@ -7,16 +7,17 @@ import {
     Scope,
     StatementStructures,
     StructureKind,
-    Writers
+    Writers,
 } from 'ts-morph';
+
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { MethodOperation } from '../../models/kinds/MethodOperation';
 import { ParameterPlace } from '../../models/kinds/ParameterPlace';
 import { PropertyKind } from '../../models/kinds/PropertyKind';
-import { IBodyParameter } from "../../models/method-parameter/IBodyParameter";
+import { IBodyParameter } from '../../models/method-parameter/IBodyParameter';
 import { IMethodModel } from '../../models/method-parameter/IMethodModel';
-import { IPathParameter } from "../../models/method-parameter/IPathParameter";
-import { IQueryParameter } from "../../models/method-parameter/IQueryParameter";
+import { IPathParameter } from '../../models/method-parameter/IPathParameter';
+import { IQueryParameter } from '../../models/method-parameter/IQueryParameter';
 import { IReturnType } from '../../models/method-parameter/IReturnType';
 import { IServiceModel } from '../../models/ServiceModel';
 import { AliasResolver } from '../../services/AliasResolver';
@@ -33,8 +34,8 @@ const HTTP_CLIENT_VARIABLE_NAME = 'http';
 
 interface IParameterType {
     type: string;
-    isCollection: boolean;
-    isModel: boolean;
+    isCollection?: boolean;
+    isModel?: boolean;
 }
 
 export class AngularServicesGenerator {
@@ -133,10 +134,10 @@ export class AngularServicesGenerator {
 
         switch (parameter.place) {
             case ParameterPlace.Path:
-                statement.type = this.getFullTypeName({ type: parameter.dtoType, isCollection: false, isModel: false });
+                statement.type = this.getFullTypeName({ type: parameter.dtoType });
                 break;
             case ParameterPlace.Query:
-                statement.type = this.getFullTypeName({ type: parameter.dtoType, isCollection: false, isModel: false });
+                statement.type = this.getFullTypeName({ type: parameter.dtoType });
                 if (parameter.optional) {
                     statement.initializer = `${undefined}`;
                 }

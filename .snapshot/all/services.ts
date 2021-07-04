@@ -25,7 +25,7 @@ export class CategoryService extends BaseHttpService {
 
     public upload(data: FormData): Observable<Guid> {
         return this.post<string>(
-            `upload`,
+            `Upload`,
             data,
         ).pipe($mappers.mapGuid());
     }
@@ -41,7 +41,7 @@ export class ProductService extends DownloadFileService {
 
     public download(saveAs: string = undefined): Promise<IDownloadResult> {
         return this.downloadFile(
-            `download`,
+            `Download`,
             'get',
             undefined,
             saveAs
@@ -50,7 +50,7 @@ export class ProductService extends DownloadFileService {
 
     public getById(id: string): Observable<$models.Product> {
         return this.get<$models.IProduct>(
-            `getById/${encodeURIComponent(id)}`,
+            `GetById/${encodeURIComponent(id)}`,
         ).pipe($mappers.mapSingle($models.Product));
     }
 
@@ -62,11 +62,11 @@ export class ProductService extends DownloadFileService {
 
     public searchProducts(name: string): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
-            `searchProducts?name=${encodeURIComponent(name)}`,
+            `SearchProducts?name=${encodeURIComponent(name)}`,
         ).pipe($mappers.mapCollection($models.Product));
     }
 
-    public type(date: string, customer: string, type: string): Observable<$models.Product> {
+    public type(customer: string, type: string, date: string): Observable<$models.Product> {
         return this.get<$models.IProduct>(
             `getByCustomer/${encodeURIComponent(customer)}/type/${encodeURIComponent(type)}?date=${encodeURIComponent(date)}`,
         ).pipe($mappers.mapSingle($models.Product));
