@@ -18,7 +18,7 @@ export class CategoryService extends BaseHttpService {
 
     public addCategory(category: $models.ICategory): Observable<Guid> {
         return this.post<string>(
-            `addCategory`,
+            `AddCategory`,
             category,
         ).pipe($mappers.mapGuid());
     }
@@ -34,7 +34,7 @@ export class ProductService extends BaseHttpService {
 
     public getProducts(): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
-            `getProducts`,
+            `GetProducts`,
         ).pipe($mappers.mapCollection($models.Product));
     }
 }

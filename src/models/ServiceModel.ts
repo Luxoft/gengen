@@ -1,4 +1,4 @@
-import { IMethodModel } from './MethodModel';
+import { IMethodModel } from './method-parameter/IMethodModel';
 
 export interface IServiceModel {
     name: string;
