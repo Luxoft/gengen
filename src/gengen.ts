@@ -60,7 +60,7 @@ export async function main(options: IOptions): Promise<void> {
     const openAPIService = new OpenAPIService(swaggerJson, typesGuard);
     const endpointsService = new EndpointsService(openAPIService);
     const typesService = new TypesService(typesGuard);
-    const modelMappingService = new ModelMappingService(typesGuard, typesService);
+    const modelMappingService = new ModelMappingService(openAPIService, typesGuard, typesService);
     const serviceMappingService = new ServiceMappingService(endpointsService, openAPIService, typesService, typesGuard);
     const configReader = new EndpointsConfigReader(settings);
     const aliasResolver = new AliasResolver(settings);

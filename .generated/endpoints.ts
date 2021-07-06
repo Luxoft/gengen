@@ -5,8 +5,10 @@ export class Endpoints {
     };
     public static ProductService = {
         Download: 'Product/Download',
-        Get: 'Product/Get',
+        GetById: 'Product/GetById',
         GetProducts: 'Product/GetProducts',
-        SearchProducts: 'Product/SearchProducts'
+        GetProductsByStatus: 'Product/GetProductsByStatus',
+        SearchProducts: 'Product/SearchProducts',
+        type: 'Product/type'
     };
 }
