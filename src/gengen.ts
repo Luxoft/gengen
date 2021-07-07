@@ -87,6 +87,7 @@ export async function main(options: IOptions): Promise<void> {
 
     await project.save();
 
+    promises.copyFile(resolve(__dirname, '../libs/types.ts'), `${settings.output}/types.ts`);
     promises.copyFile(resolve(__dirname, '../libs/Guid.ts'), `${settings.output}/Guid.ts`);
     promises.copyFile(resolve(__dirname, '../libs/utils.ts'), `${settings.output}/utils.ts`);
     promises.copyFile(resolve(__dirname, '../libs/mappers.ts'), `${settings.output}/mappers.ts`);

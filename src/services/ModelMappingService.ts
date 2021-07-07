@@ -156,15 +156,20 @@ export class ModelMappingService {
     }
 
     private getInterfaces(identities: IIdentityModel[], objects: IObjectModel[]): IInterfaceModel[] {
-        const interfaces = identities.map((z) => ({
+        const interfaces: IInterfaceModel[] = identities.map((z) => ({
             name: this.getInterfaceName(z.name),
-            properties: [{ name: z.property.name, dtoType: z.property.dtoType, isCollection: false }]
+            properties: [{ name: z.property.name, dtoType: z.property.dtoType, isCollection: false, isNullable: false }]
         }));
 
         return interfaces.concat(
             objects.map((z) => ({
                 name: this.getInterfaceName(z.name),
-                properties: z.properties.map((x) => ({ name: x.name, dtoType: x.dtoType, isCollection: x.isCollection }))
+                properties: z.properties.map((x) => ({
+                    name: x.name,
+                    dtoType: x.dtoType,
+                    isCollection: x.isCollection,
+                    isNullable: x.isNullable
+                }))
             }))
         );
     }

@@ -1,5 +1,14 @@
-import { PropertyDeclarationStructure, Scope, StatementStructures, StructureKind } from 'ts-morph';
-
+import {
+    ClassDeclarationStructure,
+    ConstructorDeclarationStructure,
+    ImportDeclarationStructure,
+    OptionalKind,
+    ParameterDeclarationStructure,
+    PropertyDeclarationStructure,
+    Scope,
+    StatementStructures,
+    StructureKind
+} from 'ts-morph';
 import { IEnumModel } from '../models/EnumModel';
 import { IIdentityModel } from '../models/IdentityModel';
 import { IInterfaceModel } from '../models/InterfaceModel';
@@ -7,22 +16,28 @@ import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
 import { lowerFirst } from '../utils';
+import { NULL_STRING, TYPES_NAMESPACE, UNDEFINED_STRING } from './utils/consts';
+import { InterfacesGenerator } from './models-generator/InterfacesGenerator';
+import { TypeSerializer } from './utils/TypeSerializer';
+import { typeOrUndefined } from './utils/typeOrUndefined';
 
 const TO_DTO_METHOD = 'toDTO';
 const FROM_DTO_METHOD = 'fromDTO';
 
 export class ModelsGenerator {
+    private interfaceGenerator = new InterfacesGenerator();
+
     public getModelsCodeStructure(models: IModelsContainer): StatementStructures[] {
         return [
             ...this.getImports(),
             ...this.getEnums(models.enums),
-            ...this.getInterfaces(models.interfaces),
+            ...this.interfaceGenerator.getCodeStructure(models.interfaces),
             ...this.getIdentities(models.identities, models.interfaces),
             ...this.getObjects(models.objects)
         ];
     }
 
-    private getImports(): StatementStructures[] {
+    private getImports(): ImportDeclarationStructure[] {
         return [
             {
                 kind: StructureKind.ImportDeclaration,
@@ -33,6 +48,12 @@ export class ModelsGenerator {
                 kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: './date-converters',
                 namedImports: [{ name: 'toDateIn' }, { name: 'toDateOut' }]
+            },
+            {
+                kind: StructureKind.ImportDeclaration,
+                moduleSpecifier: './types',
+                namespaceImport: TYPES_NAMESPACE,
+                isTypeOnly: true
             }
         ];
     }
@@ -46,60 +67,49 @@ export class ModelsGenerator {
         }));
     }
 
-    private getInterfaces(interfaces: IInterfaceModel[]): StatementStructures[] {
-        return interfaces.map((z) => ({
-            kind: StructureKind.Interface,
-            name: z.name,
-            isExported: true,
-            properties: z.properties.map((x) => ({ name: x.name, type: x.isCollection ? `${x.dtoType}[]` : x.dtoType }))
-        }));
-    }
-
     private getIdentities(identities: IIdentityModel[], interfaces: IInterfaceModel[]): StatementStructures[] {
-        return identities.map((z) => ({
-            kind: StructureKind.Class,
-            isExported: true,
-            name: z.name,
-            ctors: [
-                {
-                    parameters: [
-                        { name: z.property.name, initializer: this.nullString, type: `${z.property.type} | ${z.property.dtoType}` }
-                    ],
-                    statements: `this.${z.property.name} = new ${z.property.type}(${z.property.name});`
-                }
-            ],
-            properties: [{ scope: Scope.Public, name: z.property.name, type: z.property.type }, this.getGuardProperty(z.name)],
-            methods: [
-                {
-                    scope: Scope.Public,
-                    isStatic: true,
-                    name: TO_DTO_METHOD,
-                    parameters: [{ name: z.property.name, type: z.property.type }],
-                    returnType: interfaces.find(
-                        (i) =>
-                            i.properties.length === 1 &&
-                            i.properties.every((x) => x.dtoType === z.property.dtoType && x.name === z.property.name)
-                    )?.name,
-                    statements: `return { ${z.property.name}: ${z.property.name}.toString() };`
-                }
-            ]
-        }));
+        return identities.map(
+            (z): ClassDeclarationStructure => ({
+                kind: StructureKind.Class,
+                isExported: true,
+                name: z.name,
+                ctors: [
+                    {
+                        parameters: [
+                            {
+                                name: z.property.name,
+                                hasQuestionToken: true,
+                                type: TypeSerializer.fromTypeName(`${z.property.type} | ${z.property.dtoType}`).toString()
+                            }
+                        ] as OptionalKind<ParameterDeclarationStructure>[],
+                        statements: `this.${z.property.name} = new ${z.property.type}(${z.property.name});`
+                    }
+                ] as OptionalKind<ConstructorDeclarationStructure>[],
+                properties: [{ scope: Scope.Public, name: z.property.name, type: z.property.type }, this.getGuardProperty(z.name)],
+                methods: [
+                    {
+                        scope: Scope.Public,
+                        isStatic: true,
+                        name: TO_DTO_METHOD,
+                        parameters: [{ name: z.property.name, type: z.property.type }],
+                        returnType: interfaces.find(
+                            (i) =>
+                                i.properties.length === 1 &&
+                                i.properties.every((x) => x.dtoType === z.property.dtoType && x.name === z.property.name)
+                        )?.name,
+                        statements: `return { ${z.property.name}: ${z.property.name}.toString() };`
+                    }
+                ]
+            })
+        );
     }
 
-    private getObjects(objects: IObjectModel[]): StatementStructures[] {
+    private getObjects(objects: IObjectModel[]): ClassDeclarationStructure[] {
         return objects.map((z) => ({
             kind: StructureKind.Class,
             isExported: true,
             name: z.name,
-            properties: [
-                ...z.properties.map((x) => ({
-                    scope: Scope.Public,
-                    name: x.name,
-                    type: x.isCollection ? `${x.type}[]` : x.type,
-                    initializer: this.undefinedString
-                })),
-                this.getGuardProperty(z.name)
-            ],
+            properties: this.getObjectProperties(z),
             methods: [
                 {
                     scope: Scope.Public,
@@ -133,12 +143,28 @@ export class ModelsGenerator {
         }));
     }
 
+    private getObjectProperties(objectModel: IObjectModel): PropertyDeclarationStructure[] {
+        return [
+            ...objectModel.properties.map(
+                (objectProperty): PropertyDeclarationStructure => ({
+                    kind: StructureKind.Property,
+                    scope: Scope.Public,
+                    name: objectProperty.name,
+                    type: new TypeSerializer(objectProperty).toString(),
+                    initializer: UNDEFINED_STRING
+                })
+            ),
+            this.getGuardProperty(objectModel.name)
+        ];
+    }
+
     private getGuardProperty(name: string): PropertyDeclarationStructure {
         return {
             kind: StructureKind.Property,
             scope: Scope.Private,
             name: `__${lowerFirst(name)}`,
-            type: 'string'
+            type: 'string',
+            hasExclamationToken: true
         };
     }
 
@@ -151,27 +177,27 @@ export class ModelsGenerator {
 
             case PropertyKind.Guid:
                 if (property.isCollection) {
-                    return `${modelProperty} ? ${modelProperty}.map(x => x.toString()) : ${this.undefinedString}`;
+                    return `${modelProperty} ? ${modelProperty}.map(x => x.toString()) : ${UNDEFINED_STRING}`;
                 }
 
                 return (
                     `${modelProperty} ? ${modelProperty}.toString()` +
-                    ` : ${property.isNullable ? this.nullString : `${property.type}.empty.toString()`}`
+                    ` : ${property.isNullable ? NULL_STRING : `${property.type}.empty.toString()`}`
                 );
 
             case PropertyKind.Identity:
                 if (property.isCollection) {
-                    return `${modelProperty} ? ${modelProperty}.map(x => ${property.type}.${TO_DTO_METHOD}(x.id)) : ${this.undefinedString}`;
+                    return `${modelProperty} ? ${modelProperty}.map(x => ${property.type}.${TO_DTO_METHOD}(x.id)) : ${UNDEFINED_STRING}`;
                 }
 
-                return `${modelProperty} ? ${property.type}.${TO_DTO_METHOD}(${modelProperty}.id) : ${this.undefinedString}`;
+                return `${modelProperty} ? ${property.type}.${TO_DTO_METHOD}(${modelProperty}.id) : ${UNDEFINED_STRING}`;
 
             case PropertyKind.Object:
                 if (property.isCollection) {
-                    return `${modelProperty} ? ${modelProperty}.map(x => ${property.type}.${TO_DTO_METHOD}(x)) : ${this.undefinedString}`;
+                    return `${modelProperty} ? ${modelProperty}.map(x => ${property.type}.${TO_DTO_METHOD}(x)) : ${UNDEFINED_STRING}`;
                 }
 
-                return `${modelProperty} ? ${property.type}.${TO_DTO_METHOD}(${modelProperty}) : ${this.undefinedString}`;
+                return `${modelProperty} ? ${property.type}.${TO_DTO_METHOD}(${modelProperty}) : ${UNDEFINED_STRING}`;
         }
 
         return modelProperty;
@@ -190,7 +216,7 @@ export class ModelsGenerator {
                 }
 
                 if (property.isNullable) {
-                    return `${dtoProperty} ? new ${property.type}(${dtoProperty}) : ${this.nullString}`;
+                    return `${dtoProperty} ? new ${property.type}(${dtoProperty}) : ${NULL_STRING}`;
                 }
 
                 return `new ${property.type}(${dtoProperty})`;
@@ -200,24 +226,16 @@ export class ModelsGenerator {
                     return `${dtoProperty} ? ${dtoProperty}.map(x => new ${property.type}(x.id)) : []`;
                 }
 
-                return `${dtoProperty} ? new ${property.type}(${dtoProperty}.id) : ${this.undefinedString}`;
+                return `${dtoProperty} ? new ${property.type}(${dtoProperty}.id) : ${UNDEFINED_STRING}`;
 
             case PropertyKind.Object:
                 if (property.isCollection) {
                     return `${dtoProperty} ? ${dtoProperty}.map(x => ${property.type}.${FROM_DTO_METHOD}(x)) : []`;
                 }
 
-                return `${dtoProperty} ? ${property.type}.${FROM_DTO_METHOD}(${dtoProperty}) : ${this.undefinedString}`;
+                return `${dtoProperty} ? ${property.type}.${FROM_DTO_METHOD}(${dtoProperty}) : ${UNDEFINED_STRING}`;
         }
 
         return dtoProperty;
-    }
-
-    private get undefinedString(): string {
-        return `${undefined}`;
-    }
-
-    private get nullString(): string {
-        return `${null}`;
     }
 }

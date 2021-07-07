@@ -1,5 +1,6 @@
 import { Guid } from './Guid';
 import { toDateIn, toDateOut } from './date-converters';
+import type * as $types from './types';
 
 export enum ProductStatus {
     InStock = 0,
@@ -8,20 +9,20 @@ export enum ProductStatus {
 }
 
 export interface ICategory {
-    name: string;
+    name: $types.TypeOrUndefined<string>;
 }
 
 export interface IProduct {
-    category: ICategory;
-    expireDate: string;
-    id: string;
-    name: string;
-    status: ProductStatus;
+    category: $types.TypeOrUndefined<ICategory>;
+    expireDate: $types.TypeOrUndefined<string>;
+    id: $types.TypeOrUndefined<string>;
+    name: $types.TypeOrUndefined<string>;
+    status: $types.TypeOrUndefined<ProductStatus>;
 }
 
 export class Category {
-    public name: string = undefined;
-    private __category: string;
+    public name: $types.TypeOrUndefined<string> = undefined;
+    private __category!: string;
 
     public static toDTO(model: Partial<Category>): ICategory {
         return {
@@ -37,12 +38,12 @@ export class Category {
 }
 
 export class Product {
-    public category: Category = undefined;
-    public expireDate: Date = undefined;
-    public id: Guid = undefined;
-    public name: string = undefined;
-    public status: ProductStatus = undefined;
-    private __product: string;
+    public category: $types.TypeOrUndefined<Category> = undefined;
+    public expireDate: $types.TypeOrUndefined<Date> = undefined;
+    public id: $types.TypeOrUndefined<Guid> = undefined;
+    public name: $types.TypeOrUndefined<string> = undefined;
+    public status: $types.TypeOrUndefined<ProductStatus> = undefined;
+    private __product!: string;
 
     public static toDTO(model: Partial<Product>): IProduct {
         return {

@@ -10,6 +10,7 @@ export interface IDownloadResult {
 
 export class DownloadFileService extends BaseHttpService {
     private readonly fileNameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+    private readonly defaultFileName = 'unknown filename';
 
     constructor(relativePath: string, http: HttpClient) {
         super(relativePath, http);
@@ -55,11 +56,15 @@ export class DownloadFileService extends BaseHttpService {
         }
 
         const disposition = httpResponse.headers.get('Content-Disposition');
-        const results = this.fileNameRegex.exec(disposition);
-        if (results && results[1]) {
-            return results[1].replace(/['"]/g, '');
+        if (!disposition) {
+            return this.defaultFileName;
         }
 
-        return 'unknown filename';
+        const results = this.fileNameRegex.exec(disposition);
+        if (!results?.[1]) {
+            return this.defaultFileName;
+        }
+        
+        return results?.[1].replace(/['"]/g, '');
     }
 }

@@ -14,7 +14,16 @@ async function main() {
 async function snapshotter(pathA: string, pathB: string, name: string) {
     const snapshot = await readFile(pathA);
     const generated = await readFile(pathB);
-    console.log(snapshotDiff(snapshot, generated, { colors: true, stablePatchmarks: true }));
+
+    console.log(`${name} tests:\n`);
+    console.log(
+        snapshotDiff(snapshot, generated, {
+            colors: true,
+            stablePatchmarks: true,
+            aAnnotation: 'Expected',
+            bAnnotation: 'Result'
+        })
+    );
 
     if (snapshot !== generated) {
         console.log(`${name} snapshot tests failed`);
