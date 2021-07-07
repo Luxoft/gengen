@@ -4,4 +4,5 @@ export interface IParameter {
     name: string;
     dtoType: string;
     place: ParameterPlace;
+    isModel: boolean;
 }

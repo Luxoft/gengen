@@ -60,6 +60,12 @@ export class ProductService extends DownloadFileService {
         ).pipe($mappers.mapCollection($models.Product));
     }
 
+    public getProductsByStatus(status: $models.ProductStatus): Observable<$models.Product[]> {
+        return this.get<$models.IProduct[]>(
+            `GetProductsByStatus/${encodeURIComponent(status)}`,
+        ).pipe($mappers.mapCollection($models.Product));
+    }
+
     public searchProducts(name: string): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `SearchProducts?name=${encodeURIComponent(name)}`,

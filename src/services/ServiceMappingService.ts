@@ -66,7 +66,13 @@ export class ServiceMappingService {
         return services.sort(sortBy((z) => z.name));
     }
 
-    private getMethod(actionName: string, method: MethodOperation, operation: IOpenAPI3Operation, models: IModelsContainer, originUri: string): IMethodModel {
+    private getMethod(
+        actionName: string,
+        method: MethodOperation,
+        operation: IOpenAPI3Operation,
+        models: IModelsContainer,
+        originUri: string
+    ): IMethodModel {
         const model: IMethodModel = {
             kind: this.hasDownloadResponse(operation) ? MethodKind.Download : MethodKind.Default,
             name: lowerFirst(actionName),
@@ -119,16 +125,13 @@ export class ServiceMappingService {
 
         const pathParams = parameters
             .filter((z) => z.in === 'path')
-            .map((z) => new PathMethodParameterModel(z, this.typesGuard, this.typesService));
+            .map((parameter) => new PathMethodParameterModel(parameter, this.typesGuard, this.typesService, this.openAPIService));
 
         const queryParams = parameters
             .filter((z) => z.in === 'query')
-            .map((z) => new QueryMethodParameterModel(z, this.typesGuard, this.typesService));
+            .map((parameter) => new QueryMethodParameterModel(parameter, this.typesGuard, this.typesService, this.openAPIService));
 
-        return [
-            ...pathParams.sort(sortBy((z) => z.name)),
-            ...queryParams.sort(sortBy((z) => z.name))
-        ];
+        return [...pathParams.sort(sortBy((z) => z.name)), ...queryParams.sort(sortBy((z) => z.name))];
     }
 
     private getBodyParameter(

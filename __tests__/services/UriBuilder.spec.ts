@@ -21,7 +21,8 @@ describe('UriBuilder tests', () => {
                         {
                             dtoType: 'string',
                             name: 'id',
-                            place: ParameterPlace.Path
+                            place: ParameterPlace.Path,
+                            isModel: false
                         }
                     ],
                     returnType: {
@@ -56,7 +57,8 @@ describe('UriBuilder tests', () => {
                             dtoType: 'string',
                             name: 'name',
                             optional: false,
-                            place: ParameterPlace.Query
+                            place: ParameterPlace.Query,
+                            isModel: false
                         }
                     ],
                     returnType: {
@@ -90,13 +92,15 @@ describe('UriBuilder tests', () => {
                         {
                             dtoType: 'string',
                             name: 'id',
-                            place: ParameterPlace.Path
+                            place: ParameterPlace.Path,
+                            isModel: false
                         },
                         {
                             dtoType: 'string',
                             name: 'name',
                             optional: false,
-                            place: ParameterPlace.Query
+                            place: ParameterPlace.Query,
+                            isModel: false
                         }
                     ],
                     returnType: {
@@ -130,18 +134,21 @@ describe('UriBuilder tests', () => {
                         {
                             dtoType: 'string',
                             name: 'customer',
-                            place: ParameterPlace.Path
+                            place: ParameterPlace.Path,
+                            isModel: false
                         },
                         {
                             dtoType: 'string',
                             name: 'type',
-                            place: ParameterPlace.Path
+                            place: ParameterPlace.Path,
+                            isModel: false
                         },
                         {
                             dtoType: 'string',
                             name: 'date',
                             optional: false,
-                            place: ParameterPlace.Query
+                            place: ParameterPlace.Query,
+                            isModel: false
                         }
                     ],
                     returnType: {
