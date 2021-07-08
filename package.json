@@ -18,7 +18,9 @@
     "debug:tests": "node --inspect-brk ./node_modules/jest/bin/jest.js -i",
     "e2e": "npm run g && ts-node ./e2e/e2e.ts",
     "test": "jest",
-    "test:w": "jest --watch"
+    "test:w": "jest --watch",
+    "coverage": "jest --coverage",
+    "coverage:html": "jest --coverage --coverageReporter=html"
   },
   "keywords": [
     "swagger",
