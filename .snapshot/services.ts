@@ -6,6 +6,7 @@ import { BaseHttpService } from './base-http.service';
 import { DownloadFileService, IDownloadResult } from './download.service';
 import { getBasePath } from './utils';
 import * as $mappers from './mappers';
+import type * as $types from './types';
 import * as $models from './models';
 
 @Injectable({
@@ -39,7 +40,7 @@ export class ProductService extends DownloadFileService {
         super(getBasePath('', '/Product'), http);
     }
 
-    public download(saveAs: string = undefined): Promise<IDownloadResult> {
+    public download(saveAs?: $types.TypeOrUndefined<string>): Promise<IDownloadResult> {
         return this.downloadFile(
             `Download`,
             'get',
@@ -48,8 +49,8 @@ export class ProductService extends DownloadFileService {
         );
     }
 
-    public getById(id: string): Observable<$models.Product> {
-        return this.get<$models.IProduct>(
+    public getById(id: string): Observable<$types.TypeOrUndefined<$models.Product>> {
+        return this.get<$types.TypeOrUndefined<$models.IProduct>>(
             `GetById/${encodeURIComponent(id)}`,
         ).pipe($mappers.mapSingle($models.Product));
     }
@@ -72,8 +73,8 @@ export class ProductService extends DownloadFileService {
         ).pipe($mappers.mapCollection($models.Product));
     }
 
-    public type(customer: string, type: string, date: string): Observable<$models.Product> {
-        return this.get<$models.IProduct>(
+    public type(customer: string, type: string, date: string): Observable<$types.TypeOrUndefined<$models.Product>> {
+        return this.get<$types.TypeOrUndefined<$models.IProduct>>(
             `getByCustomer/${encodeURIComponent(customer)}/type/${encodeURIComponent(type)}?date=${encodeURIComponent(date)}`,
         ).pipe($mappers.mapSingle($models.Product));
     }
