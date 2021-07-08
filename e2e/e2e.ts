@@ -15,7 +15,7 @@ async function snapshotter(pathA: string, pathB: string, name: string) {
     const snapshot = await readFile(pathA);
     const generated = await readFile(pathB);
 
-    console.log(`${name} tests:\n`);
+    console.log(`${name} tests.`);
     console.log(
         snapshotDiff(snapshot, generated, {
             colors: true,
@@ -24,6 +24,7 @@ async function snapshotter(pathA: string, pathB: string, name: string) {
             bAnnotation: 'Result'
         })
     );
+    console.log(`\n`);
 
     if (snapshot !== generated) {
         console.log(`${name} snapshot tests failed`);
