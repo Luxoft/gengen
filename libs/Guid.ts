@@ -1,9 +1,11 @@
+import type { TypeOrUndefined } from './types';
+
 export class Guid {
     public static empty = new Guid('00000000-0000-0000-0000-000000000000');
 
-    private id: string;
+    private id!: string;
 
-    constructor(value: Guid | string) {
+    constructor(value: TypeOrUndefined<Guid | string>) {
         if (!value) {
             return Guid.empty;
         }

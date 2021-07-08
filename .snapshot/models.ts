@@ -1,5 +1,6 @@
 import { Guid } from './Guid';
 import { toDateIn, toDateOut } from './date-converters';
+import type * as $types from './types';
 
 export enum ProductStatus {
     InStock = 0,
@@ -8,20 +9,21 @@ export enum ProductStatus {
 }
 
 export interface ICategory {
-    name: string;
+    name: $types.TypeOrUndefinedNullable<string>;
 }
 
 export interface IProduct {
-    category: ICategory;
-    expireDate: string;
-    id: string;
-    name: string;
-    status: ProductStatus;
+    category: $types.TypeOrUndefinedNullable<ICategory>;
+    expireDate: $types.TypeOrUndefined<string>;
+    externalId: $types.TypeOrUndefinedNullable<string>;
+    id: $types.TypeOrUndefined<string>;
+    name: $types.TypeOrUndefinedNullable<string>;
+    status: $types.TypeOrUndefined<ProductStatus>;
 }
 
 export class Category {
-    public name: string = undefined;
-    private __category: string;
+    public name: $types.TypeOrUndefinedNullable<string> = undefined;
+    private __category!: string;
 
     public static toDTO(model: Partial<Category>): ICategory {
         return {
@@ -37,17 +39,19 @@ export class Category {
 }
 
 export class Product {
-    public category: Category = undefined;
-    public expireDate: Date = undefined;
-    public id: Guid = undefined;
-    public name: string = undefined;
-    public status: ProductStatus = undefined;
-    private __product: string;
+    public category: $types.TypeOrUndefinedNullable<Category> = undefined;
+    public expireDate: $types.TypeOrUndefined<Date> = undefined;
+    public externalId: $types.TypeOrUndefinedNullable<Guid> = undefined;
+    public id: $types.TypeOrUndefined<Guid> = undefined;
+    public name: $types.TypeOrUndefinedNullable<string> = undefined;
+    public status: $types.TypeOrUndefined<ProductStatus> = undefined;
+    private __product!: string;
 
     public static toDTO(model: Partial<Product>): IProduct {
         return {
             category: model.category ? Category.toDTO(model.category) : undefined,
             expireDate: toDateOut(model.expireDate),
+            externalId: model.externalId ? model.externalId.toString() : null,
             id: model.id ? model.id.toString() : Guid.empty.toString(),
             name: model.name,
             status: model.status,
@@ -58,6 +62,7 @@ export class Product {
         const model = new Product();
         model.category = dto.category ? Category.fromDTO(dto.category) : undefined;
         model.expireDate = toDateIn(dto.expireDate);
+        model.externalId = dto.externalId ? new Guid(dto.externalId) : null;
         model.id = new Guid(dto.id);
         model.name = dto.name;
         model.status = dto.status;

@@ -12,6 +12,7 @@ import { EndpointsService } from './services/EndpointsService';
 import { ModelMappingService } from './services/ModelMappingService';
 import { ServiceMappingService } from './services/ServiceMappingService';
 import { TypesService } from './services/TypesService';
+import { UriBuilder } from './services/UriBuilder';
 import { OpenAPIService } from './swagger/OpenAPIService';
 import { OpenAPITypesGuard } from './swagger/OpenAPITypesGuard';
 import { getSwaggerJson } from './utils';
@@ -59,10 +60,11 @@ export async function main(options: IOptions): Promise<void> {
     const openAPIService = new OpenAPIService(swaggerJson, typesGuard);
     const endpointsService = new EndpointsService(openAPIService);
     const typesService = new TypesService(typesGuard);
-    const modelMappingService = new ModelMappingService(typesGuard, typesService);
+    const modelMappingService = new ModelMappingService(openAPIService, typesGuard, typesService);
     const serviceMappingService = new ServiceMappingService(endpointsService, openAPIService, typesService, typesGuard);
     const configReader = new EndpointsConfigReader(settings);
     const aliasResolver = new AliasResolver(settings);
+    const uriBuilder = new UriBuilder();
 
     const actions = await (settings.all ? endpointsService.getActions() : configReader.getActions());
     const modelsContainer = modelMappingService.toModelsContainer(openAPIService.getSchemasByEndpoints(actions));
@@ -77,7 +79,7 @@ export async function main(options: IOptions): Promise<void> {
 
     const serviceFile = project.createSourceFile(
         `${settings.output}/${aliasResolver.getServicesFileName()}`,
-        { statements: new AngularServicesGenerator(aliasResolver).getServicesCodeStructure(newServices) },
+        { statements: new AngularServicesGenerator(aliasResolver, uriBuilder).getServicesCodeStructure(newServices) },
         { overwrite: true }
     );
 
@@ -85,6 +87,7 @@ export async function main(options: IOptions): Promise<void> {
 
     await project.save();
 
+    promises.copyFile(resolve(__dirname, '../libs/types.ts'), `${settings.output}/types.ts`);
     promises.copyFile(resolve(__dirname, '../libs/Guid.ts'), `${settings.output}/Guid.ts`);
     promises.copyFile(resolve(__dirname, '../libs/utils.ts'), `${settings.output}/utils.ts`);
     promises.copyFile(resolve(__dirname, '../libs/mappers.ts'), `${settings.output}/mappers.ts`);
