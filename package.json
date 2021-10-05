@@ -1,6 +1,6 @@
 {
   "name": "@luxbss/gengen",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "description": "Tool for generating models and Angular services based on OpenAPIs and Swagger's JSON",
   "bin": {
     "gengen": "./bin/index.js"
@@ -10,15 +10,17 @@
     "build": "tsc -p tsconfig.json",
     "g:i": "node ./bin/index.js init",
     "g:c": "node ./bin/index.js g:c --file=./swagger.json",
-    "g": "node ./bin/index.js g --file=./swagger.json --output=./.output/selected",
-    "g:a": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/all",
+    "g:selected": "node ./bin/index.js g --file=./swagger.json --output=./.output/selected",
+    "g": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/all",
     "g:alias": "node ./bin/index.js g --file=./swagger.json --aliasName alias --output=./.output/selected",
     "debug:all": "node --inspect-brk ./bin/index.js g --all --file=./swagger.json --output=./dist",
     "debug": "node --inspect-brk ./bin/index.js g --file=./swagger.json --output=./dist",
     "debug:tests": "node --inspect-brk ./node_modules/jest/bin/jest.js -i",
-    "e2e": "npm run g && npm run g:a && ts-node ./e2e/e2e.ts",
+    "e2e": "npm run g && ts-node ./e2e/e2e.ts",
     "test": "jest",
-    "test:w": "jest --watch"
+    "test:w": "jest --watch",
+    "coverage": "jest --coverage",
+    "coverage:html": "jest --coverage --coverageReporter=html"
   },
   "keywords": [
     "swagger",
@@ -40,7 +42,7 @@
     "@types/node-fetch": "2.5.10",
     "@types/prettier": "2.2.3",
     "jest": "27.0.4",
-    "snapshot-diff": "0.8.1",
+    "snapshot-diff": "0.9.0",
     "ts-jest": "27.0.3",
     "typescript": "4.3.2",
     "@typescript-eslint/eslint-plugin": "4.26.0",

@@ -18,3 +18,5 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# code coverage
+/coverage

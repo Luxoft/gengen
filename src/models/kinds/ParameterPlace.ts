@@ -1,4 +1,5 @@
 export enum ParameterPlace {
     Body,
-    Query
+    Query,
+    Path
 }

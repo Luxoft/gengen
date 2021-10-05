@@ -4,6 +4,7 @@ import { OpenAPITypesGuard } from './OpenAPITypesGuard';
 import { IOpenAPI3 } from './v3/open-api';
 import { IOpenAPI3Operation } from './v3/operation';
 import { IOpenAPI3Reference } from './v3/reference';
+import { IOpenAPI3EnumSchema } from './v3/schemas/enum-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
 import { OpenAPI3ResponseSchema, OpenAPI3SchemaContainer } from './v3/schemas/schema';
 
@@ -79,6 +80,11 @@ export class OpenAPIService {
         return last(reference.$ref.split('/'));
     }
 
+    public getRefSchema(reference: IOpenAPI3Reference): IOpenAPI3ObjectSchema | IOpenAPI3EnumSchema | undefined {
+        const refKey = this.getSchemaKey(reference);
+        return this.spec.components.schemas[refKey];
+    }
+
     private get majorVersion(): string | undefined {
         if (!this.spec.openapi) {
             return undefined;
@@ -145,9 +151,10 @@ export class OpenAPIService {
                 propertyRefs = z.allOf;
             }
 
-            propertyRefs.forEach((x) => {
-                refs.push(x);
-                const schema = this.spec.components.schemas[this.getSchemaKey(x)];
+            propertyRefs.forEach((ref) => {
+                refs.push(ref);
+
+                const schema = this.getRefSchema(ref);
                 if (this.typesGuard.isObject(schema)) {
                     refs = refs.concat(this.getReferencesByObject(schema));
                 }

@@ -7,16 +7,24 @@ function readFile(path: string) {
 }
 
 async function main() {
-    snapshotter('./.snapshot/selected/services.ts', './.output/selected/services.ts', 'Services');
-    snapshotter('./.snapshot/selected/models.ts', './.output/selected/models.ts', 'Models');
-    snapshotter('./.snapshot/all/services.ts', './.output/all/services.ts', 'Services');
-    snapshotter('./.snapshot/all/models.ts', './.output/all/models.ts', 'Models');
+    snapshotter('./.snapshot/services.ts', './.output/all/services.ts', 'Services');
+    snapshotter('./.snapshot/models.ts', './.output/all/models.ts', 'Models');
 }
 
 async function snapshotter(pathA: string, pathB: string, name: string) {
     const snapshot = await readFile(pathA);
     const generated = await readFile(pathB);
-    console.log(snapshotDiff(snapshot, generated, { colors: true }));
+
+    console.log(`${name} tests.`);
+    console.log(
+        snapshotDiff(snapshot, generated, {
+            colors: true,
+            stablePatchmarks: true,
+            aAnnotation: 'Expected',
+            bAnnotation: 'Result'
+        })
+    );
+    console.log(`\n`);
 
     if (snapshot !== generated) {
         console.log(`${name} snapshot tests failed`);
