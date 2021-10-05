@@ -3,13 +3,15 @@ import { TypesService } from '../../src/services/TypesService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 import { OpenAPI3SchemaContainer } from '../../src/swagger/v3/schemas/schema';
 import { first } from '../../src/utils';
+import { MockOpenAPIService } from '../../__mocks__/MockOpenAPIService';
 
 describe('ModelMappingService tests', () => {
     let service: ModelMappingService;
 
     beforeEach(() => {
         const guard = new OpenAPITypesGuard();
-        service = new ModelMappingService(guard, new TypesService(guard));
+        const openAPIService = new MockOpenAPIService(guard);
+        service = new ModelMappingService(openAPIService, guard, new TypesService(guard));
     });
 
     describe('toModelsContainer', () => {

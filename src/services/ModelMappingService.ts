@@ -4,6 +4,7 @@ import { IInterfaceModel } from '../models/InterfaceModel';
 import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
+import { OpenAPIService } from '../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3EnumSchema } from '../swagger/v3/schemas/enum-schema';
@@ -16,7 +17,11 @@ import { TypesService } from './TypesService';
 const IGNORE_PROPERTIES = ['startRow', 'rowCount'];
 
 export class ModelMappingService {
-    constructor(private readonly typesGuard: OpenAPITypesGuard, private readonly typesService: TypesService) { }
+    constructor(
+        private readonly openAPIService: OpenAPIService,
+        private readonly typesGuard: OpenAPITypesGuard,
+        private readonly typesService: TypesService
+    ) {}
 
     public toModelsContainer(schemas: OpenAPI3SchemaContainer): IModelsContainer {
         const enums: IEnumModel[] = [];
@@ -58,10 +63,12 @@ export class ModelMappingService {
     private toEnumModel(name: string, schema: IOpenAPI3EnumSchema): IEnumModel {
         return {
             name,
-            items: schema.enum.map((value, index) => ({
-                key: schema['x-enumNames'][index],
-                value
-            })).sort(sortBy((z) => z.key))
+            items: schema.enum
+                .map((value, index) => ({
+                    key: schema['x-enumNames'][index],
+                    value
+                }))
+                .sort(sortBy((z) => z.key))
         };
     }
 
@@ -90,7 +97,7 @@ export class ModelMappingService {
             if (this.typesGuard.isSimple(schema.items)) {
                 property = this.getSimpleProperty(name, schema.items);
             } else if (this.typesGuard.isReference(schema.items)) {
-                property = this.getReferenceProperty(schemas, name, schema.items);
+                property = this.getReferenceProperty(name, schema.items);
             }
 
             if (property) {
@@ -101,9 +108,9 @@ export class ModelMappingService {
         }
 
         if (this.typesGuard.isReference(schema)) {
-            property = this.getReferenceProperty(schemas, name, schema);
+            property = this.getReferenceProperty(name, schema);
         } else if (this.typesGuard.isAllOf(schema)) {
-            property = this.getReferenceProperty(schemas, name, first(schema.allOf));
+            property = this.getReferenceProperty(name, first(schema.allOf));
         }
 
         if (property) {
@@ -121,10 +128,11 @@ export class ModelMappingService {
         };
     }
 
-    private getReferenceProperty(schemas: OpenAPI3SchemaContainer, name: string, schema: IOpenAPI3Reference): IObjectPropertyModel {
-        const schemaKey = last(schema.$ref.split('/'));
-        const referenceSchema = schemas[schemaKey];
-        if (this.typesGuard.isEnum(referenceSchema)) {
+    private getReferenceProperty(name: string, schema: IOpenAPI3Reference): IObjectPropertyModel {
+        const schemaKey = this.openAPIService.getSchemaKey(schema);
+        const refSchema = this.openAPIService.getRefSchema(schema);
+
+        if (this.typesGuard.isEnum(refSchema)) {
             return {
                 kind: PropertyKind.Enum,
                 isCollection: false,
@@ -135,10 +143,7 @@ export class ModelMappingService {
             };
         }
 
-        let kind = PropertyKind.Object;
-        if (this.isIdentity(referenceSchema)) {
-            kind = PropertyKind.Identity;
-        }
+        const kind = this.isIdentity(refSchema) ? PropertyKind.Identity : PropertyKind.Object;
 
         return {
             kind,
@@ -151,15 +156,20 @@ export class ModelMappingService {
     }
 
     private getInterfaces(identities: IIdentityModel[], objects: IObjectModel[]): IInterfaceModel[] {
-        const interfaces = identities.map((z) => ({
+        const interfaces: IInterfaceModel[] = identities.map((z) => ({
             name: this.getInterfaceName(z.name),
-            properties: [{ name: z.property.name, dtoType: z.property.dtoType, isCollection: false }]
+            properties: [{ name: z.property.name, dtoType: z.property.dtoType, isCollection: false, isNullable: false }]
         }));
 
         return interfaces.concat(
             objects.map((z) => ({
                 name: this.getInterfaceName(z.name),
-                properties: z.properties.map((x) => ({ name: x.name, dtoType: x.dtoType, isCollection: x.isCollection }))
+                properties: z.properties.map((x) => ({
+                    name: x.name,
+                    dtoType: x.dtoType,
+                    isCollection: x.isCollection,
+                    isNullable: x.isNullable
+                }))
             }))
         );
     }
@@ -168,7 +178,10 @@ export class ModelMappingService {
         return `I${name}`;
     }
 
-    private isIdentity(schema: IOpenAPI3ObjectSchema): boolean {
+    private isIdentity(schema: IOpenAPI3ObjectSchema | undefined): boolean {
+        if (!schema) {
+            return false;
+        }
         return schema.properties && Object.keys(schema.properties)?.length === 1 && this.typesGuard.isGuid(schema.properties['id']);
     }
 }

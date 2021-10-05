@@ -1,7 +1,8 @@
+import type { TypeOrUndefined, TypeOrUndefinedNullable } from './types';
 const HOUR_COEFF = 3600000;
 const MINUTS_IN_HOUR = 60;
 
-export function toDateOut(value: Date): string | undefined {
+export function toDateOut(value: TypeOrUndefinedNullable<Date>): TypeOrUndefined<string> {
     if (!value) {
         return undefined;
     }
@@ -9,7 +10,7 @@ export function toDateOut(value: Date): string | undefined {
     return dateOut(value).toISOString();
 }
 
-export function toDateIn(value: string): Date | undefined {
+export function toDateIn(value: TypeOrUndefinedNullable<string>): TypeOrUndefined<Date> {
     if (!value) {
         return undefined;
     }
@@ -18,19 +19,11 @@ export function toDateIn(value: string): Date | undefined {
 }
 
 function dateOut(value: Date): Date {
-    if (!value) {
-        return value;
-    }
-
     const offsetHours = getOffset(value);
     return addHours(value, -offsetHours);
 }
 
 function dateIn(value: Date): Date {
-    if (!value) {
-        return value;
-    }
-
     const offsetHours = getOffset(value);
     return addHours(value, offsetHours);
 }
