@@ -1,4 +1,3 @@
-import { IServiceModel } from '../models/ServiceModel';
 import { OpenAPIService } from '../swagger/OpenAPIService';
 import { first, lowerFirst, sortBy, upperFirst } from '../utils';
 
@@ -71,31 +70,7 @@ export class EndpointsService {
         };
     }
 
-    public resolveMethodDuplication(endpoint: IEndpointInfo, storage: IServiceModel[]): IEndpointInfo {
-        const methods = storage.find(z => z.name === endpoint.name)?.methods;
-        if (!methods) {
-            return endpoint;
-        }
-
-        const duplication = methods.find(z => z.name === endpoint.action.name);
-
-        if (duplication) {
-            endpoint.action.name = this.renameByMethod(endpoint);
-        }
-
-        return endpoint;
-    }
-
-    public resolveEndpointDuplication(endpoint: IEndpointInfo, storage: Record<string, IEndpointInfo[]>): IEndpointInfo {
-        const duplication = storage[endpoint.name].find(z => z.action.name === endpoint.action.name);
-        if (duplication) {
-            endpoint.action.name = this.renameByMethod(endpoint);
-        }
-
-        return endpoint;
-    }
-
-    private renameByMethod(endpoint: IEndpointInfo): string {
+    public getDuplicateByMethod(endpoint: IEndpointInfo): string {
         const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
         return `${lowerFirst(endpoint.action.name)}${upperFirst(method)}`;
     }
@@ -110,7 +85,12 @@ export class EndpointsService {
 
             store[info.name] = store[info.name] || [];
 
-            store[info.name].push(this.resolveEndpointDuplication(info, store));
+            const duplicate = store[info.name]?.find(z => z.action.name === info.action.name);
+            if (duplicate) {
+                info.action.name = this.getDuplicateByMethod(info);
+            }
+
+            store[info.name].push(info);
 
             return store;
         }, {});
