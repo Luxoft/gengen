@@ -40,7 +40,7 @@ export class OpenAPIService {
 
     public getMethodByEndpoint(endpoint: string): string {
         const result = this.getOperationByEndpoint(endpoint);
-        return result ? MethodOperation[result.method] : '';
+        return result ? MethodOperation[result.method].toLocaleLowerCase() : '';
     }
 
     public getTagsByEndpoint(endpoint: string): string[] {

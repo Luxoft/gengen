@@ -42,22 +42,22 @@ export class ServiceMappingService {
 
 
             // TODO Handle paths without methods
-            if (!info || !info.action.name) {
+            if (!info) {
                 return store;
             }
 
-            info = this.endpointsService.checkMethodDuplication(info, store);
+            info = this.endpointsService.resolveMethodDuplication(info, store);
 
             const service = store.find((z) => z.name === info?.name);
             if (service) {
-                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.origin));
+                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.action.originUri));
                 return store;
             }
 
             store.push({
                 name: info.name,
                 relativePath: info.relativePath,
-                methods: [this.getMethod(info.action.name, model.method, model.operation, models, info.origin)]
+                methods: [this.getMethod(info.action.name, model.method, model.operation, models, info.action.originUri)]
             });
             return store;
         }, []);

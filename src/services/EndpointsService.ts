@@ -6,12 +6,12 @@ const SEPARATOR = '/';
 
 export interface IAction {
     name: string;
+    originUri: string;
 }
 
 export interface IEndpointInfo {
     name: string;
     origin: string;
-    url:string;
     relativePath: string;
     action: IAction;
 }
@@ -63,15 +63,15 @@ export class EndpointsService {
         return {
             name: controller,
             origin: endpoint,
-            url:rawAction,
             relativePath: endpoint.slice(0, controllerStartIndex) + controller,
             action: {
-                name: this.buildActionName(rawAction, controller)
+                name: this.buildActionName(rawAction, controller),
+                originUri: rawAction
             }
         };
     }
 
-    public checkMethodDuplication(endpoint: IEndpointInfo, storage: IServiceModel[]): IEndpointInfo {
+    public resolveMethodDuplication(endpoint: IEndpointInfo, storage: IServiceModel[]): IEndpointInfo {
         const methods = storage.find(z => z.name === endpoint.name)?.methods;
         if (!methods) {
             return endpoint;
@@ -80,21 +80,24 @@ export class EndpointsService {
         const duplication = methods.find(z => z.name === endpoint.action.name);
 
         if (duplication) {
-            const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
-            endpoint.action.name = `${lowerFirst(endpoint.action.name)}${method}`;
+            endpoint.action.name = this.renameByMethod(endpoint);
         }
 
         return endpoint;
     }
 
-    public checkEndpointDuplication(endpoint: IEndpointInfo, storage: Record<string, IEndpointInfo[]>): IEndpointInfo {
+    public resolveEndpointDuplication(endpoint: IEndpointInfo, storage: Record<string, IEndpointInfo[]>): IEndpointInfo {
         const duplication = storage[endpoint.name].find(z => z.action.name === endpoint.action.name);
         if (duplication) {
-            const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
-            endpoint.action.name = `${lowerFirst(endpoint.action.name)}${method}`;
+            endpoint.action.name = this.renameByMethod(endpoint);
         }
 
         return endpoint;
+    }
+
+    private renameByMethod(endpoint: IEndpointInfo): string {
+        const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
+        return `${lowerFirst(endpoint.action.name)}${upperFirst(method)}`;
     }
 
     private getControllers(): Record<string, IEndpointInfo[]> {
@@ -107,14 +110,14 @@ export class EndpointsService {
 
             store[info.name] = store[info.name] || [];
 
-            store[info.name].push(this.checkEndpointDuplication(info, store));
+            store[info.name].push(this.resolveEndpointDuplication(info, store));
 
             return store;
         }, {});
     }
 
-    private buildActionName(raw: string, controller: string): string {
-        if (!raw) {
+    private buildActionName(raw: string, controller?: string): string {
+        if (!raw && controller) {
             return lowerFirst(controller);
         }
 
