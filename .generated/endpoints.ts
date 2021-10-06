@@ -4,10 +4,13 @@ export class Endpoints {
         upload: '/api/v1/Category/Upload'
     };
     public static ProductService = {
-        '': '/api/v1/Product',
         download: '/Product/Download',
+        getByCustomerType: '/Product/getByCustomer/{customer}/type/{type}',
         getById: '/api/v1/Product/GetById/{id}',
         getProducts: '/Product/GetProducts',
+        getProductsByStatus: '/api/v1/Product/GetProductsByStatus/{status}',
+        product: '/Product/Product',
+        productGET: '/api/v1/Product',
         searchProducts: '/Product/SearchProducts'
     };
 }

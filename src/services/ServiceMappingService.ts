@@ -38,23 +38,26 @@ export class ServiceMappingService {
 
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
-            const info = this.endpointsService.parse(endpoint);
+            let info = this.endpointsService.parse(endpoint);
+
 
             // TODO Handle paths without methods
             if (!info || !info.action.name) {
                 return store;
             }
 
-            const service = store.find((z) => z.name === info.name);
+            info = this.endpointsService.checkMethodDuplication(info, store);
+
+            const service = store.find((z) => z.name === info?.name);
             if (service) {
-                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin));
+                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.origin));
                 return store;
             }
 
             store.push({
                 name: info.name,
                 relativePath: info.relativePath,
-                methods: [this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin)]
+                methods: [this.getMethod(info.action.name, model.method, model.operation, models, info.origin)]
             });
             return store;
         }, []);
