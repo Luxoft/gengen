@@ -19,7 +19,7 @@ import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3ArraySchema } from '../swagger/v3/schemas/array-schema';
 import { OpenAPI3ResponseSchema } from '../swagger/v3/schemas/schema';
 import { lowerFirst, sortBy } from '../utils';
-import { EndpointsService } from './EndpointsService';
+import { ServiceEndpointNameResolver } from './ServiceEndpointNameResolver';
 import { TypesService } from './TypesService';
 
 interface IModel {
@@ -30,37 +30,31 @@ interface IModel {
 
 export class ServiceMappingService {
     constructor(
-        private readonly endpointsService: EndpointsService,
         private readonly openAPIService: OpenAPIService,
         private readonly typesService: TypesService,
-        private readonly typesGuard: OpenAPITypesGuard
+        private readonly typesGuard: OpenAPITypesGuard,
+        private readonly endpointNameResolver: ServiceEndpointNameResolver
     ) {}
 
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
-            const info = this.endpointsService.parse(endpoint);
 
-            // TODO Handle paths without methods
+            const info = this.endpointNameResolver.getEndpointInfo(endpoint, store);
+
             if (!info) {
                 return store;
             }
 
             const service = store.find((z) => z.name === info.name);
             if (service) {
-                const duplication = service.methods.find(z => z.name === info.action.name);
-
-                if (duplication) {
-                    info.action.name = this.endpointsService.getDuplicateByMethod(info);
-                }
-
-                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.action.originUri));
+                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin));
                 return store;
             }
 
             store.push({
                 name: info.name,
                 relativePath: info.relativePath,
-                methods: [this.getMethod(info.action.name, model.method, model.operation, models, info.action.originUri)]
+                methods: [this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin)]
             });
             return store;
         }, []);

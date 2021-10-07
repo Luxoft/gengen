@@ -38,9 +38,9 @@ export class OpenAPIService {
         return Object.keys(this.spec.paths).sort();
     }
 
-    public getMethodByEndpoint(endpoint: string): string {
+    public getMethodByEndpoint(endpoint: string): string | undefined {
         const result = this.getOperationByEndpoint(endpoint);
-        return result ? MethodOperation[result.method].toLocaleLowerCase() : '';
+        return result ? MethodOperation[result.method].toLocaleLowerCase() : undefined;
     }
 
     public getTagsByEndpoint(endpoint: string): string[] {

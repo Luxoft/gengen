@@ -10,7 +10,7 @@ export class Endpoints {
         getProducts: '/Product/GetProducts',
         getProductsByStatus: '/api/v1/Product/GetProductsByStatus/{status}',
         product: '/Product/Product',
-        productGet: '/api/v1/Product',
+        productDefault: '/api/v1/Product',
         searchProducts: '/Product/SearchProducts'
     };
 }

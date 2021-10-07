@@ -267,6 +267,7 @@
         }
       }
     },
+
     "/Product/SearchProducts": {
       "get": {
         "tags": [
