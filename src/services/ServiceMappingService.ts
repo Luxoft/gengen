@@ -19,7 +19,7 @@ import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3ArraySchema } from '../swagger/v3/schemas/array-schema';
 import { OpenAPI3ResponseSchema } from '../swagger/v3/schemas/schema';
 import { lowerFirst, sortBy } from '../utils';
-import { ServiceEndpointNameResolver } from './ServiceEndpointNameResolver';
+import { IControllerItem, ServiceEndpointNameResolver } from './ServiceEndpointNameResolver';
 import { TypesService } from './TypesService';
 
 interface IModel {
@@ -38,8 +38,9 @@ export class ServiceMappingService {
 
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
+            const storage = store.map(z => ({ name: z.name, endpoints: z.methods.map(e => e.name) } as IControllerItem));
 
-            const info = this.endpointNameResolver.getEndpointInfo(endpoint, store);
+            const info = this.endpointNameResolver.getEndpointInfo(endpoint, storage);
 
             if (!info) {
                 return store;

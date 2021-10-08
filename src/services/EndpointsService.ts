@@ -1,6 +1,6 @@
 import { OpenAPIService } from '../swagger/OpenAPIService';
 import { sortBy } from '../utils';
-import { ControllerEndpointNameResolver } from './ControllerEndpointNameResolver';
+import { IControllerItem, ServiceEndpointNameResolver } from './ServiceEndpointNameResolver';
 
 export interface IAction {
     name: string;
@@ -17,7 +17,7 @@ export interface IEndpointInfo {
 export class EndpointsService {
     constructor(
         private readonly openAPIService: OpenAPIService,
-        private readonly endpointNameResolver: ControllerEndpointNameResolver) {}
+        private readonly endpointNameResolver: ServiceEndpointNameResolver) {}
 
     public getActionsGroupedByController(): Record<string, Record<string, string>> {
         const result: Record<string, Record<string, string>> = {};
@@ -50,7 +50,10 @@ export class EndpointsService {
     private getControllers(): Record<string, IEndpointInfo[]> {
         const endpoints = this.openAPIService.getEndpoints();
         return endpoints.reduce<Record<string, IEndpointInfo[]>>((store, endpoint) => {
-            const info = this.endpointNameResolver.getEndpointInfo(endpoint, store);
+            
+            const storage = Object.keys(store).map(z => ({ name: z, endpoints: store[z].map(e => e.action.name) } as IControllerItem));
+
+            const info = this.endpointNameResolver.getEndpointInfo(endpoint, storage);
             if (!info) {
                 return store;
             }
