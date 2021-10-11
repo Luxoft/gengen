@@ -18,8 +18,6 @@ import { OpenAPIService } from './swagger/OpenAPIService';
 import { OpenAPITypesGuard } from './swagger/OpenAPITypesGuard';
 import { getSwaggerJson } from './utils';
 
-
-
 export async function init(options: IOptions = defaultOptions): Promise<void> {
     const generator = new ConfigGenerator();
     const project = new Project(generatorsOptions);
