@@ -7,10 +7,10 @@ import { ConfigGenerator } from './generators/ConfigGenerator';
 import { ModelsGenerator } from './generators/ModelsGenerator';
 import { configOptions, defaultOptions, generatorsOptions, IOptions } from './options';
 import { AliasResolver } from './services/AliasResolver';
+import { EndpointNameResolver } from './services/EndpointNameResolver';
 import { EndpointsConfigReader } from './services/EndpointsConfigReader';
 import { EndpointsService } from './services/EndpointsService';
 import { ModelMappingService } from './services/ModelMappingService';
-import { ServiceEndpointNameResolver } from './services/ServiceEndpointNameResolver';
 import { ServiceMappingService } from './services/ServiceMappingService';
 import { TypesService } from './services/TypesService';
 import { UriBuilder } from './services/UriBuilder';
@@ -39,7 +39,7 @@ export async function config(options: IOptions): Promise<void> {
 
     const typesGuard = new OpenAPITypesGuard();
     const openAPIService = new OpenAPIService(swaggerJson, typesGuard);
-    const endpointNameResolver = new ServiceEndpointNameResolver(openAPIService);
+    const endpointNameResolver = new EndpointNameResolver(openAPIService);
     const endpointsService = new EndpointsService(openAPIService, endpointNameResolver);
     const controllers = endpointsService.getActionsGroupedByController();
 
@@ -62,11 +62,11 @@ export async function main(options: IOptions): Promise<void> {
 
     const typesGuard = new OpenAPITypesGuard();
     const openAPIService = new OpenAPIService(swaggerJson, typesGuard);
-    const endpointNameResolver = new ServiceEndpointNameResolver(openAPIService);
+    const endpointNameResolver = new EndpointNameResolver(openAPIService);
     const endpointsService = new EndpointsService(openAPIService, endpointNameResolver);
     const typesService = new TypesService(typesGuard);
     const modelMappingService = new ModelMappingService(openAPIService, typesGuard, typesService);
-    const serviceMappingService = new ServiceMappingService(openAPIService, typesService, typesGuard, endpointNameResolver);
+    const serviceMappingService = new ServiceMappingService(openAPIService, typesService, typesGuard, endpointsService);
     const configReader = new EndpointsConfigReader(settings);
     const aliasResolver = new AliasResolver(settings);
     const uriBuilder = new UriBuilder();

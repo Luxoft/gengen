@@ -19,7 +19,7 @@ import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3ArraySchema } from '../swagger/v3/schemas/array-schema';
 import { OpenAPI3ResponseSchema } from '../swagger/v3/schemas/schema';
 import { lowerFirst, sortBy } from '../utils';
-import { IControllerItem, ServiceEndpointNameResolver } from './ServiceEndpointNameResolver';
+import { EndpointsService, IEndpointInfo } from './EndpointsService';
 import { TypesService } from './TypesService';
 
 interface IModel {
@@ -33,18 +33,20 @@ export class ServiceMappingService {
         private readonly openAPIService: OpenAPIService,
         private readonly typesService: TypesService,
         private readonly typesGuard: OpenAPITypesGuard,
-        private readonly endpointNameResolver: ServiceEndpointNameResolver
+        private readonly endpointsService: EndpointsService
     ) {}
 
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
+        const endpointGroup: Record<string, IEndpointInfo[]> = {};
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
-            const storage = store.map(z => ({ name: z.name, endpoints: z.methods.map(e => e.name) } as IControllerItem));
-
-            const info = this.endpointNameResolver.getEndpointInfo(endpoint, storage);
+            const info = this.endpointsService.getEndpointInfo(endpoint, endpointGroup);
 
             if (!info) {
                 return store;
             }
+
+            endpointGroup[info.name] = endpointGroup[info.name] || [];
+            endpointGroup[info.name].push(info);
 
             const service = store.find((z) => z.name === info.name);
             if (service) {

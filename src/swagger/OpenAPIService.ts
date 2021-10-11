@@ -65,8 +65,6 @@ export class OpenAPIService {
             }, {});
     }
 
-
-
     public getOperationsByEndpoints(endpoints: Set<string>): IOpenAPI3Operations {
         if (!endpoints?.size) {
             return {};
