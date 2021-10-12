@@ -1,5 +1,6 @@
+import { pathOptions } from '../options';
 import { OpenAPIService } from '../swagger/OpenAPIService';
-import { lowerFirst, pathOptions, upperFirst } from '../utils';
+import { lowerFirst, upperFirst } from '../utils';
 import { IEndpointInfo } from './EndpointsService';
 
 export class EndpointNameResolver {

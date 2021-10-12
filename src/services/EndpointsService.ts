@@ -1,5 +1,6 @@
+import { pathOptions } from '../options';
 import { OpenAPIService } from '../swagger/OpenAPIService';
-import { first, pathOptions, sortBy } from '../utils';
+import { first, sortBy } from '../utils';
 import { EndpointNameResolver } from './EndpointNameResolver';
 
 export interface IAction {
