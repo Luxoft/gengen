@@ -6,7 +6,9 @@ import { IOptions } from './options';
 
 const readFile = util.promisify(fs.readFile);
 
-export const SEPARATOR = '/';
+export const pathOptions = {
+    separator: '/'
+}
 
 export function first<T>(array: T[]): T {
     return array[0];

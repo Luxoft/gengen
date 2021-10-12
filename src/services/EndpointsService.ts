@@ -1,5 +1,5 @@
 import { OpenAPIService } from '../swagger/OpenAPIService';
-import { first, lowerFirst, SEPARATOR, sortBy } from '../utils';
+import { first, pathOptions, sortBy } from '../utils';
 import { EndpointNameResolver } from './EndpointNameResolver';
 
 export interface IAction {
@@ -46,20 +46,30 @@ export class EndpointsService {
         return new Set(actions.sort());
     }
 
+    public addToStore(endpoint: string, store: Record<string, IEndpointInfo[]>): IEndpointInfo | undefined {
+        const info = this.parse(endpoint);
+
+        if (!info) {
+            return undefined;
+        }
+
+        const duplicate = this.endpointNameResolver.isDuplicate(info, store);
+
+        if (duplicate) {
+            info.action.name = this.endpointNameResolver.generateUniqueName(info);
+        }
+
+        store[info.name] = store[info.name] || [];
+        store[info.name].push(info);
+
+        return info;
+    }
+
     private getControllers(): Record<string, IEndpointInfo[]> {
         const endpoints = this.openAPIService.getEndpoints();
-        return endpoints.reduce<Record<string, IEndpointInfo[]>>((store, endpoint) => {
-
-            const info = this.getEndpointInfo(endpoint, store);
-
-            if (!info) {
-                return store;
-            }
-
-            store[info.name] = store[info.name] || [];
-            store[info.name].push(info);
-            return store;
-        }, {});
+        const store: Record<string, IEndpointInfo[]> = {};
+        endpoints.forEach(endpoint => this.addToStore(endpoint, store));
+        return store
     }
 
     private parse(endpoint: string): IEndpointInfo | undefined {
@@ -73,31 +83,15 @@ export class EndpointsService {
             return undefined;
         }
 
-        const rawAction = endpoint.slice(controllerStartIndex + controller.length + SEPARATOR.length);
+        const rawAction = endpoint.slice(controllerStartIndex + controller.length + pathOptions.separator.length);
         return {
             name: controller,
             origin: endpoint,
             relativePath: endpoint.slice(0, controllerStartIndex) + controller,
             action: {
-                name: rawAction ? this.endpointNameResolver.generateNameByPath(rawAction) : lowerFirst(`${controller}Default`),
+                name: rawAction ? this.endpointNameResolver.generateNameByPath(rawAction) : this.endpointNameResolver.genDefaultName(controller),
                 origin: rawAction
             }
         };
-    }
-
-    public getEndpointInfo(endpoint: string, store: Record<string, IEndpointInfo[]>): IEndpointInfo | undefined {
-        const info = this.parse(endpoint);
-
-        if (!info) {
-            return undefined;
-        }
-
-        const duplicate = this.endpointNameResolver.hasDuplicate(info, store);
-
-        if (duplicate) {
-            info.action.name = this.endpointNameResolver.generateUniqueName(info);
-        }
-
-        return info;
     }
 }

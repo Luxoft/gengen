@@ -39,14 +39,11 @@ export class ServiceMappingService {
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
         const endpointGroup: Record<string, IEndpointInfo[]> = {};
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
-            const info = this.endpointsService.getEndpointInfo(endpoint, endpointGroup);
+            const info = this.endpointsService.addToStore(endpoint, endpointGroup);
 
             if (!info) {
                 return store;
             }
-
-            endpointGroup[info.name] = endpointGroup[info.name] || [];
-            endpointGroup[info.name].push(info);
 
             const service = store.find((z) => z.name === info.name);
             if (service) {
