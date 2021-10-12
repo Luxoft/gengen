@@ -48,15 +48,13 @@ export class EndpointsService {
 
     public addToStore(endpoint: string, store: Record<string, IEndpointInfo[]>): IEndpointInfo | undefined {
         const info = this.parse(endpoint);
-
         if (!info) {
             return undefined;
         }
 
         const duplicate = this.endpointNameResolver.isDuplicate(info, store);
-
         if (duplicate) {
-            info.action.name = this.endpointNameResolver.generateUniqueName(info);
+            info.action.name = this.endpointNameResolver.generateNameUnique(info);
         }
 
         store[info.name] = store[info.name] || [];
@@ -89,7 +87,7 @@ export class EndpointsService {
             origin: endpoint,
             relativePath: endpoint.slice(0, controllerStartIndex) + controller,
             action: {
-                name: rawAction ? this.endpointNameResolver.generateNameByPath(rawAction) : this.endpointNameResolver.genDefaultName(controller),
+                name: rawAction ? this.endpointNameResolver.generateNameByPath(rawAction) : this.endpointNameResolver.generateNameDefault(controller),
                 origin: rawAction
             }
         };

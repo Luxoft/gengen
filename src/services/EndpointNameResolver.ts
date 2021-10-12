@@ -11,7 +11,7 @@ export class EndpointNameResolver {
         return Boolean(store[info.name]?.some(z => z.action.name === info.action.name));
     }
 
-    public generateUniqueName(endpoint: IEndpointInfo): string {
+    public generateNameUnique(endpoint: IEndpointInfo): string {
         const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
         if (!method) {
             throw new Error(`Cannot find method operation for endpoint ${endpoint.origin}`);
@@ -28,7 +28,7 @@ export class EndpointNameResolver {
             .join('');
     }
 
-    public genDefaultName(name: string): string {
+    public generateNameDefault(name: string): string {
         return lowerFirst(`${name}Default`);
     }
 }
