@@ -1,10 +1,11 @@
+import { pathOptions } from '../options';
 import { OpenAPIService } from '../swagger/OpenAPIService';
-import { first, lowerFirst, sortBy, upperFirst } from '../utils';
-
-const SEPARATOR = '/';
+import { first, sortBy } from '../utils';
+import { EndpointNameResolver } from './EndpointNameResolver';
 
 export interface IAction {
     name: string;
+    origin: string;
 }
 
 export interface IEndpointInfo {
@@ -15,9 +16,9 @@ export interface IEndpointInfo {
 }
 
 export class EndpointsService {
-    private queryParameterRegExp = new RegExp('^{(.*)}$');
-
-    constructor(private readonly openAPIService: OpenAPIService) {}
+    constructor(
+        private readonly openAPIService: OpenAPIService,
+        private readonly endpointNameResolver: EndpointNameResolver) {}
 
     public getActionsGroupedByController(): Record<string, Record<string, string>> {
         const result: Record<string, Record<string, string>> = {};
@@ -46,7 +47,31 @@ export class EndpointsService {
         return new Set(actions.sort());
     }
 
-    public parse(endpoint: string): IEndpointInfo | undefined {
+    public addToStore(endpoint: string, store: Record<string, IEndpointInfo[]>): IEndpointInfo | undefined {
+        const info = this.parse(endpoint);
+        if (!info) {
+            return undefined;
+        }
+
+        const duplicate = this.endpointNameResolver.isDuplicate(info, store);
+        if (duplicate) {
+            info.action.name = this.endpointNameResolver.generateNameUnique(info);
+        }
+
+        store[info.name] = store[info.name] || [];
+        store[info.name].push(info);
+
+        return info;
+    }
+
+    private getControllers(): Record<string, IEndpointInfo[]> {
+        const endpoints = this.openAPIService.getEndpoints();
+        const store: Record<string, IEndpointInfo[]> = {};
+        endpoints.forEach(endpoint => this.addToStore(endpoint, store));
+        return store
+    }
+
+    private parse(endpoint: string): IEndpointInfo | undefined {
         const controller = first(this.openAPIService.getTagsByEndpoint(endpoint));
         if (!controller) {
             return undefined;
@@ -57,37 +82,15 @@ export class EndpointsService {
             return undefined;
         }
 
-        const rawAction = endpoint.slice(controllerStartIndex + controller.length + SEPARATOR.length);
+        const rawAction = endpoint.slice(controllerStartIndex + controller.length + pathOptions.separator.length);
         return {
             name: controller,
             origin: endpoint,
             relativePath: endpoint.slice(0, controllerStartIndex) + controller,
             action: {
-                name: rawAction ? this.buildActionName(rawAction) : ''
+                name: rawAction ? this.endpointNameResolver.generateNameByPath(rawAction) : this.endpointNameResolver.generateNameDefault(controller),
+                origin: rawAction
             }
         };
-    }
-
-    private getControllers(): Record<string, IEndpointInfo[]> {
-        const endpoints = this.openAPIService.getEndpoints();
-
-        return endpoints.reduce<Record<string, IEndpointInfo[]>>((store, endpoint) => {
-            const info = this.parse(endpoint);
-            if (!info) {
-                return store;
-            }
-
-            store[info.name] = store[info.name] || [];
-            store[info.name].push(info);
-            return store;
-        }, {});
-    }
-
-    private buildActionName(raw: string): string {
-        return raw
-            .split(SEPARATOR)
-            .filter((z) => z && !this.queryParameterRegExp.test(z))
-            .map((z, i) => i ? upperFirst(z) : lowerFirst(z))
-            .join('');
     }
 }

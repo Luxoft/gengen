@@ -1,4 +1,5 @@
 import { CodeBlockWriter, MethodDeclarationStructure, OptionalKind, ParameterDeclarationStructure, Scope } from 'ts-morph';
+
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { MethodOperation } from '../../models/kinds/MethodOperation';
 import { ParameterPlace } from '../../models/kinds/ParameterPlace';
@@ -12,7 +13,6 @@ import { UriBuilder } from '../../services/UriBuilder';
 import { first } from '../../utils';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, UNDEFINED_STRING } from '../utils/consts';
 import { TypeSerializer } from '../utils/TypeSerializer';
-import { typeOrUndefined } from '../utils/typeOrUndefined';
 
 interface IParameterType {
     type: string;

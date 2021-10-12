@@ -38,6 +38,11 @@ export class OpenAPIService {
         return Object.keys(this.spec.paths).sort();
     }
 
+    public getMethodByEndpoint(endpoint: string): string | undefined {
+        const result = this.getOperationByEndpoint(endpoint);
+        return result ? MethodOperation[result.method].toLocaleLowerCase() : undefined;
+    }
+
     public getTagsByEndpoint(endpoint: string): string[] {
         const result = this.getOperationByEndpoint(endpoint);
         return result?.operation.tags ?? [];
@@ -98,7 +103,7 @@ export class OpenAPIService {
             return undefined;
         }
 
-        const path = Object.entries(this.spec.paths).find(([key]) => key.endsWith(endpoint));
+        const path = Object.entries(this.spec.paths).find(([key]) => key === endpoint);
         if (!path) {
             return undefined;
         }
