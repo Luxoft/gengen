@@ -1,5 +1,6 @@
+import { pathOptions } from '../options';
 import { OpenAPIService } from '../swagger/OpenAPIService';
-import { lowerFirst, SEPARATOR, upperFirst } from '../utils';
+import { lowerFirst, upperFirst } from '../utils';
 import { IEndpointInfo } from './EndpointsService';
 
 export class EndpointNameResolver {
@@ -7,11 +8,11 @@ export class EndpointNameResolver {
 
     constructor(private readonly openAPIService: OpenAPIService) {}
 
-    public hasDuplicate(info: IEndpointInfo, store: Record<string, IEndpointInfo[]>): boolean {
+    public isDuplicate(info: IEndpointInfo, store: Record<string, IEndpointInfo[]>): boolean {
         return Boolean(store[info.name]?.some(z => z.action.name === info.action.name));
     }
 
-    public generateUniqueName(endpoint: IEndpointInfo): string {
+    public generateNameUnique(endpoint: IEndpointInfo): string {
         const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
         if (!method) {
             throw new Error(`Cannot find method operation for endpoint ${endpoint.origin}`);
@@ -22,9 +23,13 @@ export class EndpointNameResolver {
 
     public generateNameByPath(path: string): string {
         return path
-            .split(SEPARATOR)
+            .split(pathOptions.separator)
             .filter((z) => z && !this.queryParameterRegExp.test(z))
             .map((z, i) => i ? upperFirst(z) : lowerFirst(z))
             .join('');
+    }
+
+    public generateNameDefault(name: string): string {
+        return lowerFirst(`${name}Default`);
     }
 }

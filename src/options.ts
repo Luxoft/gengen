@@ -9,6 +9,10 @@ export interface IOptions {
     aliasName?: string;
 }
 
+export const pathOptions = {
+    separator: '/'
+}
+
 export const defaultOptions: IOptions = {
     configOutput: './.generated',
     output: './src/generated',
