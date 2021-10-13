@@ -1,3 +1,4 @@
+import { EndpointNameResolver } from '../../src/services/EndpointNameResolver';
 import { EndpointsService } from '../../src/services/EndpointsService';
 import { OpenAPIService } from '../../src/swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
@@ -29,7 +30,8 @@ describe('EndpointsService tests', () => {
             };
 
             const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const endpointNameResolver = new EndpointNameResolver(openApiService);
+            const service = new EndpointsService(openApiService, endpointNameResolver);
 
             const result = service.getActionsGroupedByController();
 
@@ -48,13 +50,13 @@ describe('EndpointsService tests', () => {
             };
 
             const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
-
+            const endpointNameResolver = new EndpointNameResolver(openApiService);
+            const service = new EndpointsService(openApiService, endpointNameResolver);
             expect(service.getActionsGroupedByController()).toEqual({});
         });
     });
 
-    describe('getActions', () => {
+    describe('getEndpoints', () => {
         test('sort actions', () => {
             const spec = {
                 openapi: '3.0.1',
@@ -77,9 +79,10 @@ describe('EndpointsService tests', () => {
             const expected = new Set(['Category/AddCategory', 'Product/GetProducts', 'Product/Product/{id}', 'Product/SearchProducts']);
 
             const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const endpointNameResolver = new EndpointNameResolver(openApiService);
+            const service = new EndpointsService(openApiService, endpointNameResolver);
 
-            expect(service.getActions()).toEqual(expected);
+            expect(service.getEndpoints()).toEqual(expected);
         });
     });
 
@@ -91,7 +94,8 @@ describe('EndpointsService tests', () => {
             };
 
             const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const endpointNameResolver = new EndpointNameResolver(openApiService);
+            const service = new EndpointsService(openApiService,endpointNameResolver);
 
             expect(service.parse('/Product/SearchProducts')).toMatchObject({
                 name: 'Product',
@@ -107,7 +111,8 @@ describe('EndpointsService tests', () => {
             };
 
             const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const endpointNameResolver = new EndpointNameResolver(openApiService);
+            const service = new EndpointsService(openApiService,endpointNameResolver);
 
             expect(service.parse('/api/v1/Product/SearchProducts')).toMatchObject({
                 name: 'Product',
@@ -123,7 +128,8 @@ describe('EndpointsService tests', () => {
             };
 
             const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const endpointNameResolver = new EndpointNameResolver(openApiService);
+            const service = new EndpointsService(openApiService,endpointNameResolver);
 
             expect(service.parse('/api/v1/Product/Download/{id}')).toMatchObject({
                 name: 'Product',
@@ -139,7 +145,8 @@ describe('EndpointsService tests', () => {
             };
 
             const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const endpointNameResolver = new EndpointNameResolver(openApiService);
+            const service = new EndpointsService(openApiService,endpointNameResolver);
 
             expect(service.parse('/api/v1/Product/{test}')).toMatchObject({
                 name: 'Product',
