@@ -6,12 +6,11 @@ import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 describe('EndpointNameResolver tests', () => {
     let guard: OpenAPITypesGuard;
 
-    function initNameResolverService(paths: Object = {}): EndpointNameResolver {
-        const spec = {
-            openapi: '3.0.1',
-            paths
-        };
-        const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
+    function initNameResolverService(spec?: string): EndpointNameResolver {
+        const openApiService = new OpenAPIService(
+            spec
+            ??
+            JSON.stringify({ openapi: '3.0.1', paths: {} }), guard);
         return new EndpointNameResolver(openApiService);
     }
 
@@ -74,8 +73,11 @@ describe('EndpointNameResolver tests', () => {
     describe('generateNameUnique', () => {
         test('info', () => {
             // Arrange
-            const paths = { '/api/v1/Product/Product': { put: { tags: ['Product'] } } };
-            const service = initNameResolverService(paths);
+            const spec = {
+                openapi: '3.0.1',
+                paths:{ '/api/v1/Product/Product': { put: { tags: ['Product'] } } }
+            }
+            const service = initNameResolverService(JSON.stringify(spec));
             const info = toEndpointInfo({
                 origin: '/api/v1/Product/Product',
                 action: { name: 'product', origin: 'Product' }
