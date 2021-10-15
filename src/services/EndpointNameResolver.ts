@@ -22,7 +22,6 @@ export class EndpointNameResolver {
     }
 
     public generateNameByPath(path: string): string {
-        console.log(path)
         return path
             .split(pathOptions.separator)
             .filter((z) => z && !this.queryParameterRegExp.test(z))
