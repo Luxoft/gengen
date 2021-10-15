@@ -18,7 +18,7 @@ describe('EndpointsService tests', () => {
         test('group actions', () => {
             // Arrange
             const spec = {
-                openapi: '3.0,1',
+                openapi: '3.0.1',
                 paths: {
                     '/Product/SearchProducts': {
                         get: { tags: ['Product'] }
@@ -53,7 +53,7 @@ describe('EndpointsService tests', () => {
         test('tags does not exists', () => {
             // Arrange
             const spec = {
-                openapi: '3.0,1',
+                openapi: '3.0.1',
                 paths: {
                     '/Product/SearchProducts': {},
                     '/api/v1/Category/AddCategory': {},
@@ -73,7 +73,7 @@ describe('EndpointsService tests', () => {
         test('sort actions', () => {
             // Arrange
             const spec = {
-                openapi: '3.0,1',
+                openapi: '3.0.1',
                 paths: {
                     '/Product/SearchProducts': {
                         get: { tags: ['Product'] }
@@ -103,7 +103,7 @@ describe('EndpointsService tests', () => {
         test('short endpoint', () => {
             // Arrange
             const spec = {
-                openapi: '3.0,1',
+                openapi: '3.0.1',
                 paths: { '/Product/SearchProducts': { get: { tags: ['Product'] } } }
             };
             // Act
@@ -120,7 +120,7 @@ describe('EndpointsService tests', () => {
         test('version endpoint', () => {
             // Arrange
             const spec = {
-                openapi: '3.0,1',
+                openapi: '3.0.1',
                 paths: { '/api/v1/Product/SearchProducts': { get: { tags: ['Product'] } } }
             };
             // Act
@@ -137,7 +137,7 @@ describe('EndpointsService tests', () => {
         test('long endpoint', () => {
             // Arrange
             const spec = {
-                openapi: '3.0,1',
+                openapi: '3.0.1',
                 paths: { '/api/v1/Product/Download/{id}': { get: { tags: ['Product'] } } }
             };
             // Act
@@ -156,7 +156,7 @@ describe('EndpointsService tests', () => {
         test('spec with duplicates of endpoints', () => {
             // Arrange
             const spec = {
-                openapi: '3.0,1',
+                openapi: '3.0.1',
                 paths: {
                     '/api/v1/Product/Product': {
                         get: { tags: ['Product'] },
