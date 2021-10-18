@@ -4,14 +4,9 @@ import { OpenAPIService } from '../../src/swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 
 describe('EndpointNameResolver tests', () => {
-    let guard: OpenAPITypesGuard;
-
-    function initNameResolverService(spec?: string): EndpointNameResolver {
-        const openApiService = new OpenAPIService(
-            spec
-            ??
-            JSON.stringify({ openapi: '3.0.1', paths: {} }), guard);
-        return new EndpointNameResolver(openApiService);
+    function getService(spec?: string): EndpointNameResolver {
+        const json = spec ?? JSON.stringify({ openapi: '3.0.1', paths: {} });
+        return new EndpointNameResolver(new OpenAPIService(json, new OpenAPITypesGuard()));
     }
 
     function toEndpointInfo(info: Partial<IEndpointInfo>): IEndpointInfo {
@@ -24,16 +19,12 @@ describe('EndpointNameResolver tests', () => {
         };
     }
 
-    beforeEach(() => (guard = new OpenAPITypesGuard()));
-
     describe('isDuplicate', () => {
         test('has duplicate', () => {
             // Arrange
-            const service = initNameResolverService();
+            const service = getService();
             const store = {
-                Product: [
-                    toEndpointInfo({ action: { name: 'product', origin: '' } })
-                ]
+                Product: [toEndpointInfo({ action: { name: 'product', origin: '' } })]
             };
             const info = toEndpointInfo({
                 name: 'Product',
@@ -49,11 +40,9 @@ describe('EndpointNameResolver tests', () => {
 
         test('doesnt have duplicate', () => {
             // Arrange
-            const service = initNameResolverService();
+            const service = getService();
             const store = {
-                Product: [
-                    toEndpointInfo({ action: { name: 'download', origin: '' } })
-                ]
+                Product: [toEndpointInfo({ action: { name: 'download', origin: '' } })]
             };
             const info = {
                 name: 'Product',
@@ -75,9 +64,9 @@ describe('EndpointNameResolver tests', () => {
             // Arrange
             const spec = {
                 openapi: '3.0.1',
-                paths:{ '/api/v1/Product/Product': { put: { tags: ['Product'] } } }
+                paths: { '/api/v1/Product/Product': { put: { tags: ['Product'] } } }
             }
-            const service = initNameResolverService(JSON.stringify(spec));
+            const service = getService(JSON.stringify(spec));
             const info = toEndpointInfo({
                 origin: '/api/v1/Product/Product',
                 action: { name: 'product', origin: 'Product' }
@@ -94,7 +83,7 @@ describe('EndpointNameResolver tests', () => {
     describe('generateNameByPath', () => {
         test('short path', () => {
             // Arrange
-            const service = initNameResolverService();
+            const service = getService();
 
             // Act
             const result = service.generateNameByPath('SearchProducts')
@@ -105,7 +94,7 @@ describe('EndpointNameResolver tests', () => {
 
         test('long path', () => {
             // Arrange
-            const service = initNameResolverService();
+            const service = getService();
 
             // Act
             const result = service.generateNameByPath('getByCustomer/{customer}/type/{type}')
@@ -118,7 +107,7 @@ describe('EndpointNameResolver tests', () => {
     describe('generateNameDefault', () => {
         test('name', () => {
             // Arrange
-            const service = initNameResolverService();
+            const service = getService();
             const name = 'product';
 
             // Act

@@ -1,9 +1,9 @@
+import { MockOpenAPIService } from '../../__mocks__/MockOpenAPIService';
 import { ModelMappingService } from '../../src/services/ModelMappingService';
 import { TypesService } from '../../src/services/TypesService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 import { OpenAPI3SchemaContainer } from '../../src/swagger/v3/schemas/schema';
 import { first } from '../../src/utils';
-import { MockOpenAPIService } from '../../__mocks__/MockOpenAPIService';
 
 describe('ModelMappingService tests', () => {
     let service: ModelMappingService;

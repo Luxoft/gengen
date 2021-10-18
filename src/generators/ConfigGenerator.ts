@@ -32,7 +32,7 @@ export class ConfigGenerator {
     private getProperties(controllers: Record<string, Record<string, string>>): OptionalKind<PropertyDeclarationStructure>[] {
         return Object.entries(controllers).map(([controller, actions]) => {
             const propertyValue = Object.entries(actions).reduce<Record<string, string>>((store, [name, path]) => {
-                store[name ? name : `''`] = `'${path}'`;
+                store[name] = `'${path}'`;
                 return store;
             }, {});
 

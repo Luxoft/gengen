@@ -15,7 +15,7 @@ export class EndpointNameResolver {
     public generateNameUnique(endpoint: IEndpointInfo): string {
         const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
         if (!method) {
-            throw new Error(`Cannot find method operation for endpoint ${endpoint.origin}`);
+            throw new Error(`Cannot find method operation for endpoint '${endpoint.origin}'`);
         }
 
         return `${lowerFirst(method)}${upperFirst(endpoint.action.name)}`;

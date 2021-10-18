@@ -4,15 +4,10 @@ import { OpenAPIService } from '../../src/swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 
 describe('EndpointsService tests', () => {
-    let guard: OpenAPITypesGuard;
-
-    function initEndpointService(spec: string): EndpointsService {
-        const openApiService = new OpenAPIService(spec, guard);
-        const endpointNameResolver = new EndpointNameResolver(openApiService);
-        return new EndpointsService(openApiService, endpointNameResolver);
+    function getService(spec: string): EndpointsService {
+        const openApiService = new OpenAPIService(spec, new OpenAPITypesGuard());
+        return new EndpointsService(openApiService, new EndpointNameResolver(openApiService));
     }
-
-    beforeEach(() => (guard = new OpenAPITypesGuard()));
 
     describe('getActionsGroupedByController', () => {
         test('group actions', () => {
@@ -40,7 +35,7 @@ describe('EndpointsService tests', () => {
                 }
             };
 
-            const service = initEndpointService(JSON.stringify(spec));
+            const service = getService(JSON.stringify(spec));
 
             // Act
             const result = service.getActionsGroupedByController();
@@ -61,11 +56,13 @@ describe('EndpointsService tests', () => {
                 }
             };
 
+            const service = getService(JSON.stringify(spec));
+
             // Act
-            const service = initEndpointService(JSON.stringify(spec));
+            const result = service.getActionsGroupedByController();
 
             // Assert
-            expect(service.getActionsGroupedByController()).toEqual({});
+            expect(result).toEqual({});
         });
     });
 
@@ -90,12 +87,13 @@ describe('EndpointsService tests', () => {
                 }
             }
             const expected = new Set(['/Product/GetProducts', '/Product/SearchProducts', '/api/v1/Category/AddCategory', '/api/v1/Product/Product/{id}']);
+            const service = getService(JSON.stringify(spec));
 
             // Act
-            const service = initEndpointService(JSON.stringify(spec));
+            const result = service.getEndpoints();
 
             // Assert
-            expect(service.getEndpoints()).toEqual(expected);
+            expect(result).toEqual(expected);
         });
     });
 
@@ -106,11 +104,14 @@ describe('EndpointsService tests', () => {
                 openapi: '3.0.1',
                 paths: { '/Product/SearchProducts': { get: { tags: ['Product'] } } }
             };
+
+            const service = getService(JSON.stringify(spec));
+
             // Act
-            const service = initEndpointService(JSON.stringify(spec));
+            const result = service.parse('/Product/SearchProducts')
 
             // Assert
-            expect(service.parse('/Product/SearchProducts')).toMatchObject({
+            expect(result).toMatchObject({
                 name: 'Product',
                 action: { origin: 'SearchProducts', name: 'searchProducts' },
                 relativePath: '/Product'
@@ -123,11 +124,13 @@ describe('EndpointsService tests', () => {
                 openapi: '3.0.1',
                 paths: { '/api/v1/Product/SearchProducts': { get: { tags: ['Product'] } } }
             };
+            const service = getService(JSON.stringify(spec));
+
             // Act
-            const service = initEndpointService(JSON.stringify(spec));
+            const result = service.parse('/api/v1/Product/SearchProducts');
 
             // Assert
-            expect(service.parse('/api/v1/Product/SearchProducts')).toMatchObject({
+            expect(result).toMatchObject({
                 name: 'Product',
                 action: { origin: 'SearchProducts', name: 'searchProducts' },
                 relativePath: '/api/v1/Product'
@@ -140,11 +143,14 @@ describe('EndpointsService tests', () => {
                 openapi: '3.0.1',
                 paths: { '/api/v1/Product/Download/{id}': { get: { tags: ['Product'] } } }
             };
+
+            const service = getService(JSON.stringify(spec));
+
             // Act
-            const service = initEndpointService(JSON.stringify(spec));
+            const result = service.parse('/api/v1/Product/Download/{id}');
 
             // Assert
-            expect(service.parse('/api/v1/Product/Download/{id}')).toMatchObject({
+            expect(result).toMatchObject({
                 name: 'Product',
                 action: { origin: 'Download/{id}', name: 'download' },
                 relativePath: '/api/v1/Product'
@@ -164,7 +170,7 @@ describe('EndpointsService tests', () => {
                     }
                 }
             };
-            const service = initEndpointService(JSON.stringify(spec));
+            const service = getService(JSON.stringify(spec));
             const info1 = {
                 name: 'Product',
                 origin: '/api/v1/Product/Product',
