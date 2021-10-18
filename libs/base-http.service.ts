@@ -14,7 +14,7 @@ export abstract class BaseHttpService {
     constructor(private relativePath: string, protected http: HttpClient) {}
 
     protected get<TResult>(url: string): Observable<TResult> {
-        return this.http.get<TResult>(`${this.getPath(url)}`);
+        return this.http.get<TResult>(this.getPath(url));
     }
 
     protected post<TResult, TData = {}>(
@@ -22,11 +22,11 @@ export abstract class BaseHttpService {
         data?: TData,
         options?: IAngularHttpRequestOptions
     ): Observable<TResult> {
-        return this.http.post<TResult>(`${this.getPath(url)}`, data, options);
+        return this.http.post<TResult>(this.getPath(url), data, options);
     }
 
     protected delete<TResult>(url: string, options?: IAngularHttpRequestOptions): Observable<TResult> {
-        return this.http.delete<TResult>(`${this.getPath(url)}`, options);
+        return this.http.delete<TResult>(this.getPath(url), options);
     }
 
     public get path(): string {
