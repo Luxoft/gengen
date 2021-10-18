@@ -1,6 +1,6 @@
 {
   "name": "@luxbss/gengen",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0",
   "description": "Tool for generating models and Angular services based on OpenAPIs and Swagger's JSON",
   "bin": {
     "gengen": "./bin/index.js"
