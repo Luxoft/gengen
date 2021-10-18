@@ -34,6 +34,6 @@ export abstract class BaseHttpService {
     }
 
     private getPath(url: string): string {
-        return `${this.relativePath}${url ? '/' : ''}${url}`
+        return `${this.relativePath}${url ? `/${url}` : ''}`
     }
 }
