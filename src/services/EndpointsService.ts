@@ -47,12 +47,7 @@ export class EndpointsService {
         return new Set(actions.sort());
     }
 
-    public addToStore(endpoint: string, store: Record<string, IEndpointInfo[]>): IEndpointInfo | undefined {
-        const info = this.parse(endpoint);
-        if (!info) {
-            return undefined;
-        }
-
+    public addToStore(info: IEndpointInfo, store: Record<string, IEndpointInfo[]>): void {
         const duplicate = this.endpointNameResolver.isDuplicate(info, store);
         if (duplicate) {
             info.action.name = this.endpointNameResolver.generateNameUnique(info);
@@ -60,18 +55,9 @@ export class EndpointsService {
 
         store[info.name] = store[info.name] || [];
         store[info.name].push(info);
-
-        return info;
     }
 
-    private getControllers(): Record<string, IEndpointInfo[]> {
-        const endpoints = this.openAPIService.getEndpoints();
-        const store: Record<string, IEndpointInfo[]> = {};
-        endpoints.forEach(endpoint => this.addToStore(endpoint, store));
-        return store
-    }
-
-    private parse(endpoint: string): IEndpointInfo | undefined {
+    public parse(endpoint: string): IEndpointInfo | undefined {
         const controller = first(this.openAPIService.getTagsByEndpoint(endpoint));
         if (!controller) {
             return undefined;
@@ -92,5 +78,19 @@ export class EndpointsService {
                 origin: rawAction
             }
         };
+    }
+
+    private getControllers(): Record<string, IEndpointInfo[]> {
+        const endpoints = this.openAPIService.getEndpoints();
+        const store: Record<string, IEndpointInfo[]> = {};
+        endpoints.forEach(endpoint => {
+            const info = this.parse(endpoint);
+            if (!info) {
+                return;
+            }
+
+            this.addToStore(info, store)
+        });
+        return store
     }
 }
