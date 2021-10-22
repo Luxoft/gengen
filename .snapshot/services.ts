@@ -49,6 +49,12 @@ export class ProductService extends DownloadFileService {
         );
     }
 
+    public getByCustomerType(customer: string, type: string, date: string): Observable<$types.TypeOrUndefined<$models.Product>> {
+        return this.get<$types.TypeOrUndefined<$models.IProduct>>(
+            `getByCustomer/${encodeURIComponent(customer)}/type/${encodeURIComponent(type)}?date=${encodeURIComponent(date)}`,
+        ).pipe($mappers.mapSingle($models.Product));
+    }
+
     public getById(id: string): Observable<$types.TypeOrUndefined<$models.Product>> {
         return this.get<$types.TypeOrUndefined<$models.IProduct>>(
             `GetById/${encodeURIComponent(id)}`,
@@ -67,15 +73,21 @@ export class ProductService extends DownloadFileService {
         ).pipe($mappers.mapCollection($models.Product));
     }
 
+    public product(): Observable<$models.Product[]> {
+        return this.get<$models.IProduct[]>(
+            `Product`,
+        ).pipe($mappers.mapCollection($models.Product));
+    }
+
+    public productDefault(): Observable<$models.Product[]> {
+        return this.get<$models.IProduct[]>(
+            ``,
+        ).pipe($mappers.mapCollection($models.Product));
+    }
+
     public searchProducts(name: string): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `SearchProducts?name=${encodeURIComponent(name)}`,
         ).pipe($mappers.mapCollection($models.Product));
-    }
-
-    public type(customer: string, type: string, date: string): Observable<$types.TypeOrUndefined<$models.Product>> {
-        return this.get<$types.TypeOrUndefined<$models.IProduct>>(
-            `getByCustomer/${encodeURIComponent(customer)}/type/${encodeURIComponent(type)}?date=${encodeURIComponent(date)}`,
-        ).pipe($mappers.mapSingle($models.Product));
     }
 }
