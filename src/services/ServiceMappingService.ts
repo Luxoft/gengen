@@ -19,7 +19,7 @@ import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3ArraySchema } from '../swagger/v3/schemas/array-schema';
 import { OpenAPI3ResponseSchema } from '../swagger/v3/schemas/schema';
 import { lowerFirst, sortBy } from '../utils';
-import { EndpointsService } from './EndpointsService';
+import { EndpointsService, IEndpointInfo } from './EndpointsService';
 import { TypesService } from './TypesService';
 
 interface IModel {
@@ -30,21 +30,21 @@ interface IModel {
 
 export class ServiceMappingService {
     constructor(
-        private readonly endpointsService: EndpointsService,
         private readonly openAPIService: OpenAPIService,
         private readonly typesService: TypesService,
-        private readonly typesGuard: OpenAPITypesGuard
+        private readonly typesGuard: OpenAPITypesGuard,
+        private readonly endpointsService: EndpointsService
     ) {}
 
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
+        const endpointGroup: Record<string, IEndpointInfo[]> = {};
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
             const info = this.endpointsService.parse(endpoint);
-
-            // TODO Handle paths without methods
-            if (!info || !info.action.name) {
+            if (!info) {
                 return store;
             }
 
+            this.endpointsService.addToStore(info, endpointGroup);
             const service = store.find((z) => z.name === info.name);
             if (service) {
                 service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin));

@@ -1,13 +1,17 @@
+import { EndpointNameResolver } from '../../src/services/EndpointNameResolver';
 import { EndpointsService } from '../../src/services/EndpointsService';
 import { OpenAPIService } from '../../src/swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 
 describe('EndpointsService tests', () => {
-    let guard: OpenAPITypesGuard;
-    beforeEach(() => (guard = new OpenAPITypesGuard()));
+    function getService(spec: string): EndpointsService {
+        const openApiService = new OpenAPIService(spec, new OpenAPITypesGuard());
+        return new EndpointsService(openApiService, new EndpointNameResolver(openApiService));
+    }
 
     describe('getActionsGroupedByController', () => {
         test('group actions', () => {
+            // Arrange
             const spec = {
                 openapi: '3.0.1',
                 paths: {
@@ -24,20 +28,25 @@ describe('EndpointsService tests', () => {
             };
 
             const expected = {
-                Category: ['AddCategory'],
-                Product: ['GetProducts', 'SearchProducts']
+                Category: { addCategory: "/api/v1/Category/AddCategory" },
+                Product: {
+                    getProducts: "/Product/GetProducts",
+                    searchProducts: "/Product/SearchProducts",
+                }
             };
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const service = getService(JSON.stringify(spec));
 
+            // Act
             const result = service.getActionsGroupedByController();
 
+            // Assert
             expect(Object.keys(result)).toEqual(['Category', 'Product']);
             expect(result).toEqual(expected);
         });
 
         test('tags does not exists', () => {
+            // Arrange
             const spec = {
                 openapi: '3.0.1',
                 paths: {
@@ -47,15 +56,19 @@ describe('EndpointsService tests', () => {
                 }
             };
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const service = getService(JSON.stringify(spec));
 
-            expect(service.getActionsGroupedByController()).toEqual({});
+            // Act
+            const result = service.getActionsGroupedByController();
+
+            // Assert
+            expect(result).toEqual({});
         });
     });
 
-    describe('getActions', () => {
+    describe('getEndpoints', () => {
         test('sort actions', () => {
+            // Arrange
             const spec = {
                 openapi: '3.0.1',
                 paths: {
@@ -72,80 +85,115 @@ describe('EndpointsService tests', () => {
                         get: { tags: ['Product'] }
                     }
                 }
-            };
+            }
+            const expected = new Set(['/Product/GetProducts', '/Product/SearchProducts', '/api/v1/Category/AddCategory', '/api/v1/Product/Product/{id}']);
+            const service = getService(JSON.stringify(spec));
 
-            const expected = new Set(['Category/AddCategory', 'Product/GetProducts', 'Product/Product/{id}', 'Product/SearchProducts']);
+            // Act
+            const result = service.getEndpoints();
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
-
-            expect(service.getActions()).toEqual(expected);
+            // Assert
+            expect(result).toEqual(expected);
         });
     });
 
     describe('parse', () => {
         test('short endpoint', () => {
+            // Arrange
             const spec = {
                 openapi: '3.0.1',
                 paths: { '/Product/SearchProducts': { get: { tags: ['Product'] } } }
             };
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const service = getService(JSON.stringify(spec));
 
-            expect(service.parse('/Product/SearchProducts')).toMatchObject({
+            // Act
+            const result = service.parse('/Product/SearchProducts')
+
+            // Assert
+            expect(result).toMatchObject({
                 name: 'Product',
-                action: { origin: 'SearchProducts', name: 'SearchProducts' },
+                action: { origin: 'SearchProducts', name: 'searchProducts' },
                 relativePath: '/Product'
             });
         });
 
         test('version endpoint', () => {
+            // Arrange
             const spec = {
                 openapi: '3.0.1',
                 paths: { '/api/v1/Product/SearchProducts': { get: { tags: ['Product'] } } }
             };
+            const service = getService(JSON.stringify(spec));
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            // Act
+            const result = service.parse('/api/v1/Product/SearchProducts');
 
-            expect(service.parse('/api/v1/Product/SearchProducts')).toMatchObject({
+            // Assert
+            expect(result).toMatchObject({
                 name: 'Product',
-                action: { origin: 'SearchProducts', name: 'SearchProducts' },
+                action: { origin: 'SearchProducts', name: 'searchProducts' },
                 relativePath: '/api/v1/Product'
             });
         });
 
         test('long endpoint', () => {
+            // Arrange
             const spec = {
                 openapi: '3.0.1',
                 paths: { '/api/v1/Product/Download/{id}': { get: { tags: ['Product'] } } }
             };
 
-            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
+            const service = getService(JSON.stringify(spec));
 
-            expect(service.parse('/api/v1/Product/Download/{id}')).toMatchObject({
+            // Act
+            const result = service.parse('/api/v1/Product/Download/{id}');
+
+            // Assert
+            expect(result).toMatchObject({
                 name: 'Product',
-                action: { origin: 'Download/{id}', name: 'Download' },
+                action: { origin: 'Download/{id}', name: 'download' },
                 relativePath: '/api/v1/Product'
             });
         });
+    });
 
-        test('empty action', () => {
+    describe('addToStore', () => {
+        test('spec with duplicates of endpoints', () => {
+            // Arrange
             const spec = {
                 openapi: '3.0.1',
-                paths: { '/api/v1/Product/{test}': { get: { tags: ['Product'] } } }
+                paths: {
+                    '/api/v1/Product/Product': {
+                        get: { tags: ['Product'] },
+                        post: { tags: ['Product'] }
+                    }
+                }
             };
-
-            const openApiService = new OpenAPIService(JSON.stringify(spec), guard);
-            const service = new EndpointsService(openApiService);
-
-            expect(service.parse('/api/v1/Product/{test}')).toMatchObject({
+            const service = getService(JSON.stringify(spec));
+            const info1 = {
                 name: 'Product',
-                action: { origin: '{test}', name: undefined },
-                relativePath: '/api/v1/Product'
-            });
+                origin: '/api/v1/Product/Product',
+                relativePath: '/api/v1/Product',
+                action: { name: 'product', origin: 'Product' }
+            };
+            const info2 = {
+                name: 'Product',
+                origin: '/api/v1/Product/Product',
+                relativePath: '/api/v1/Product',
+                action: { name: 'getProduct', origin: 'Product' }
+            };
+            const expectedStore = {
+                Product: [info1, info2]
+            };
+            const resultstore = {};
+            service.addToStore(info1, resultstore);
+
+            // Act
+            service.addToStore(info2, resultstore);
+
+            // Assert
+            expect(resultstore).toMatchObject(expectedStore);
         });
     });
 });

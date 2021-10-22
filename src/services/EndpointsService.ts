@@ -1,48 +1,60 @@
+import { pathOptions } from '../options';
 import { OpenAPIService } from '../swagger/OpenAPIService';
-import { first, last } from '../utils';
-
-const SEPARATOR = '/';
+import { first, sortBy } from '../utils';
+import { EndpointNameResolver } from './EndpointNameResolver';
 
 export interface IAction {
-    name: string | undefined;
+    name: string;
     origin: string;
 }
 
 export interface IEndpointInfo {
     name: string;
+    origin: string;
     relativePath: string;
     action: IAction;
 }
 
 export class EndpointsService {
-    private queryParameterRegExp = new RegExp('^{(.*)}$');
+    constructor(
+        private readonly openAPIService: OpenAPIService,
+        private readonly endpointNameResolver: EndpointNameResolver) {}
 
-    constructor(private readonly openAPIService: OpenAPIService) { }
-
-    public getActionsGroupedByController(): Record<string, string[]> {
-        const result: Record<string, string[]> = {};
+    public getActionsGroupedByController(): Record<string, Record<string, string>> {
+        const result: Record<string, Record<string, string>> = {};
         const controllers = this.getControllers();
 
         Object.keys(controllers)
             .sort()
             .forEach((key) => {
-                result[key] = controllers[key]
-                    .filter((x) => x.name)
-                    .map((x) => x.name as string)
-                    .sort();
+                result[key] = {};
+
+                controllers[key]
+                    .sort(sortBy((z) => z.action.name))
+                    .forEach(z => result[key][z.action.name] = z.origin);
             });
 
         return result;
     }
 
-    public getActions(): Set<string> {
+    public getEndpoints(): Set<string> {
         const controllers = this.getControllers();
-        const actions = Object.entries(controllers).reduce<string[]>(
-            (store, [controller, actions]) => store.concat(actions.map((z) => controller + SEPARATOR + z.origin)),
+        const actions = Object.values(controllers).reduce<string[]>(
+            (store, endpoints) => store.concat(endpoints.map((z) => z.origin)),
             []
         );
 
         return new Set(actions.sort());
+    }
+
+    public addToStore(info: IEndpointInfo, store: Record<string, IEndpointInfo[]>): void {
+        const duplicate = this.endpointNameResolver.isDuplicate(info, store);
+        if (duplicate) {
+            info.action.name = this.endpointNameResolver.generateNameUnique(info);
+        }
+
+        store[info.name] = store[info.name] || [];
+        store[info.name].push(info);
     }
 
     public parse(endpoint: string): IEndpointInfo | undefined {
@@ -51,30 +63,34 @@ export class EndpointsService {
             return undefined;
         }
 
-        const parts = endpoint.split(`${SEPARATOR}${controller}${SEPARATOR}`);
-        const action = last(parts);
+        const controllerStartIndex = endpoint.indexOf(controller);
+        if (controllerStartIndex < 0) {
+            return undefined;
+        }
+
+        const rawAction = endpoint.slice(controllerStartIndex + controller.length + pathOptions.separator.length);
         return {
             name: controller,
+            origin: endpoint,
+            relativePath: endpoint.slice(0, controllerStartIndex) + controller,
             action: {
-                origin: action,
-                name: last(action.split(SEPARATOR).filter((z) => z && !this.queryParameterRegExp.test(z)))
-            },
-            relativePath: `${first(parts)}/${controller}`
+                name: rawAction ? this.endpointNameResolver.generateNameByPath(rawAction) : this.endpointNameResolver.generateNameDefault(controller),
+                origin: rawAction
+            }
         };
     }
 
-    private getControllers(): Record<string, IAction[]> {
+    private getControllers(): Record<string, IEndpointInfo[]> {
         const endpoints = this.openAPIService.getEndpoints();
-
-        return endpoints.reduce<Record<string, IAction[]>>((store, endpoint) => {
+        const store: Record<string, IEndpointInfo[]> = {};
+        endpoints.forEach(endpoint => {
             const info = this.parse(endpoint);
             if (!info) {
-                return store;
+                return;
             }
 
-            store[info.name] = store[info.name] || [];
-            store[info.name].push(info.action);
-            return store;
-        }, {});
+            this.addToStore(info, store)
+        });
+        return store
     }
 }

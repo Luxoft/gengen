@@ -1,14 +1,16 @@
 export class Endpoints {
     public static CategoryService = {
-        AddCategory: 'Category/AddCategory',
-        Upload: 'Category/Upload'
+        addCategory: '/api/v1/Category/AddCategory',
+        upload: '/api/v1/Category/Upload'
     };
     public static ProductService = {
-        Download: 'Product/Download',
-        GetById: 'Product/GetById',
-        GetProducts: 'Product/GetProducts',
-        GetProductsByStatus: 'Product/GetProductsByStatus',
-        SearchProducts: 'Product/SearchProducts',
-        type: 'Product/type'
+        download: '/Product/Download',
+        getByCustomerType: '/Product/getByCustomer/{customer}/type/{type}',
+        getById: '/api/v1/Product/GetById/{id}',
+        getProducts: '/Product/GetProducts',
+        getProductsByStatus: '/api/v1/Product/GetProductsByStatus/{status}',
+        product: '/Product/Product',
+        productDefault: '/api/v1/Product',
+        searchProducts: '/Product/SearchProducts'
     };
 }
