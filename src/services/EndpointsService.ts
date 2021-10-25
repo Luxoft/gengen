@@ -83,12 +83,7 @@ export class EndpointsService {
         }, []);
 
         this.endpointNameResolver.deduplicate(endpointInfos);
-        return endpoints.reduce<Record<string, IEndpointInfo[]>>((store, endpoint) => {
-            const info = endpointInfos.find(z => z.origin === endpoint);
-            if (!info) {
-                return store;
-            }
-
+        return endpointInfos.reduce<Record<string, IEndpointInfo[]>>((store, info) => {
             store[info.name] = store[info.name] || [];
             store[info.name].push(info);
             return store;

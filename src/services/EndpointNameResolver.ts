@@ -8,10 +8,6 @@ export class EndpointNameResolver {
 
     constructor(private readonly openAPIService: OpenAPIService) {}
 
-    private isDuplicate(info: IEndpointInfo, infos: IEndpointInfo[]): boolean {
-        return infos.filter(z => z.action.name === info.action.name && z.name == info.name).length > 1;
-    }
-
     public deduplicate(infos: IEndpointInfo[]): void {
         infos.forEach(info => {
             const duplicate = this.isDuplicate(info, infos);
@@ -19,15 +15,6 @@ export class EndpointNameResolver {
                 info.action.name = this.generateNameUnique(info);
             }
         })
-    }
-
-    private generateNameUnique(endpoint: IEndpointInfo): string {
-        const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
-        if (!method) {
-            throw new Error(`Cannot find method operation for endpoint '${endpoint.origin}'`);
-        }
-
-        return `${lowerFirst(method)}${upperFirst(endpoint.action.name)}`;
     }
 
     public generateNameByPath(path: string): string {
@@ -40,5 +27,18 @@ export class EndpointNameResolver {
 
     public generateNameDefault(name: string): string {
         return lowerFirst(`${name}Default`);
+    }
+
+    private generateNameUnique(endpoint: IEndpointInfo): string {
+        const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
+        if (!method) {
+            throw new Error(`Cannot find method operation for endpoint '${endpoint.origin}'`);
+        }
+
+        return `${lowerFirst(method)}${upperFirst(endpoint.action.name)}`;
+    }
+
+    private isDuplicate(info: IEndpointInfo, infos: IEndpointInfo[]): boolean {
+        return infos.filter(z => z.action.name === info.action.name && z.name == info.name).length > 1;
     }
 }
