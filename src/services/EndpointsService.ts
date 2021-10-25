@@ -47,16 +47,6 @@ export class EndpointsService {
         return new Set(actions.sort());
     }
 
-    public addToStore(info: IEndpointInfo, store: Record<string, IEndpointInfo[]>): void {
-        const duplicate = this.endpointNameResolver.isDuplicate(info, store);
-        if (duplicate) {
-            info.action.name = this.endpointNameResolver.generateNameUnique(info);
-        }
-
-        store[info.name] = store[info.name] || [];
-        store[info.name].push(info);
-    }
-
     public parse(endpoint: string): IEndpointInfo | undefined {
         const controller = first(this.openAPIService.getTagsByEndpoint(endpoint));
         if (!controller) {
@@ -82,15 +72,21 @@ export class EndpointsService {
 
     private getControllers(): Record<string, IEndpointInfo[]> {
         const endpoints = this.openAPIService.getEndpoints();
-        const store: Record<string, IEndpointInfo[]> = {};
-        endpoints.forEach(endpoint => {
+        const endpointInfos = endpoints.reduce<IEndpointInfo[]>((infos, endpoint) => {
             const info = this.parse(endpoint);
             if (!info) {
-                return;
+                return infos;
             }
 
-            this.addToStore(info, store)
-        });
-        return store
+            infos.push(info);
+            return infos;
+        }, []);
+
+        this.endpointNameResolver.deduplicate(endpointInfos);
+        return endpointInfos.reduce<Record<string, IEndpointInfo[]>>((store, info) => {
+            store[info.name] = store[info.name] || [];
+            store[info.name].push(info);
+            return store;
+        }, {});
     }
 }

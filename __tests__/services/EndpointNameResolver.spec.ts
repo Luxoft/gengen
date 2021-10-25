@@ -19,64 +19,29 @@ describe('EndpointNameResolver tests', () => {
         };
     }
 
-    describe('isDuplicate', () => {
-        test('has duplicate', () => {
-            // Arrange
-            const service = getService();
-            const store = {
-                Product: [toEndpointInfo({ action: { name: 'product', origin: '' } })]
-            };
-            const info = toEndpointInfo({
-                name: 'Product',
-                action: { name: 'product', origin: 'Product' }
-            });
-
-            // Act
-            const result = service.isDuplicate(info, store);
-
-            // Assert
-            expect(result).toEqual(true);
-        });
-
-        test('doesnt have duplicate', () => {
-            // Arrange
-            const service = getService();
-            const store = {
-                Product: [toEndpointInfo({ action: { name: 'download', origin: '' } })]
-            };
-            const info = {
-                name: 'Product',
-                origin: '/Product/Product',
-                relativePath: '/Product',
-                action: { name: 'product', origin: 'Product' }
-            };
-
-            // Act
-            const result = service.isDuplicate(info, store);
-
-            // Assert
-            expect(result).toEqual(false);
-        });
-    });
-
-    describe('generateNameUnique', () => {
-        test('info', () => {
+    describe('deduplicate', () => {
+        test('store with duplicates', () => {
             // Arrange
             const spec = {
                 openapi: '3.0.1',
-                paths: { '/api/v1/Product/Product': { put: { tags: ['Product'] } } }
+                paths: { '/api/v1/Product/Product': { get: { tags: ['Product'] }, put: { tags: ['Product'] } } }
             }
             const service = getService(JSON.stringify(spec));
-            const info = toEndpointInfo({
-                origin: '/api/v1/Product/Product',
-                action: { name: 'product', origin: 'Product' }
-            });
+            const infos = [
+                toEndpointInfo({ action: { name: 'product', origin: '' }, origin: '/api/v1/Product/Product' }),
+                toEndpointInfo({ action: { name: 'product', origin: '' }, origin: '/api/v1/Product/Product' })
+            ];
+
+            const expected = [
+                toEndpointInfo({ action: { name: 'getProduct', origin: '', }, origin: '/api/v1/Product/Product' }),
+                toEndpointInfo({ action: { name: 'product', origin: '' }, origin: '/api/v1/Product/Product' })
+            ]
 
             // Act
-            const result = service.generateNameUnique(info);
+            service.deduplicate(infos);
 
             // Assert
-            expect(result).toEqual('putProduct');
+            expect(infos).toMatchObject(expected);
         });
     });
 
