@@ -157,43 +157,4 @@ describe('EndpointsService tests', () => {
             });
         });
     });
-
-    describe('addToStore', () => {
-        test('spec with duplicates of endpoints', () => {
-            // Arrange
-            const spec = {
-                openapi: '3.0.1',
-                paths: {
-                    '/api/v1/Product/Product': {
-                        get: { tags: ['Product'] },
-                        post: { tags: ['Product'] }
-                    }
-                }
-            };
-            const service = getService(JSON.stringify(spec));
-            const info1 = {
-                name: 'Product',
-                origin: '/api/v1/Product/Product',
-                relativePath: '/api/v1/Product',
-                action: { name: 'product', origin: 'Product' }
-            };
-            const info2 = {
-                name: 'Product',
-                origin: '/api/v1/Product/Product',
-                relativePath: '/api/v1/Product',
-                action: { name: 'getProduct', origin: 'Product' }
-            };
-            const expectedStore = {
-                Product: [info1, info2]
-            };
-            const resultstore = {};
-            service.addToStore(info1, resultstore);
-
-            // Act
-            service.addToStore(info2, resultstore);
-
-            // Assert
-            expect(resultstore).toMatchObject(expectedStore);
-        });
-    });
 });

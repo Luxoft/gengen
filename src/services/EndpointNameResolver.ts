@@ -8,11 +8,20 @@ export class EndpointNameResolver {
 
     constructor(private readonly openAPIService: OpenAPIService) {}
 
-    public isDuplicate(info: IEndpointInfo, store: Record<string, IEndpointInfo[]>): boolean {
-        return Boolean(store[info.name]?.some(z => z.action.name === info.action.name));
+    private isDuplicate(info: IEndpointInfo, infos: IEndpointInfo[]): boolean {
+        return infos.filter(z => z.action.name === info.action.name && z.name == info.name).length > 1;
     }
 
-    public generateNameUnique(endpoint: IEndpointInfo): string {
+    public deduplicate(infos: IEndpointInfo[]): void {
+        infos.forEach(info => {
+            const duplicate = this.isDuplicate(info, infos);
+            if (duplicate) {
+                info.action.name = this.generateNameUnique(info);
+            }
+        })
+    }
+
+    private generateNameUnique(endpoint: IEndpointInfo): string {
         const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
         if (!method) {
             throw new Error(`Cannot find method operation for endpoint '${endpoint.origin}'`);
