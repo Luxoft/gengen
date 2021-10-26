@@ -1,6 +1,7 @@
+import { MethodOperation } from '../models/kinds/MethodOperation';
 import { pathOptions } from '../options';
 import { OpenAPIService } from '../swagger/OpenAPIService';
-import { first, sortBy } from '../utils';
+import { first, sortBy, upperFirst } from '../utils';
 import { EndpointNameResolver } from './EndpointNameResolver';
 
 export interface IAction {
@@ -12,7 +13,7 @@ export interface IEndpointInfo {
     name: string;
     origin: string;
     relativePath: string;
-    action: IAction;
+    actions: IAction[];
 }
 
 export class EndpointsService {
@@ -23,15 +24,13 @@ export class EndpointsService {
     public getActionsGroupedByController(): Record<string, Record<string, string>> {
         const result: Record<string, Record<string, string>> = {};
         const controllers = this.getControllers();
-
         Object.keys(controllers)
             .sort()
             .forEach((key) => {
                 result[key] = {};
-
                 controllers[key]
-                    .sort(sortBy((z) => z.action.name))
-                    .forEach(z => result[key][z.action.name] = z.origin);
+                    .sort(sortBy((z) => first(z.actions).name))
+                    .forEach(z => z.actions.forEach(x => result[key][x.name] = z.origin));
             });
 
         return result;
@@ -58,15 +57,27 @@ export class EndpointsService {
             return undefined;
         }
 
+        const methods = this.openAPIService.getOperationByEndpoint(endpoint);
         const rawAction = endpoint.slice(controllerStartIndex + controller.length + pathOptions.separator.length);
+
         return {
             name: controller,
             origin: endpoint,
             relativePath: endpoint.slice(0, controllerStartIndex) + controller,
-            action: {
-                name: rawAction ? this.endpointNameResolver.generateNameByPath(rawAction) : this.endpointNameResolver.generateNameDefault(controller),
-                origin: rawAction
-            }
+            actions: [...methods.map(z => {
+                const name = rawAction ?
+                    this.endpointNameResolver.generateNameByPath(rawAction)
+                    :
+                    this.endpointNameResolver.generateNameDefault(controller);
+                    
+                return {
+                    name: `${methods.length > 1 ?
+                        `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}`
+                        :
+                        name}`,
+                    origin: rawAction
+                }
+            })]
         };
     }
 
@@ -82,7 +93,7 @@ export class EndpointsService {
             return infos;
         }, []);
 
-        this.endpointNameResolver.deduplicate(endpointInfos);
+        this.endpointNameResolver.checkForDuplication(endpointInfos);
         return endpointInfos.reduce<Record<string, IEndpointInfo[]>>((store, info) => {
             store[info.name] = store[info.name] || [];
             store[info.name].push(info);

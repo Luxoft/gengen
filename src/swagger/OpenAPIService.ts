@@ -16,7 +16,7 @@ interface IOperation {
     method: MethodOperation;
 }
 
-export type IOpenAPI3Operations = { [key: string]: { method: MethodOperation; operation: IOpenAPI3Operation } };
+export type IOpenAPI3Operations = { [key: string]: { method: MethodOperation; operation: IOpenAPI3Operation }[] };
 
 export class OpenAPIService {
     private readonly spec: IOpenAPI3;
@@ -38,14 +38,13 @@ export class OpenAPIService {
         return Object.keys(this.spec.paths).sort();
     }
 
-    public getMethodByEndpoint(endpoint: string): string | undefined {
-        const result = this.getOperationByEndpoint(endpoint);
-        return result ? MethodOperation[result.method].toLocaleLowerCase() : undefined;
-    }
-
     public getTagsByEndpoint(endpoint: string): string[] {
         const result = this.getOperationByEndpoint(endpoint);
-        return result?.operation.tags ?? [];
+        if (!result) {
+            return [];
+        }
+        
+        return first(result).operation.tags ?? [];
     }
 
     public getSchemasByEndpoints(endpoints: Set<string>): OpenAPI3SchemaContainer {
@@ -60,7 +59,7 @@ export class OpenAPIService {
                     return store;
                 }
 
-                const refs = this.getReferencesByOperation(model.operation);
+                const refs = this.getReferencesByOperation(first(model).operation);
                 return { ...store, ...this.getSchemas(refs) };
             }, {});
     }
@@ -72,11 +71,12 @@ export class OpenAPIService {
 
         return [...endpoints].reduce<IOpenAPI3Operations>((store, endpoint) => {
             const model = this.getOperationByEndpoint(endpoint);
-            if (!model) {
+            if (!model.length) {
                 return store;
             }
 
-            store[model.key] = { method: model.method, operation: model.operation };
+            store[first(model).key] = model.map(x => ({ method: x.method, operation: x.operation }))
+
             return store;
         }, {});
     }
@@ -98,34 +98,36 @@ export class OpenAPIService {
         return first(this.spec.openapi.split('.'));
     }
 
-    private getOperationByEndpoint(endpoint: string): IOperation | undefined {
+    public getOperationByEndpoint(endpoint: string): IOperation[] {
         if (!this.spec.paths) {
-            return undefined;
+            return [];
         }
 
         const path = Object.entries(this.spec.paths).find(([key]) => key === endpoint);
         if (!path) {
-            return undefined;
+            return [];
         }
 
         const [name, pathItem] = path;
-        if (pathItem.get) {
-            return { key: name, operation: pathItem.get, method: MethodOperation.GET };
-        }
 
-        if (pathItem.post) {
-            return { key: name, operation: pathItem.post, method: MethodOperation.POST };
-        }
+        return Object.keys(pathItem).reduce<IOperation[]>((operations, method) => {
+            switch (method) {
+                case 'get':
+                    operations.push({ key: name, operation: pathItem.get, method: MethodOperation.GET } as IOperation);
+                    break;
+                case 'post':
+                    operations.push({ key: name, operation: pathItem.post, method: MethodOperation.POST } as IOperation);
+                    break;
+                case 'put':
+                    operations.push({ key: name, operation: pathItem.put, method: MethodOperation.PUT } as IOperation);
+                    break;
+                case 'delete':
+                    operations.push({ key: name, operation: pathItem.delete, method: MethodOperation.DELETE } as IOperation);
+                    break;
+            }
 
-        if (pathItem.put) {
-            return { key: name, operation: pathItem.put, method: MethodOperation.PUT };
-        }
-
-        if (pathItem.delete) {
-            return { key: name, operation: pathItem.delete, method: MethodOperation.DELETE };
-        }
-
-        return undefined;
+            return operations;
+        }, [])
     }
 
     private getReferencesByOperation(operation: IOpenAPI3Operation): IOpenAPI3Reference[] {
