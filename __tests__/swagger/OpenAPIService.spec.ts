@@ -89,8 +89,8 @@ describe('OpenAPIService tests', () => {
             const spec = { openapi: '3.0.1', paths: { test: operationObject, test2: operationObject } };
             const service = new OpenAPIService(JSON.stringify(spec), guard);
             expect(service.getOperationsByEndpoints(new Set(['test', 'test2']))).toMatchObject({
-                test: { operation: operationObject[operation], method: method },
-                test2: { operation: operationObject[operation], method: method }
+                test: [{ operation: operationObject[operation], method: method }],
+                test2: [{ operation: operationObject[operation], method: method }]
             });
         });
     });
