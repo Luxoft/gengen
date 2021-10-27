@@ -5,6 +5,9 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "./lib",
+    "lib": [
+      "es2019"
+    ]
   },
   "include": [
     "src/**/*"

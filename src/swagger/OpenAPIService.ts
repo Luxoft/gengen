@@ -59,12 +59,8 @@ export class OpenAPIService {
                     return store;
                 }
 
-                const refs = model.reduce<IOpenAPI3Reference[]>((operations, z) => {
-                    operations.push(...this.getReferencesByOperation(z.operation));
-                    return operations;
-                }, []);
-
-                return { ...store, ...this.getSchemas(refs) };
+                const operations = model.flatMap(z => this.getReferencesByOperation(z.operation));
+                return { ...store, ...this.getSchemas(operations) };
             }, {});
     }
 
