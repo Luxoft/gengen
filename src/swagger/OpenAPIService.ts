@@ -90,14 +90,6 @@ export class OpenAPIService {
         return this.spec.components.schemas[refKey];
     }
 
-    private get majorVersion(): string | undefined {
-        if (!this.spec.openapi) {
-            return undefined;
-        }
-
-        return first(this.spec.openapi.split('.'));
-    }
-
     public getOperationByEndpoint(endpoint: string): IOperation[] {
         if (!this.spec.paths) {
             return [];
@@ -130,6 +122,14 @@ export class OpenAPIService {
         }, [])
     }
 
+    private get majorVersion(): string | undefined {
+        if (!this.spec.openapi) {
+            return undefined;
+        }
+
+        return first(this.spec.openapi.split('.'));
+    }
+    
     private getReferencesByOperation(operation: IOpenAPI3Operation): IOpenAPI3Reference[] {
         const refs: IOpenAPI3Reference[] = [];
 
