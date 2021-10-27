@@ -72,9 +72,9 @@ export class EndpointsService {
 
                 return {
                     name: `${methods.length > 1 ?
-                        `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}`
-                        :
-                        name}`,
+                            `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}`
+                            :
+                            name}`,
                     origin: rawAction
                 }
             })
