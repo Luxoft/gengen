@@ -40,10 +40,10 @@ export class OpenAPIService {
 
     public getTagsByEndpoint(endpoint: string): string[] {
         const result = this.getOperationByEndpoint(endpoint);
-        if (!result) {
+        if (!result.length) {
             return [];
         }
-        
+
         return first(result).operation.tags ?? [];
     }
 
@@ -55,11 +55,15 @@ export class OpenAPIService {
         return [...endpoints]
             .map((z) => this.getOperationByEndpoint(z))
             .reduce((store, model) => {
-                if (!model) {
+                if (!model.length) {
                     return store;
                 }
 
-                const refs = this.getReferencesByOperation(first(model).operation);
+                const refs = model.reduce<IOpenAPI3Reference[]>((operations, z) => {
+                    operations.push(...this.getReferencesByOperation(z.operation));
+                    return operations;
+                }, []);
+
                 return { ...store, ...this.getSchemas(refs) };
             }, {});
     }
@@ -70,12 +74,12 @@ export class OpenAPIService {
         }
 
         return [...endpoints].reduce<IOpenAPI3Operations>((store, endpoint) => {
-            const model = this.getOperationByEndpoint(endpoint);
-            if (!model.length) {
+            const operations = this.getOperationByEndpoint(endpoint);
+            if (!operations.length) {
                 return store;
             }
 
-            store[first(model).key] = model.map(x => ({ method: x.method, operation: x.operation }))
+            store[first(operations).key] = operations.map(x => ({ method: x.method, operation: x.operation }))
 
             return store;
         }, {});

@@ -7,13 +7,10 @@ export class Endpoints {
         download: '/Product/Download',
         getByCustomerType: '/Product/getByCustomer/{customer}/type/{type}',
         getById: '/api/v1/Product/GetById/{id}',
-        getProduct: '/Product/Product',
-        postProduct: '/Product/Product',
-        getProduct1: '/Product/GetProduct1',
-        getProductDefault: '/api/v1/Product',
-        postProductDefault: '/api/v1/Product',
-        putProductDefault: '/api/v1/Product',
+        getProducts: '/Product/GetProducts',
         getProductsByStatus: '/api/v1/Product/GetProductsByStatus/{status}',
+        product: '/Product/Product',
+        productDefault: '/api/v1/Product',
         searchProducts: '/Product/SearchProducts'
     };
 }

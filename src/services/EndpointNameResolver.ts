@@ -21,9 +21,9 @@ export class EndpointNameResolver {
 
         infos.forEach(z => {
             const duplicates = this.findDuplicates(z, infos);
-            if (duplicates && duplicates.length > 1) {
+            if (duplicates?.length > 1) {
                 const duplicate = first(duplicates);
-                throw new Error(`Duplicate with origin: '${duplicate.origin}' was detected. Please, rename your endpoints`);
+                throw new Error(`Duplicate by path: '${duplicate.origin}' was detected. Please, rename your endpoints`);
             }
         })
     }

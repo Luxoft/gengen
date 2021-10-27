@@ -60,7 +60,7 @@ export class ServiceMappingService {
 
             model.forEach(z => {
                 const action = model.length > 1 ?
-                    info.actions.find(x => x.name.indexOf(MethodOperation[z.method].toLocaleLowerCase()) > -1)
+                    info.actions.find(x => x.name.startsWith(MethodOperation[z.method].toLocaleLowerCase()))
                     :
                     first(info.actions);
 

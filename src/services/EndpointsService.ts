@@ -64,12 +64,12 @@ export class EndpointsService {
             name: controller,
             origin: endpoint,
             relativePath: endpoint.slice(0, controllerStartIndex) + controller,
-            actions: [...methods.map(z => {
+            actions: methods.map(z => {
                 const name = rawAction ?
                     this.endpointNameResolver.generateNameByPath(rawAction)
                     :
                     this.endpointNameResolver.generateNameDefault(controller);
-                    
+
                 return {
                     name: `${methods.length > 1 ?
                         `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}`
@@ -77,7 +77,7 @@ export class EndpointsService {
                         name}`,
                     origin: rawAction
                 }
-            })]
+            })
         };
     }
 
