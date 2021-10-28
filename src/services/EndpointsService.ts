@@ -34,7 +34,10 @@ export class EndpointsService {
                 controllers[key]
                     .flatMap(endpointInfo => endpointInfo.actions).sort(sortBy(action => action.name))
                     .forEach(action => {
-                        result[key][action.name] = controllers[key].find(endpointInfo => endpointInfo.actions.includes(action))?.origin ?? '';
+                        const info = controllers[key].find(endpointInfo => endpointInfo.actions.includes(action));
+                        if (info) {
+                            result[key][action.name] = info.origin;
+                        }
                     });
             });
 
