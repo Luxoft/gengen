@@ -9,10 +9,6 @@ interface IEndpointInfoItem {
 }
 
 export class EndpointNameResolver {
-    private queryParameterRegExp = new RegExp('^{(.*)}$');
-
-    constructor() {}
-
     public checkDuplicates(endpointInfos: IEndpointInfo[]): void {
         const infos = endpointInfos.reduce<IEndpointInfoItem[]>((arr, z) => {
             arr.push(...z.actions.map(x => ({ name: z.name, origin: z.origin, action: x })))
@@ -44,4 +40,6 @@ export class EndpointNameResolver {
     private findDuplicates(info: IEndpointInfoItem, infos: IEndpointInfoItem[]): IEndpointInfoItem[] {
         return infos.filter(x => info.action.name === x.action.name && info.name === x.name);
     }
+
+    private queryParameterRegExp = new RegExp('^{(.*)}$');
 }
