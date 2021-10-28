@@ -13,7 +13,7 @@ export class EndpointNameResolver {
 
     constructor() {}
 
-    public checkForDuplication(endpointInfos: IEndpointInfo[]): void {
+    public checkDuplicates(endpointInfos: IEndpointInfo[]): void {
         const infos = endpointInfos.reduce<IEndpointInfoItem[]>((arr, z) => {
             arr.push(...z.actions.map(x => ({ name: z.name, origin: z.origin, action: x })))
             return arr;
@@ -21,7 +21,7 @@ export class EndpointNameResolver {
 
         infos.forEach(z => {
             const duplicates = this.findDuplicates(z, infos);
-            if (duplicates?.length > 1) {
+            if (duplicates.length > 1) {
                 const duplicate = first(duplicates);
                 throw new Error(`Duplicate by path: '${duplicate.origin}' was detected. Please, rename your endpoints`);
             }

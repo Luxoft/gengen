@@ -12,7 +12,7 @@ describe('EndpointNameResolver tests', () => {
         };
     }
 
-    describe('checkForDuplication', () => {
+    describe('checkDuplicates', () => {
         test('store with duplicates', () => {
             // Arrange
             const service = new EndpointNameResolver();
@@ -23,7 +23,7 @@ describe('EndpointNameResolver tests', () => {
             ];
 
             // Assert
-            expect(() => { service.checkForDuplication(infos) }).toThrowError(new Error(`Duplicate by path: '${origin}' was detected. Please, rename your endpoints`));
+            expect(() => { service.checkDuplicates(infos) }).toThrowError(new Error(`Duplicate by path: '${origin}' was detected. Please, rename your endpoints`));
         });
     });
 

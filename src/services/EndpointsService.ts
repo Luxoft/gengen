@@ -1,3 +1,5 @@
+import { action } from 'commander';
+
 import { MethodOperation } from '../models/kinds/MethodOperation';
 import { pathOptions } from '../options';
 import { OpenAPIService } from '../swagger/OpenAPIService';
@@ -29,8 +31,12 @@ export class EndpointsService {
             .forEach((key) => {
                 result[key] = {};
                 controllers[key]
-                    .sort(sortBy((z) => first(z.actions).name))
-                    .forEach(z => z.actions.forEach(x => result[key][x.name] = z.origin));
+                    .sort(sortBy((controller) => first(controller.actions).name))
+                    .forEach(controller => {
+                        controller.actions.forEach(action => {
+                            result[key][action.name] = controller.origin;
+                        });
+                    });
             });
 
         return result;
@@ -57,7 +63,7 @@ export class EndpointsService {
             return undefined;
         }
 
-        const methods = this.openAPIService.getOperationByEndpoint(endpoint);
+        const methods = this.openAPIService.getOperationsByEndpoint(endpoint);
         const rawAction = endpoint.slice(controllerStartIndex + controller.length + pathOptions.separator.length);
 
         return {
@@ -72,9 +78,9 @@ export class EndpointsService {
 
                 return {
                     name: `${methods.length > 1 ?
-                            `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}`
-                            :
-                            name}`,
+                        `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}`
+                        :
+                        name}`,
                     origin: rawAction
                 }
             })
@@ -93,7 +99,7 @@ export class EndpointsService {
             return infos;
         }, []);
 
-        this.endpointNameResolver.checkForDuplication(endpointInfos);
+        this.endpointNameResolver.checkDuplicates(endpointInfos);
         return endpointInfos.reduce<Record<string, IEndpointInfo[]>>((store, info) => {
             store[info.name] = store[info.name] || [];
             store[info.name].push(info);

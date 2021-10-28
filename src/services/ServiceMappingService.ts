@@ -48,7 +48,7 @@ export class ServiceMappingService {
             return infos;
         }, []);
 
-        this.endpointNameResolver.checkForDuplication(endpointInfos);
+        this.endpointNameResolver.checkDuplicates(endpointInfos);
 
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
             const info = endpointInfos.find(z => z.origin === endpoint);

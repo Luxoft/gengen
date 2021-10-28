@@ -39,7 +39,7 @@ export class OpenAPIService {
     }
 
     public getTagsByEndpoint(endpoint: string): string[] {
-        const result = this.getOperationByEndpoint(endpoint);
+        const result = this.getOperationsByEndpoint(endpoint);
         if (!result.length) {
             return [];
         }
@@ -53,14 +53,14 @@ export class OpenAPIService {
         }
 
         return [...endpoints]
-            .map((z) => this.getOperationByEndpoint(z))
-            .reduce((store, model) => {
-                if (!model.length) {
+            .map((z) => this.getOperationsByEndpoint(z))
+            .reduce((store, operations) => {
+                if (!operations.length) {
                     return store;
                 }
 
-                const operations = model.flatMap(z => this.getReferencesByOperation(z.operation));
-                return { ...store, ...this.getSchemas(operations) };
+                const refs = operations.flatMap(z => this.getReferencesByOperation(z.operation));
+                return { ...store, ...this.getSchemas(refs) };
             }, {});
     }
 
@@ -70,7 +70,7 @@ export class OpenAPIService {
         }
 
         return [...endpoints].reduce<IOpenAPI3Operations>((store, endpoint) => {
-            const operations = this.getOperationByEndpoint(endpoint);
+            const operations = this.getOperationsByEndpoint(endpoint);
             if (!operations.length) {
                 return store;
             }
@@ -90,7 +90,7 @@ export class OpenAPIService {
         return this.spec.components.schemas[refKey];
     }
 
-    public getOperationByEndpoint(endpoint: string): IOperation[] {
+    public getOperationsByEndpoint(endpoint: string): IOperation[] {
         if (!this.spec.paths) {
             return [];
         }
@@ -129,7 +129,7 @@ export class OpenAPIService {
 
         return first(this.spec.openapi.split('.'));
     }
-    
+
     private getReferencesByOperation(operation: IOpenAPI3Operation): IOpenAPI3Reference[] {
         const refs: IOpenAPI3Reference[] = [];
 
