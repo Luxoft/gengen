@@ -26,16 +26,15 @@ export class EndpointsService {
     public getActionsGroupedByController(): Record<string, Record<string, string>> {
         const result: Record<string, Record<string, string>> = {};
         const controllers = this.getControllers();
+
         Object.keys(controllers)
             .sort()
             .forEach((key) => {
                 result[key] = {};
                 controllers[key]
-                    .sort(sortBy((controller) => first(controller.actions).name))
-                    .forEach(controller => {
-                        controller.actions.forEach(action => {
-                            result[key][action.name] = controller.origin;
-                        });
+                    .flatMap(x => x.actions).sort(sortBy(action => action.name))
+                    .forEach(action => {
+                        result[key][action.name] = controllers[key].find(endpointInfo => endpointInfo.actions.includes(action))?.origin ?? '';
                     });
             });
 
@@ -71,18 +70,16 @@ export class EndpointsService {
             origin: endpoint,
             relativePath: endpoint.slice(0, controllerStartIndex) + controller,
             actions: methods.map(z => {
-                const name = rawAction ?
-                    this.endpointNameResolver.generateNameByPath(rawAction)
-                    :
-                    this.endpointNameResolver.generateNameDefault(controller);
+                const name = rawAction
+                    ? this.endpointNameResolver.generateNameByPath(rawAction)
+                    : this.endpointNameResolver.generateNameDefault(controller);
 
                 return {
-                    name: `${methods.length > 1 ?
-                        `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}`
-                        :
-                        name}`,
+                    name: `${methods.length > 1
+                        ? `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}`
+                        : name}`,
                     origin: rawAction
-                }
+                };
             })
         };
     }

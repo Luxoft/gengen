@@ -78,7 +78,7 @@ export class ServiceMappingService {
                     relativePath: info.relativePath,
                     methods: [this.getMethod(action.name, z.method, z.operation, models, action.origin)]
                 });
-            })
+            });
 
             return store;
         }, []);

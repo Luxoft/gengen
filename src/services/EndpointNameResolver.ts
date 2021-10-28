@@ -25,7 +25,7 @@ export class EndpointNameResolver {
                 const duplicate = first(duplicates);
                 throw new Error(`Duplicate by path: '${duplicate.origin}' was detected. Please, rename your endpoints`);
             }
-        })
+        });
     }
 
     public generateNameByPath(path: string): string {
