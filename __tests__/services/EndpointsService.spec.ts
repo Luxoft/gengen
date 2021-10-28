@@ -6,7 +6,7 @@ import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 describe('EndpointsService tests', () => {
     function getService(spec: string): EndpointsService {
         const openApiService = new OpenAPIService(spec, new OpenAPITypesGuard());
-        return new EndpointsService(openApiService, new EndpointNameResolver(openApiService));
+        return new EndpointsService(openApiService, new EndpointNameResolver());
     }
 
     describe('getActionsGroupedByController', () => {
@@ -113,7 +113,7 @@ describe('EndpointsService tests', () => {
             // Assert
             expect(result).toMatchObject({
                 name: 'Product',
-                action: { origin: 'SearchProducts', name: 'searchProducts' },
+                actions: [{ origin: 'SearchProducts', name: 'searchProducts' }],
                 relativePath: '/Product'
             });
         });
@@ -132,7 +132,7 @@ describe('EndpointsService tests', () => {
             // Assert
             expect(result).toMatchObject({
                 name: 'Product',
-                action: { origin: 'SearchProducts', name: 'searchProducts' },
+                actions: [{ origin: 'SearchProducts', name: 'searchProducts' }],
                 relativePath: '/api/v1/Product'
             });
         });
@@ -152,7 +152,7 @@ describe('EndpointsService tests', () => {
             // Assert
             expect(result).toMatchObject({
                 name: 'Product',
-                action: { origin: 'Download/{id}', name: 'download' },
+                actions: [{ origin: 'Download/{id}', name: 'download' }],
                 relativePath: '/api/v1/Product'
             });
         });

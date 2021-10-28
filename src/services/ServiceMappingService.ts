@@ -18,7 +18,7 @@ import { IOpenAPI3Parameter } from '../swagger/v3/parameter';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3ArraySchema } from '../swagger/v3/schemas/array-schema';
 import { OpenAPI3ResponseSchema } from '../swagger/v3/schemas/schema';
-import { lowerFirst, sortBy } from '../utils';
+import { first, lowerFirst, sortBy } from '../utils';
 import { EndpointNameResolver } from './EndpointNameResolver';
 import { EndpointsService, IEndpointInfo } from './EndpointsService';
 import { TypesService } from './TypesService';
@@ -48,7 +48,7 @@ export class ServiceMappingService {
             return infos;
         }, []);
 
-        this.endpointNameResolver.deduplicate(endpointInfos);
+        this.endpointNameResolver.checkDuplicates(endpointInfos);
 
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
             const info = endpointInfos.find(z => z.origin === endpoint);
@@ -57,16 +57,29 @@ export class ServiceMappingService {
             }
 
             const service = store.find((z) => z.name === info.name);
-            if (service) {
-                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin));
-                return store;
-            }
 
-            store.push({
-                name: info.name,
-                relativePath: info.relativePath,
-                methods: [this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin)]
+            model.forEach(z => {
+                const action = model.length > 1 ?
+                    info.actions.find(x => x.name.startsWith(MethodOperation[z.method].toLocaleLowerCase()))
+                    :
+                    first(info.actions);
+
+                if(!action){
+                    throw new Error(`Cannot find action in service ${info.name} by method ${z}`);
+                }
+                
+                if (service) {
+                    service.methods.push(this.getMethod(action.name, z.method, z.operation, models, action.origin));
+                    return store;
+                }
+
+                store.push({
+                    name: info.name,
+                    relativePath: info.relativePath,
+                    methods: [this.getMethod(action.name, z.method, z.operation, models, action.origin)]
+                });
             });
+
             return store;
         }, []);
 

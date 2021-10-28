@@ -1,20 +1,27 @@
 import { pathOptions } from '../options';
-import { OpenAPIService } from '../swagger/OpenAPIService';
-import { lowerFirst, upperFirst } from '../utils';
-import { IEndpointInfo } from './EndpointsService';
+import { first, lowerFirst, upperFirst } from '../utils';
+import { IAction, IEndpointInfo } from './EndpointsService';
+
+interface IEndpointInfoItem {
+    name: string;
+    origin: string;
+    action: IAction;
+}
 
 export class EndpointNameResolver {
-    private queryParameterRegExp = new RegExp('^{(.*)}$');
+    public checkDuplicates(endpointInfos: IEndpointInfo[]): void {
+        const infos = endpointInfos.reduce<IEndpointInfoItem[]>((arr, z) => {
+            arr.push(...z.actions.map(x => ({ name: z.name, origin: z.origin, action: x })))
+            return arr;
+        }, []);
 
-    constructor(private readonly openAPIService: OpenAPIService) {}
-
-    public deduplicate(infos: IEndpointInfo[]): void {
-        infos.forEach(info => {
-            const duplicate = this.isDuplicate(info, infos);
-            if (duplicate) {
-                info.action.name = this.generateNameUnique(info);
+        infos.forEach(z => {
+            const duplicates = this.findDuplicates(z, infos);
+            if (duplicates.length > 1) {
+                const duplicate = first(duplicates);
+                throw new Error(`Duplicate by path: '${duplicate.origin}' was detected. Please, rename your endpoints`);
             }
-        })
+        });
     }
 
     public generateNameByPath(path: string): string {
@@ -29,16 +36,10 @@ export class EndpointNameResolver {
         return lowerFirst(`${name}Default`);
     }
 
-    private generateNameUnique(endpoint: IEndpointInfo): string {
-        const method = this.openAPIService.getMethodByEndpoint(endpoint.origin);
-        if (!method) {
-            throw new Error(`Cannot find method operation for endpoint '${endpoint.origin}'`);
-        }
 
-        return `${lowerFirst(method)}${upperFirst(endpoint.action.name)}`;
+    private findDuplicates(info: IEndpointInfoItem, infos: IEndpointInfoItem[]): IEndpointInfoItem[] {
+        return infos.filter(x => info.action.name === x.action.name && info.name === x.name);
     }
 
-    private isDuplicate(info: IEndpointInfo, infos: IEndpointInfo[]): boolean {
-        return infos.filter(z => z.action.name === info.action.name && z.name == info.name).length > 1;
-    }
+    private queryParameterRegExp = new RegExp('^{(.*)}$');
 }

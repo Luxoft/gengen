@@ -1,54 +1,36 @@
 import { EndpointNameResolver } from '../../src/services/EndpointNameResolver';
 import { IEndpointInfo } from '../../src/services/EndpointsService';
-import { OpenAPIService } from '../../src/swagger/OpenAPIService';
-import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 
 describe('EndpointNameResolver tests', () => {
-    function getService(spec?: string): EndpointNameResolver {
-        const json = spec ?? JSON.stringify({ openapi: '3.0.1', paths: {} });
-        return new EndpointNameResolver(new OpenAPIService(json, new OpenAPITypesGuard()));
-    }
-
     function toEndpointInfo(info: Partial<IEndpointInfo>): IEndpointInfo {
         return {
             name: '',
             origin: '',
             relativePath: '',
-            action: { name: '', origin: '' },
+            actions: [{ name: '', origin: '' }],
             ...info
         };
     }
 
-    describe('deduplicate', () => {
+    describe('checkDuplicates', () => {
         test('store with duplicates', () => {
             // Arrange
-            const spec = {
-                openapi: '3.0.1',
-                paths: { '/api/v1/Product/Product': { get: { tags: ['Product'] }, put: { tags: ['Product'] } } }
-            }
-            const service = getService(JSON.stringify(spec));
+            const service = new EndpointNameResolver();
+            const origin = '/api/v1/Product/Product';
             const infos = [
-                toEndpointInfo({ action: { name: 'product', origin: '' }, origin: '/api/v1/Product/Product' }),
-                toEndpointInfo({ action: { name: 'product', origin: '' }, origin: '/api/v1/Product/Product' })
+                toEndpointInfo({ actions: [{ name: 'product', origin: '' }], origin }),
+                toEndpointInfo({ actions: [{ name: 'product', origin: '' }], origin })
             ];
 
-            const expected = [
-                toEndpointInfo({ action: { name: 'getProduct', origin: '', }, origin: '/api/v1/Product/Product' }),
-                toEndpointInfo({ action: { name: 'product', origin: '' }, origin: '/api/v1/Product/Product' })
-            ]
-
-            // Act
-            service.deduplicate(infos);
-
             // Assert
-            expect(infos).toMatchObject(expected);
+            expect(() => { service.checkDuplicates(infos) }).toThrowError(new Error(`Duplicate by path: '${origin}' was detected. Please, rename your endpoints`));
         });
     });
 
     describe('generateNameByPath', () => {
         test('short path', () => {
             // Arrange
-            const service = getService();
+            const service = new EndpointNameResolver();
 
             // Act
             const result = service.generateNameByPath('SearchProducts')
@@ -59,7 +41,7 @@ describe('EndpointNameResolver tests', () => {
 
         test('long path', () => {
             // Arrange
-            const service = getService();
+            const service = new EndpointNameResolver();
 
             // Act
             const result = service.generateNameByPath('getByCustomer/{customer}/type/{type}')
@@ -72,7 +54,7 @@ describe('EndpointNameResolver tests', () => {
     describe('generateNameDefault', () => {
         test('name', () => {
             // Arrange
-            const service = getService();
+            const service = new EndpointNameResolver();
             const name = 'product';
 
             // Act

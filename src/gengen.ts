@@ -37,7 +37,7 @@ export async function config(options: IOptions): Promise<void> {
 
     const typesGuard = new OpenAPITypesGuard();
     const openAPIService = new OpenAPIService(swaggerJson, typesGuard);
-    const endpointNameResolver = new EndpointNameResolver(openAPIService);
+    const endpointNameResolver = new EndpointNameResolver();
     const endpointsService = new EndpointsService(openAPIService, endpointNameResolver);
     const controllers = endpointsService.getActionsGroupedByController();
 
@@ -60,7 +60,7 @@ export async function main(options: IOptions): Promise<void> {
 
     const typesGuard = new OpenAPITypesGuard();
     const openAPIService = new OpenAPIService(swaggerJson, typesGuard);
-    const endpointNameResolver = new EndpointNameResolver(openAPIService);
+    const endpointNameResolver = new EndpointNameResolver();
     const endpointsService = new EndpointsService(openAPIService, endpointNameResolver);
     const typesService = new TypesService(typesGuard);
     const modelMappingService = new ModelMappingService(openAPIService, typesGuard, typesService);
