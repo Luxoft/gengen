@@ -82,7 +82,7 @@ export async function main(options: IOptions): Promise<void> {
 
     const serviceFile = project.createSourceFile(
         `${settings.output}/${aliasResolver.getServicesFileName()}`,
-        { statements: new AngularServicesGenerator(aliasResolver, uriBuilder).getServicesCodeStructure(newServices) },
+        { statements: new AngularServicesGenerator(aliasResolver, uriBuilder, settings).getServicesCodeStructure(newServices) },
         { overwrite: true }
     );
 

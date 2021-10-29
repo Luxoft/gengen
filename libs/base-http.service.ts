@@ -13,8 +13,8 @@ export interface IAngularHttpRequestOptions {
 export abstract class BaseHttpService {
     constructor(private relativePath: string, protected http: HttpClient) {}
 
-    protected get<TResult>(url: string): Observable<TResult> {
-        return this.http.get<TResult>(this.getPath(url));
+    protected get<TResult>(url: string, options?: IAngularHttpRequestOptions): Observable<TResult> {
+        return this.http.get<TResult>(this.getPath(url), options);
     }
 
     protected post<TResult, TData = {}>(

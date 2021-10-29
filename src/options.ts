@@ -7,6 +7,7 @@ export interface IOptions {
     file?: string;
     url?: string;
     aliasName?: string;
+    withRequestOptions: boolean;
 }
 
 export const pathOptions = {
@@ -16,7 +17,8 @@ export const pathOptions = {
 export const defaultOptions: IOptions = {
     configOutput: './.generated',
     output: './src/generated',
-    url: 'https://localhost:5001/swagger/v1/swagger.json'
+    url: 'https://localhost:5001/swagger/v1/swagger.json',
+    withRequestOptions: false
 };
 
 export const generatorsOptions: ProjectOptions = {
