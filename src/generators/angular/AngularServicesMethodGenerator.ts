@@ -5,13 +5,15 @@ import { MethodOperation } from '../../models/kinds/MethodOperation';
 import { ParameterPlace } from '../../models/kinds/ParameterPlace';
 import { PropertyKind } from '../../models/kinds/PropertyKind';
 import { IBodyParameter } from '../../models/method-parameter/IBodyParameter';
-import { IMethodModel } from '../../models/method-parameter/IMethodModel';
+import { IMethodModel, IMethodParameter } from '../../models/method-parameter/IMethodModel';
 import { IPathParameter } from '../../models/method-parameter/IPathParameter';
 import { IQueryParameter } from '../../models/method-parameter/IQueryParameter';
 import { IReturnType } from '../../models/method-parameter/IReturnType';
+import { IOptions } from '../../options';
 import { UriBuilder } from '../../services/UriBuilder';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, UNDEFINED_STRING } from '../utils/consts';
 import { TypeSerializer } from '../utils/TypeSerializer';
+import { HTTP_REQUEST_OPTIONS } from './AngularServicesGenerator';
 
 interface IParameterType {
     type: string;
@@ -21,14 +23,14 @@ interface IParameterType {
 }
 
 export class AngularServicesMethodGenerator {
-    constructor(private uriBuilder: UriBuilder) {}
+    constructor(private uriBuilder: UriBuilder, private settings: IOptions) {}
 
     public getMethodsCodeStructures(methodModels: IMethodModel[]): OptionalKind<MethodDeclarationStructure>[] {
         return methodModels.map(
             (methodModel): OptionalKind<MethodDeclarationStructure> => ({
                 scope: Scope.Public,
                 name: methodModel.name,
-                parameters: methodModel.parameters.map((p) => this.getParameterStatement(p)),
+                parameters: this.getMethodParameters(methodModel).map((p) => this.getParameterStatement(p)),
                 returnType: this.getMethodReturnType(methodModel),
                 statements: (writer) => {
                     if (methodModel.kind === MethodKind.Download) {
@@ -73,14 +75,26 @@ export class AngularServicesMethodGenerator {
                     isModel: parameter.isModel,
                     isOptional: parameter.optional
                 });
-                if(parameter.name ==="options"){
-                    console.log(statement.type )
-                }
                 statement.hasQuestionToken = parameter.optional;
                 break;
         }
 
         return statement;
+    }
+
+    protected getMethodParameters(methodModel: IMethodModel): IMethodParameter[] {
+        if (this.settings.withRequestOptions) {
+            methodModel.parameters.push({
+                name: 'options',
+                place: ParameterPlace.Body,
+                optional: true,
+                dtoType: HTTP_REQUEST_OPTIONS,
+                isCollection: false,
+                isModel: false
+            });
+        }
+
+        return methodModel.parameters;
     }
 
     private getReturnTypeName(returnType: IReturnType | undefined, targetType: string | undefined): string {

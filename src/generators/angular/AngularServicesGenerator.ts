@@ -8,7 +8,6 @@ import {
 } from 'ts-morph';
 
 import { MethodKind } from '../../models/kinds/MethodKind';
-import { ParameterPlace } from '../../models/kinds/ParameterPlace';
 import { IServiceModel } from '../../models/ServiceModel';
 import { IOptions } from '../../options';
 import { AliasResolver } from '../../services/AliasResolver';
@@ -16,6 +15,7 @@ import { UriBuilder } from '../../services/UriBuilder';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, TYPES_NAMESPACE } from '../utils/consts';
 import { AngularServicesMethodGenerator } from './AngularServicesMethodGenerator';
 
+export const HTTP_REQUEST_OPTIONS = 'IAngularHttpRequestOptions';
 const BASE_SERVICE = 'BaseHttpService';
 const DOWNLOAD_SERVICE = 'DownloadFileService';
 const HTTP_CLIENT = 'HttpClient';
@@ -26,7 +26,7 @@ const HTTP_CLIENT_VARIABLE_NAME = 'http';
 export class AngularServicesGenerator {
     private methodGenerator: AngularServicesMethodGenerator;
     constructor(protected aliasResolver: AliasResolver, uriBuilder: UriBuilder, private settings: IOptions) {
-        this.methodGenerator = new AngularServicesMethodGenerator(uriBuilder);
+        this.methodGenerator = new AngularServicesMethodGenerator(uriBuilder, this.settings);
     }
     public getServicesCodeStructure(services: IServiceModel[]): StatementStructures[] {
         return [...this.getImports(), ...this.getServices(services)];
@@ -59,7 +59,7 @@ export class AngularServicesGenerator {
                 moduleSpecifier: './base-http.service',
                 namedImports: [this.settings.withRequestOptions
                     ? { name: BASE_SERVICE }
-                    : { name: BASE_SERVICE }, { name: 'IAngularHttpRequestOptions' }
+                    : { name: BASE_SERVICE }, { name: HTTP_REQUEST_OPTIONS }
                 ]
             },
             {
@@ -95,38 +95,21 @@ export class AngularServicesGenerator {
 
     private getServices(services: IServiceModel[]): ClassDeclarationStructure[] {
         return services.map(
-            (service): ClassDeclarationStructure => {
-                if (this.settings.withRequestOptions) {
-                    service.methods.forEach(method => {
-                        method.parameters.push(
-                            {
-                                name: 'options',
-                                place: ParameterPlace.Body,
-                                optional: true,
-                                dtoType: 'IAngularHttpRequestOptions',
-                                isCollection: false,
-                                isModel: false
-                            }
-                        );
-                    });
-                }
-
-                return {
-                    kind: StructureKind.Class,
-                    isExported: true,
-                    name: `${service.name}Service`,
-                    extends: service.methods.some((x) => x.kind === MethodKind.Download) ? DOWNLOAD_SERVICE : BASE_SERVICE,
-                    decorators: [
-                        {
-                            kind: StructureKind.Decorator,
-                            name: 'Injectable',
-                            arguments: Writers.object({ providedIn: "'root'" })
-                        }
-                    ],
-                    ctors: [this.getConstructorStatement(service)],
-                    methods: this.methodGenerator.getMethodsCodeStructures(service.methods)
-                }
-            }
+            (service): ClassDeclarationStructure => ({
+                kind: StructureKind.Class,
+                isExported: true,
+                name: `${service.name}Service`,
+                extends: service.methods.some((x) => x.kind === MethodKind.Download) ? DOWNLOAD_SERVICE : BASE_SERVICE,
+                decorators: [
+                    {
+                        kind: StructureKind.Decorator,
+                        name: 'Injectable',
+                        arguments: Writers.object({ providedIn: "'root'" })
+                    }
+                ],
+                ctors: [this.getConstructorStatement(service)],
+                methods: this.methodGenerator.getMethodsCodeStructures(service.methods)
+            })
         );
     }
 
