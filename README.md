@@ -53,6 +53,8 @@ gengen g --all
 | **output**       | Output directory                                                       | string  | ./src/generated                                |
 | **configOutput** | Output directory using in 'Generate a part of API' scenario            | string  | ./.generated                                   |
 | **aliasName**    | Specify prefix for generated filenames. [more info](#aliasName) | string  |                                                |
+|**withRequestOptions** | Allow to pass request options                                     | boolean | false      
+|                                                |
 
 ### Option details
 

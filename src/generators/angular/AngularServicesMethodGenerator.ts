@@ -13,7 +13,8 @@ import { IOptions } from '../../options';
 import { UriBuilder } from '../../services/UriBuilder';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, UNDEFINED_STRING } from '../utils/consts';
 import { TypeSerializer } from '../utils/TypeSerializer';
-import { HTTP_REQUEST_OPTIONS } from './AngularServicesGenerator';
+
+export const HTTP_REQUEST_OPTIONS = 'IAngularHttpRequestOptions';
 
 interface IParameterType {
     type: string;
@@ -41,6 +42,21 @@ export class AngularServicesMethodGenerator {
                 }
             })
         );
+    }
+
+    protected getMethodParameters(methodModel: IMethodModel): IMethodParameter[] {
+        if (this.settings.withRequestOptions) {
+            methodModel.parameters.push({
+                name: 'options',
+                place: ParameterPlace.Body,
+                optional: true,
+                dtoType: HTTP_REQUEST_OPTIONS,
+                isCollection: false,
+                isModel: false
+            });
+        }
+
+        return methodModel.parameters;
     }
 
     private getParameterStatement(
@@ -80,21 +96,6 @@ export class AngularServicesMethodGenerator {
         }
 
         return statement;
-    }
-
-    protected getMethodParameters(methodModel: IMethodModel): IMethodParameter[] {
-        if (this.settings.withRequestOptions) {
-            methodModel.parameters.push({
-                name: 'options',
-                place: ParameterPlace.Body,
-                optional: true,
-                dtoType: HTTP_REQUEST_OPTIONS,
-                isCollection: false,
-                isModel: false
-            });
-        }
-
-        return methodModel.parameters;
     }
 
     private getReturnTypeName(returnType: IReturnType | undefined, targetType: string | undefined): string {
@@ -158,10 +159,10 @@ export class AngularServicesMethodGenerator {
     }
     private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel): void {
         const bodyParameters = model.parameters.filter((z) => z.name !== 'saveAs' && z.place === ParameterPlace.Body);
-        const dataParameter = bodyParameters.find(z => z.name === 'data');
-        const optionsParameter = bodyParameters.find(z => z.name === 'options');
+        const dataParameter = bodyParameters.find((z) => z.name === 'data');
+        const optionsParameter = bodyParameters.find((z) => z.name === 'options');
 
-        if (!model.parameters.find(z => z.name === 'saveAs')) {
+        if (!model.parameters.find((z) => z.name === 'saveAs')) {
             throw new Error(`Cannot find 'saveAs' parameter for method ${model.name}`);
         }
 
@@ -169,8 +170,8 @@ export class AngularServicesMethodGenerator {
         writer.withIndentationLevel(3, () => writer.writeLine(`${this.uriBuilder.buildUri(model)},`));
         writer.withIndentationLevel(3, () => writer.writeLine(`'${MethodOperation[model.operation].toLowerCase()}',`));
         writer.withIndentationLevel(3, () => writer.writeLine(`${dataParameter?.name ?? UNDEFINED_STRING},`));
-        writer.withIndentationLevel(3, () => writer.writeLine(`${optionsParameter?.name ?? UNDEFINED_STRING},`));
-        writer.withIndentationLevel(3, () => writer.writeLine('saveAs'));
+        writer.withIndentationLevel(3, () => writer.writeLine('saveAs,'));
+        writer.withIndentationLevel(3, () => writer.writeLine(`${optionsParameter?.name ?? UNDEFINED_STRING}`));
         writer.writeLine(');');
     }
 

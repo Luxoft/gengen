@@ -45,8 +45,8 @@ export class ProductService extends DownloadFileService {
             `Download`,
             'get',
             undefined,
-            undefined,
-            saveAs
+            saveAs,
+            undefined
         );
     }
 

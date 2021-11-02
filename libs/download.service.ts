@@ -20,8 +20,8 @@ export class DownloadFileService extends BaseHttpService {
         url: string,
         method: 'post' | 'get',
         data?: {},
-        options?: IAngularHttpRequestOptions,
         saveAs?: string,
+        options?: IAngularHttpRequestOptions,
     ): Promise<IDownloadResult> {
         const request =
             method === 'get'

@@ -13,9 +13,8 @@ import { IOptions } from '../../options';
 import { AliasResolver } from '../../services/AliasResolver';
 import { UriBuilder } from '../../services/UriBuilder';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, TYPES_NAMESPACE } from '../utils/consts';
-import { AngularServicesMethodGenerator } from './AngularServicesMethodGenerator';
+import { AngularServicesMethodGenerator, HTTP_REQUEST_OPTIONS } from './AngularServicesMethodGenerator';
 
-export const HTTP_REQUEST_OPTIONS = 'IAngularHttpRequestOptions';
 const BASE_SERVICE = 'BaseHttpService';
 const DOWNLOAD_SERVICE = 'DownloadFileService';
 const HTTP_CLIENT = 'HttpClient';
@@ -33,7 +32,7 @@ export class AngularServicesGenerator {
     }
 
     private getImports(): ImportDeclarationStructure[] {
-        const imports: ImportDeclarationStructure[] = [
+        return [
             {
                 kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: '@angular/common/http',
@@ -89,8 +88,6 @@ export class AngularServicesGenerator {
                 namespaceImport: MODELS_NAMESPACE
             }
         ];
-
-        return imports;
     }
 
     private getServices(services: IServiceModel[]): ClassDeclarationStructure[] {
