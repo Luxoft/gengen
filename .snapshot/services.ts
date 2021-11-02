@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Guid } from './Guid';
-import { BaseHttpService, IAngularHttpRequestOptions } from './base-http.service';
+import { BaseHttpService } from './base-http.service';
 import { DownloadFileService, IDownloadResult } from './download.service';
 import { getBasePath } from './utils';
 import * as $mappers from './mappers';

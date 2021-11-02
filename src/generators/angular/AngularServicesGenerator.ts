@@ -56,10 +56,9 @@ export class AngularServicesGenerator {
             {
                 kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: './base-http.service',
-                namedImports: [this.settings.withRequestOptions
-                    ? { name: BASE_SERVICE }
-                    : { name: BASE_SERVICE }, { name: HTTP_REQUEST_OPTIONS }
-                ]
+                namedImports: this.settings.withRequestOptions
+                    ? [{ name: BASE_SERVICE }, { name: HTTP_REQUEST_OPTIONS }]
+                    : [{ name: BASE_SERVICE }]
             },
             {
                 kind: StructureKind.ImportDeclaration,
