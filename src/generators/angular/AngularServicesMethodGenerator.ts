@@ -5,7 +5,7 @@ import { MethodOperation } from '../../models/kinds/MethodOperation';
 import { ParameterPlace } from '../../models/kinds/ParameterPlace';
 import { PropertyKind } from '../../models/kinds/PropertyKind';
 import { IBodyParameter } from '../../models/method-parameter/IBodyParameter';
-import { IMethodModel, MethodParameter } from '../../models/method-parameter/IMethodModel';
+import { IMethodModel } from '../../models/method-parameter/IMethodModel';
 import { IPathParameter } from '../../models/method-parameter/IPathParameter';
 import { IQueryParameter } from '../../models/method-parameter/IQueryParameter';
 import { IReturnType } from '../../models/method-parameter/IReturnType';
@@ -60,14 +60,12 @@ export class AngularServicesMethodGenerator {
     }
 
     private getRequestOptionsParameter(): OptionalKind<ParameterDeclarationStructure> {
-        return this.getParameterStatement({
+        return {
             name: 'options',
-            place: ParameterPlace.Body,
-            optional: true,
-            dtoType: HTTP_REQUEST_OPTIONS,
-            isCollection: false,
-            isModel: false
-        });
+            type: '$types.TypeOrUndefined<IAngularHttpRequestOptions>',
+            initializer: undefined,
+            hasQuestionToken: true
+        };
     }
 
     private getParameterStatement(
@@ -168,7 +166,7 @@ export class AngularServicesMethodGenerator {
             ? `Promise<${x.returnType?.type.type}>`
             : `Observable<${this.getReturnTypeName(x.returnType, x.returnType?.type.type)}>`;
     }
-    private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel, options?: Partial<MethodParameter>): void {
+    private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel, options?: { name: string }): void {
         const parameter = first(model.parameters.filter((z) => z.name !== 'saveAs' && z.place === ParameterPlace.Body));
 
         if (!model.parameters.find((z) => z.name === 'saveAs')) {
@@ -184,7 +182,7 @@ export class AngularServicesMethodGenerator {
         writer.writeLine(');');
     }
 
-    private createMethod(writer: CodeBlockWriter, model: IMethodModel, options?: Partial<MethodParameter>): void {
+    private createMethod(writer: CodeBlockWriter, model: IMethodModel, options?: { name: string }): void {
         writer.writeLine(
             `return this.${MethodOperation[model.operation].toLowerCase()}<${this.getReturnTypeName(
                 model.returnType,

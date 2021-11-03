@@ -45,10 +45,35 @@ describe('AngularServicesMethodGenerator tests', () => {
             // Assert
             expect(actual).toMatchObject(expected);
         });
+
+        test('inactive withRequestOptions', () => {
+            // Arrange
+            const uriBuilder = new UriBuilder();
+            const settings = {
+                configOutput: '',
+                output: '',
+                withRequestOptions: false
+            };
+            const service = new TestAngularServicesMethodGenerator(uriBuilder, settings);
+            const methodModel = {
+                kind: MethodKind.Default,
+                name: 'getProducts',
+                operation: MethodOperation.GET,
+                parameters: [],
+                returnType: undefined,
+                originUri: 'GetProducts'
+            };
+
+            // Act
+            const actual = service.getMethodParameters(methodModel);
+
+            // Assert
+            expect(actual).toMatchObject([]);
+        });
     });
 
     describe('getMethodsCodeStructures', () => {
-        test('active withRequestOptions', () => {
+        test('get code structures with active withRequestOptions', () => {
             // Arrange
             const uriBuilder = new UriBuilder();
             const settings = {
@@ -76,6 +101,37 @@ describe('AngularServicesMethodGenerator tests', () => {
                         hasQuestionToken: true
                     }
                 ]
+            }];
+
+            // Act
+            const actual = service.getMethodsCodeStructures([methodModel]);
+
+            // Assert
+            expect(actual).toMatchObject(expected);
+        });
+
+        test('get code structures with inactive withRequestOptions', () => {
+            // Arrange
+            const uriBuilder = new UriBuilder();
+            const settings = {
+                configOutput: '',
+                output: '',
+                withRequestOptions: false
+            };
+            const service = new AngularServicesMethodGenerator(uriBuilder, settings);
+            const methodModel = {
+                kind: MethodKind.Default,
+                name: 'getProducts',
+                operation: MethodOperation.GET,
+                parameters: [],
+                returnType: undefined,
+                originUri: 'GetProducts'
+            };
+            const expected = [{
+                scope: Scope.Public,
+                name: 'getProducts',
+                returnType: 'Observable<void>',
+                parameters: []
             }];
 
             // Act
