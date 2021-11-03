@@ -1,19 +1,15 @@
-import { Scope } from 'ts-morph';
+import { OptionalKind, ParameterDeclarationStructure, Scope } from 'ts-morph';
 
-import {
-    AngularServicesMethodGenerator,
-    HTTP_REQUEST_OPTIONS,
-} from '../../../src/generators/angular/AngularServicesMethodGenerator';
+import { AngularServicesMethodGenerator } from '../../../src/generators/angular/AngularServicesMethodGenerator';
 import { MethodKind } from '../../../src/models/kinds/MethodKind';
 import { MethodOperation } from '../../../src/models/kinds/MethodOperation';
-import { ParameterPlace } from '../../../src/models/kinds/ParameterPlace';
-import { IMethodModel, IMethodParameter } from '../../../src/models/method-parameter/IMethodModel';
+import { IMethodModel } from '../../../src/models/method-parameter/IMethodModel';
 import { UriBuilder } from '../../../src/services/UriBuilder';
 
 describe('AngularServicesMethodGenerator tests', () => {
     describe('getMethodParameters', () => {
         class TestAngularServicesMethodGenerator extends AngularServicesMethodGenerator {
-            public getMethodParameters(methodModel: IMethodModel): IMethodParameter[] {
+            public getMethodParameters(methodModel: IMethodModel): OptionalKind<ParameterDeclarationStructure>[] {
                 return super.getMethodParameters(methodModel);
             }
         }
@@ -38,11 +34,8 @@ describe('AngularServicesMethodGenerator tests', () => {
             const expected = [
                 {
                     name: 'options',
-                    place: ParameterPlace.Body,
-                    optional: true,
-                    dtoType: HTTP_REQUEST_OPTIONS,
-                    isCollection: false,
-                    isModel: false
+                    type: "$types.TypeOrUndefined<IAngularHttpRequestOptions>",
+                    hasQuestionToken: true
                 }
             ];
 
