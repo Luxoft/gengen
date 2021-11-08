@@ -45,16 +45,16 @@ gengen g --all
 
 ### Options
 
-| Option           | Description                                                            | Type    | Default value                                  |
-| ---------------- | ---------------------------------------------------------------------- | ------- | ---------------------------------------------- |
-| **all**          | Generate all                                                           | boolean | false                                          |
-| **url**          | Location of swagger.json                                               | string  | https://localhost:5001/swagger/v1/swagger.json |
-| **file**         | Local path to swagger.json                                             | string  |                                                |
-| **output**       | Output directory                                                       | string  | ./src/generated                                |
-| **configOutput** | Output directory using in 'Generate a part of API' scenario            | string  | ./.generated                                   |
-| **aliasName**    | Specify prefix for generated filenames. [more info](#aliasName) | string  |                                                |
-|**withRequestOptions** |Allows to pass http request options parameter of type IAngularHttpRequestOptions to generated methods | boolean | false      
-|                                                |
+| Option                 | Description                                                                                | Type    | Default value                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------ | ------- | ---------------------------------------------- |
+| **all**                | Generate all                                                                               | boolean | false                                          |
+| **url**                | Location of swagger.json                                                                   | string  | https://localhost:5001/swagger/v1/swagger.json |
+| **file**               | Local path to swagger.json                                                                 | string  |                                                |
+| **output**             | Output directory                                                                           | string  | ./src/generated                                |
+| **configOutput**       | Output directory using in 'Generate a part of API' scenario                                | string  | ./.generated                                   |
+| **aliasName**          | Specify prefix for generated filenames. [more info](#aliasName)                            | string  |                                                |
+| **withRequestOptions** | Allows to pass http request options to generated methods. [more info](#withRequestOptions) | boolean | false                                          |
+|                        |
 
 ### Option details
 
@@ -66,6 +66,7 @@ Alias provides:
 2. A way to specify dynamic basePath for services.
 
 Example:
+
 ```shell
 gengen --aliasName myalias
 ```
@@ -77,6 +78,16 @@ window.__gengen__basePathMap = {
     myalias: 'https://myexternalapi/api'
 };
 ```
+
+#### withRequestOptions
+
+Provides GenGen to generate methods width optional parameter, that allows to pass http options in request.
+
+Example of generated service's method:
+
+public product(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
+    return this.get<$models.IProduct[]>(`Product`, options,);
+}
 
 # License and copyright
 
