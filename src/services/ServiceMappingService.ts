@@ -1,3 +1,4 @@
+import { HTTP_REQUEST_OPTIONS } from '../generators/angular/AngularServicesMethodGenerator';
 import { MethodKind } from '../models/kinds/MethodKind';
 import { MethodOperation } from '../models/kinds/MethodOperation';
 import { ParameterPlace } from '../models/kinds/ParameterPlace';
@@ -11,6 +12,7 @@ import { PathMethodParameterModel } from '../models/method-parameter/PathMethodP
 import { QueryMethodParameterModel } from '../models/method-parameter/QueryMethodParameterModel';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IServiceModel } from '../models/ServiceModel';
+import { IOptions } from '../options';
 import { IOpenAPI3Operations, OpenAPIService } from '../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Operation } from '../swagger/v3/operation';
@@ -35,7 +37,8 @@ export class ServiceMappingService {
         private readonly typesService: TypesService,
         private readonly typesGuard: OpenAPITypesGuard,
         private readonly endpointsService: EndpointsService,
-        private readonly endpointNameResolver: EndpointNameResolver) {}
+        private readonly endpointNameResolver: EndpointNameResolver,
+        private readonly settings: IOptions) {}
 
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
         const endpointInfos = Object.keys(operations).reduce<IEndpointInfo[]>((infos, endpoint) => {
@@ -64,10 +67,10 @@ export class ServiceMappingService {
                     :
                     first(info.actions);
 
-                if(!action){
+                if (!action) {
                     throw new Error(`Cannot find action in service ${info.name} by method ${z}`);
                 }
-                
+
                 if (service) {
                     service.methods.push(this.getMethod(action.name, z.method, z.operation, models, action.origin));
                     return store;
@@ -134,6 +137,17 @@ export class ServiceMappingService {
                 place: ParameterPlace.Body,
                 optional: true,
                 dtoType: 'string',
+                isCollection: false,
+                isModel: false
+            });
+        }
+
+        if (this.settings.withRequestOptions) {
+            model.parameters.push({
+                name: 'options',
+                place: ParameterPlace.Body,
+                optional: true,
+                dtoType: HTTP_REQUEST_OPTIONS,
                 isCollection: false,
                 isModel: false
             });

@@ -25,7 +25,7 @@ const HTTP_CLIENT_VARIABLE_NAME = 'http';
 export class AngularServicesGenerator {
     private methodGenerator: AngularServicesMethodGenerator;
     constructor(protected aliasResolver: AliasResolver, uriBuilder: UriBuilder, private settings: IOptions) {
-        this.methodGenerator = new AngularServicesMethodGenerator(uriBuilder, this.settings);
+        this.methodGenerator = new AngularServicesMethodGenerator(uriBuilder);
     }
     public getServicesCodeStructure(services: IServiceModel[]): StatementStructures[] {
         return [...this.getImports(), ...this.getServices(services)];

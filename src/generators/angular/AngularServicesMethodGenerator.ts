@@ -9,9 +9,7 @@ import { IMethodModel } from '../../models/method-parameter/IMethodModel';
 import { IPathParameter } from '../../models/method-parameter/IPathParameter';
 import { IQueryParameter } from '../../models/method-parameter/IQueryParameter';
 import { IReturnType } from '../../models/method-parameter/IReturnType';
-import { IOptions } from '../../options';
 import { UriBuilder } from '../../services/UriBuilder';
-import { first } from '../../utils';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, UNDEFINED_STRING } from '../utils/consts';
 import { TypeSerializer } from '../utils/TypeSerializer';
 
@@ -25,47 +23,24 @@ interface IParameterType {
 }
 
 export class AngularServicesMethodGenerator {
-    constructor(private uriBuilder: UriBuilder, private settings: IOptions) {}
+    constructor(private uriBuilder: UriBuilder) {}
 
     public getMethodsCodeStructures(methodModels: IMethodModel[]): OptionalKind<MethodDeclarationStructure>[] {
         return methodModels.map(
             (methodModel): OptionalKind<MethodDeclarationStructure> => ({
                 scope: Scope.Public,
                 name: methodModel.name,
-                parameters: this.getMethodParameters(methodModel),
+                parameters: methodModel.parameters.map((p) => this.getParameterStatement(p)),
                 returnType: this.getMethodReturnType(methodModel),
                 statements: (writer) => {
-                    const options = this.settings.withRequestOptions
-                        ? { name: 'options' }
-                        : undefined;
-
                     if (methodModel.kind === MethodKind.Download) {
-                        this.createDownloadMethod(writer, methodModel, options);
+                        this.createDownloadMethod(writer, methodModel);
                     } else {
-                        this.createMethod(writer, methodModel, options);
+                        this.createMethod(writer, methodModel);
                     }
                 }
             })
         );
-    }
-
-    protected getMethodParameters(methodModel: IMethodModel): OptionalKind<ParameterDeclarationStructure>[] {
-        const statements = methodModel.parameters.map(x => this.getParameterStatement(x));
-
-        if (this.settings.withRequestOptions) {
-            statements.push(this.getRequestOptionsParameter());
-        }
-
-        return statements;
-    }
-
-    private getRequestOptionsParameter(): OptionalKind<ParameterDeclarationStructure> {
-        return {
-            name: 'options',
-            type: '$types.TypeOrUndefined<IAngularHttpRequestOptions>',
-            initializer: undefined,
-            hasQuestionToken: true
-        };
     }
 
     private getParameterStatement(
@@ -166,23 +141,25 @@ export class AngularServicesMethodGenerator {
             ? `Promise<${x.returnType?.type.type}>`
             : `Observable<${this.getReturnTypeName(x.returnType, x.returnType?.type.type)}>`;
     }
-    private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel, options?: { name: string }): void {
-        const parameter = first(model.parameters.filter((z) => z.name !== 'saveAs' && z.place === ParameterPlace.Body));
+    private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel): void {
+        const bodyParameters = model.parameters.filter((z) => z.name !== 'saveAs' && z.place === ParameterPlace.Body);
+        const dataParameter = bodyParameters.find(z => z.name === 'data');
+        const optionsParameter = bodyParameters.find(z => z.name === 'options');
 
-        if (!model.parameters.find((z) => z.name === 'saveAs')) {
+        if (!model.parameters.find(z => z.name === 'saveAs')) {
             throw new Error(`Cannot find 'saveAs' parameter for method ${model.name}`);
         }
 
         writer.writeLine('return this.downloadFile(');
         writer.withIndentationLevel(3, () => writer.writeLine(`${this.uriBuilder.buildUri(model)},`));
         writer.withIndentationLevel(3, () => writer.writeLine(`'${MethodOperation[model.operation].toLowerCase()}',`));
-        writer.withIndentationLevel(3, () => writer.writeLine(`${parameter?.name ?? UNDEFINED_STRING},`));
+        writer.withIndentationLevel(3, () => writer.writeLine(`${dataParameter?.name ?? UNDEFINED_STRING},`));
         writer.withIndentationLevel(3, () => writer.writeLine('saveAs,'));
-        writer.withIndentationLevel(3, () => writer.writeLine(`${options?.name ?? UNDEFINED_STRING}`));
+        writer.withIndentationLevel(3, () => writer.writeLine(`${optionsParameter?.name ?? UNDEFINED_STRING}`));
         writer.writeLine(');');
     }
 
-    private createMethod(writer: CodeBlockWriter, model: IMethodModel, options?: { name: string }): void {
+    private createMethod(writer: CodeBlockWriter, model: IMethodModel): void {
         writer.writeLine(
             `return this.${MethodOperation[model.operation].toLowerCase()}<${this.getReturnTypeName(
                 model.returnType,
@@ -195,10 +172,6 @@ export class AngularServicesMethodGenerator {
             .forEach((z) => {
                 writer.withIndentationLevel(3, () => writer.writeLine(`${z.name},`));
             });
-
-        if (options) {
-            writer.withIndentationLevel(3, () => writer.writeLine(`${options.name},`));
-        }
 
         if (this.needPipe(model.returnType)) {
             writer.writeLine(`).pipe(${this.createPipe(model.returnType)});`);
