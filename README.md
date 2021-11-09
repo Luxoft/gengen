@@ -88,10 +88,10 @@ Example:
 ```ts
 interface IAngularHttpRequestOptions {
     headers?: HttpHeaders | { [header: string]: string | string[] };
-    observe?: 'body';
+    observe?: 'body' | 'response';
     params?: HttpParams | { [param: string]: string | string[] };
     reportProgress?: boolean;
-    responseType?: 'json';
+    responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
     withCredentials?: boolean;
 }
 
