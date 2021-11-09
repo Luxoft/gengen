@@ -50,6 +50,16 @@ export class ProductService extends DownloadFileService {
         );
     }
 
+    public downloadAttachment(id: string, productIdentityDTO: $models.IProductIdentityDTO, saveAs?: $types.TypeOrUndefined<string>): Promise<IDownloadResult> {
+        return this.downloadFile(
+            `DownloadAttachment?id=${encodeURIComponent(id)}`,
+            'post',
+            productIdentityDTO,
+            saveAs,
+            undefined
+        );
+    }
+
     public getByCustomerType(customer: string, type: string, date: string): Observable<$types.TypeOrUndefined<$models.Product>> {
         return this.get<$types.TypeOrUndefined<$models.IProduct>>(
             `getByCustomer/${encodeURIComponent(customer)}/type/${encodeURIComponent(type)}?date=${encodeURIComponent(date)}`,
