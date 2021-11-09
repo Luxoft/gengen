@@ -2,8 +2,9 @@ import * as fs from 'fs';
 import snapshotDiff from 'snapshot-diff';
 import { promisify } from 'util';
 
-function readFile(path: string) {
-    return promisify(fs.readFile)(path, { encoding: 'utf8' });
+async function readFile(path: string): Promise<string> {
+    const fileData = await promisify(fs.readFile)(path, { encoding: 'utf8' });
+    return fileData.replace(/\r?\n|\r/g, '\r');
 }
 
 async function main() {
