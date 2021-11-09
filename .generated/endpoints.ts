@@ -5,6 +5,7 @@ export class Endpoints {
     };
     public static ProductService = {
         download: '/Product/Download',
+        downloadAttachment: '/Product/DownloadAttachment',
         getByCustomerType: '/Product/getByCustomer/{customer}/type/{type}',
         getById: '/api/v1/Product/GetById/{id}',
         getProducts: '/Product/GetProducts',

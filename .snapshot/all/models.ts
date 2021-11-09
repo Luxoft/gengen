@@ -21,6 +21,23 @@ export interface IProduct {
     status: $types.TypeOrUndefined<ProductStatus>;
 }
 
+export interface IProductIdentityDTO {
+    id: $types.TypeOrUndefined<string>;
+}
+
+export class ProductIdentityDTO {
+    public id: Guid;
+    private __productIdentityDTO!: string;
+
+    constructor(id?: $types.TypeOrUndefined<Guid | string>) {
+        this.id = new Guid(id);
+    }
+
+    public static toDTO(id: Guid): IProductIdentityDTO {
+        return { id: id.toString() };
+    }
+}
+
 export class Category {
     public name: $types.TypeOrUndefinedNullable<string> = undefined;
     private __category!: string;
