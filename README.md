@@ -91,7 +91,7 @@ interface IAngularHttpRequestOptions {
     observe?: 'body' | 'response';
     params?: HttpParams | { [param: string]: string | string[] };
     reportProgress?: boolean;
-    responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
+    responseType?: 'json' | 'blob';
     withCredentials?: boolean;
 }
 
