@@ -23,10 +23,12 @@ export class DownloadFileService extends BaseHttpService {
         saveAs?: string,
         options?: IAngularHttpRequestOptions,
     ): Promise<IDownloadResult> {
+        const defaultOptions: IAngularHttpRequestOptions = { observe: 'response', responseType: 'blob' };
+
         const request =
             method === 'get'
-                ? this.http.get(`${this.path}/${url}`, { observe: 'response', responseType: 'blob' }, options)
-                : this.http.post(`${this.path}/${url}`, data, { observe: 'response', responseType: 'blob' }, options);
+                ? this.http.get(`${this.path}/${url}`, { ...defaultOptions, ...options })
+                : this.http.post(`${this.path}/${url}`, data, { ...defaultOptions, ...options });
 
         const response = await request.toPromise();
         const filename = this.getFileName(response, saveAs);
