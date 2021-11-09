@@ -32,11 +32,6 @@ export class DownloadFileService extends BaseHttpService {
         const filename = this.getFileName(response, saveAs);
         const result: IDownloadResult = { filename, response };
 
-        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-            const success = window.navigator.msSaveOrOpenBlob(response.body, filename);
-            return success ? Promise.resolve(result) : Promise.reject(result);
-        }
-
         const link = document.createElement('a');
         const href = window.URL.createObjectURL(response.body);
         link.href = href;
