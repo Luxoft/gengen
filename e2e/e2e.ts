@@ -1,14 +1,15 @@
 import * as fs from 'fs';
-import { promisify } from 'util';
 import snapshotDiff from 'snapshot-diff';
+import { promisify } from 'util';
 
 function readFile(path: string) {
     return promisify(fs.readFile)(path, { encoding: 'utf8' });
 }
 
 async function main() {
-    snapshotter('./.snapshot/services.ts', './.output/all/services.ts', 'Services');
-    snapshotter('./.snapshot/models.ts', './.output/all/models.ts', 'Models');
+    snapshotter('./.snapshot/all/models.ts', './.output/all/models.ts', 'Models');
+    snapshotter('./.snapshot/all/services.ts', './.output/all/services.ts', 'Services without RequestOptions');
+    snapshotter('./.snapshot/withRequestOptions/services.ts', './.output/withRequestOptions/services.ts', 'Services with RequestOptions');
 }
 
 async function snapshotter(pathA: string, pathB: string, name: string) {

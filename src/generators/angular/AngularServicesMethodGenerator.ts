@@ -10,9 +10,10 @@ import { IPathParameter } from '../../models/method-parameter/IPathParameter';
 import { IQueryParameter } from '../../models/method-parameter/IQueryParameter';
 import { IReturnType } from '../../models/method-parameter/IReturnType';
 import { UriBuilder } from '../../services/UriBuilder';
-import { first } from '../../utils';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, UNDEFINED_STRING } from '../utils/consts';
 import { TypeSerializer } from '../utils/TypeSerializer';
+
+export const HTTP_REQUEST_OPTIONS = 'IAngularHttpRequestOptions';
 
 interface IParameterType {
     type: string;
@@ -141,7 +142,9 @@ export class AngularServicesMethodGenerator {
             : `Observable<${this.getReturnTypeName(x.returnType, x.returnType?.type.type)}>`;
     }
     private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel): void {
-        const parameter = first(model.parameters.filter((z) => z.name !== 'saveAs' && z.place === ParameterPlace.Body));
+        const bodyParameters = model.parameters.filter((z) => z.name !== 'saveAs' && z.place === ParameterPlace.Body);
+        const dataParameter = bodyParameters.find((z) => z.name === 'data');
+        const optionsParameter = bodyParameters.find((z) => z.name === 'options');
 
         if (!model.parameters.find((z) => z.name === 'saveAs')) {
             throw new Error(`Cannot find 'saveAs' parameter for method ${model.name}`);
@@ -150,9 +153,9 @@ export class AngularServicesMethodGenerator {
         writer.writeLine('return this.downloadFile(');
         writer.withIndentationLevel(3, () => writer.writeLine(`${this.uriBuilder.buildUri(model)},`));
         writer.withIndentationLevel(3, () => writer.writeLine(`'${MethodOperation[model.operation].toLowerCase()}',`));
-        writer.withIndentationLevel(3, () => writer.writeLine(`${parameter?.name ?? UNDEFINED_STRING},`));
-        writer.withIndentationLevel(3, () => writer.writeLine('saveAs'));
-
+        writer.withIndentationLevel(3, () => writer.writeLine(`${dataParameter?.name ?? UNDEFINED_STRING},`));
+        writer.withIndentationLevel(3, () => writer.writeLine('saveAs,'));
+        writer.withIndentationLevel(3, () => writer.writeLine(`${optionsParameter?.name ?? UNDEFINED_STRING}`));
         writer.writeLine(');');
     }
 

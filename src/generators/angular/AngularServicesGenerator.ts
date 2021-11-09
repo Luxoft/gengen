@@ -4,14 +4,16 @@ import {
     ImportDeclarationStructure,
     StatementStructures,
     StructureKind,
-    Writers
+    Writers,
 } from 'ts-morph';
+
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { IServiceModel } from '../../models/ServiceModel';
+import { IOptions } from '../../options';
 import { AliasResolver } from '../../services/AliasResolver';
 import { UriBuilder } from '../../services/UriBuilder';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, TYPES_NAMESPACE } from '../utils/consts';
-import { AngularServicesMethodGenerator } from './AngularServicesMethodGenerator';
+import { AngularServicesMethodGenerator, HTTP_REQUEST_OPTIONS } from './AngularServicesMethodGenerator';
 
 const BASE_SERVICE = 'BaseHttpService';
 const DOWNLOAD_SERVICE = 'DownloadFileService';
@@ -22,7 +24,7 @@ const HTTP_CLIENT_VARIABLE_NAME = 'http';
 
 export class AngularServicesGenerator {
     private methodGenerator: AngularServicesMethodGenerator;
-    constructor(protected aliasResolver: AliasResolver, uriBuilder: UriBuilder) {
+    constructor(protected aliasResolver: AliasResolver, uriBuilder: UriBuilder, private settings: IOptions) {
         this.methodGenerator = new AngularServicesMethodGenerator(uriBuilder);
     }
     public getServicesCodeStructure(services: IServiceModel[]): StatementStructures[] {
@@ -54,7 +56,9 @@ export class AngularServicesGenerator {
             {
                 kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: './base-http.service',
-                namedImports: [{ name: BASE_SERVICE }]
+                namedImports: this.settings.withRequestOptions
+                    ? [{ name: BASE_SERVICE }, { name: HTTP_REQUEST_OPTIONS }]
+                    : [{ name: BASE_SERVICE }]
             },
             {
                 kind: StructureKind.ImportDeclaration,

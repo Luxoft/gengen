@@ -64,7 +64,7 @@ export async function main(options: IOptions): Promise<void> {
     const endpointsService = new EndpointsService(openAPIService, endpointNameResolver);
     const typesService = new TypesService(typesGuard);
     const modelMappingService = new ModelMappingService(openAPIService, typesGuard, typesService);
-    const serviceMappingService = new ServiceMappingService(openAPIService, typesService, typesGuard, endpointsService, endpointNameResolver);
+    const serviceMappingService = new ServiceMappingService(openAPIService, typesService, typesGuard, endpointsService, endpointNameResolver, settings);
     const configReader = new EndpointsConfigReader(settings);
     const aliasResolver = new AliasResolver(settings);
     const uriBuilder = new UriBuilder();
@@ -82,7 +82,7 @@ export async function main(options: IOptions): Promise<void> {
 
     const serviceFile = project.createSourceFile(
         `${settings.output}/${aliasResolver.getServicesFileName()}`,
-        { statements: new AngularServicesGenerator(aliasResolver, uriBuilder).getServicesCodeStructure(newServices) },
+        { statements: new AngularServicesGenerator(aliasResolver, uriBuilder, settings).getServicesCodeStructure(newServices) },
         { overwrite: true }
     );
 

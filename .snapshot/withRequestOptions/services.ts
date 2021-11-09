@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Guid } from './Guid';
-import { BaseHttpService } from './base-http.service';
+import { BaseHttpService, IAngularHttpRequestOptions } from './base-http.service';
 import { DownloadFileService, IDownloadResult } from './download.service';
 import { getBasePath } from './utils';
 import * as $mappers from './mappers';
@@ -17,17 +17,19 @@ export class CategoryService extends BaseHttpService {
         super(getBasePath('', '/api/v1/Category'), http);
     }
 
-    public addCategory(category: $models.ICategory): Observable<Guid> {
+    public addCategory(category: $models.ICategory, options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<Guid> {
         return this.post<string>(
             `AddCategory`,
             category,
+            options,
         ).pipe($mappers.mapGuid());
     }
 
-    public upload(data: FormData): Observable<Guid> {
+    public upload(data: FormData, options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<Guid> {
         return this.post<string>(
             `Upload`,
             data,
+            options,
         ).pipe($mappers.mapGuid());
     }
 }
@@ -40,54 +42,62 @@ export class ProductService extends DownloadFileService {
         super(getBasePath('', '/Product'), http);
     }
 
-    public download(saveAs?: $types.TypeOrUndefined<string>): Promise<IDownloadResult> {
+    public download(saveAs?: $types.TypeOrUndefined<string>, options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Promise<IDownloadResult> {
         return this.downloadFile(
             `Download`,
             'get',
             undefined,
-            saveAs
+            saveAs,
+            options
         );
     }
 
-    public getByCustomerType(customer: string, type: string, date: string): Observable<$types.TypeOrUndefined<$models.Product>> {
+    public getByCustomerType(customer: string, type: string, date: string, options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$types.TypeOrUndefined<$models.Product>> {
         return this.get<$types.TypeOrUndefined<$models.IProduct>>(
             `getByCustomer/${encodeURIComponent(customer)}/type/${encodeURIComponent(type)}?date=${encodeURIComponent(date)}`,
+            options,
         ).pipe($mappers.mapSingle($models.Product));
     }
 
-    public getById(id: string): Observable<$types.TypeOrUndefined<$models.Product>> {
+    public getById(id: string, options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$types.TypeOrUndefined<$models.Product>> {
         return this.get<$types.TypeOrUndefined<$models.IProduct>>(
             `GetById/${encodeURIComponent(id)}`,
+            options,
         ).pipe($mappers.mapSingle($models.Product));
     }
 
-    public getProducts(): Observable<$models.Product[]> {
+    public getProducts(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `GetProducts`,
+            options,
         ).pipe($mappers.mapCollection($models.Product));
     }
 
-    public getProductsByStatus(status: $models.ProductStatus): Observable<$models.Product[]> {
+    public getProductsByStatus(status: $models.ProductStatus, options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `GetProductsByStatus/${encodeURIComponent(status)}`,
+            options,
         ).pipe($mappers.mapCollection($models.Product));
     }
 
-    public product(): Observable<$models.Product[]> {
+    public product(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `Product`,
+            options,
         ).pipe($mappers.mapCollection($models.Product));
     }
 
-    public productDefault(): Observable<$models.Product[]> {
+    public productDefault(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             ``,
+            options,
         ).pipe($mappers.mapCollection($models.Product));
     }
 
-    public searchProducts(name: string): Observable<$models.Product[]> {
+    public searchProducts(name: string, options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `SearchProducts?name=${encodeURIComponent(name)}`,
+            options,
         ).pipe($mappers.mapCollection($models.Product));
     }
 }

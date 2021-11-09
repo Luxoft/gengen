@@ -7,11 +7,9 @@ export class Endpoints {
         download: '/Product/Download',
         getByCustomerType: '/Product/getByCustomer/{customer}/type/{type}',
         getById: '/api/v1/Product/GetById/{id}',
-        getProduct: '/Product/Product',
-        getProductq: '/Product/GetProductq',
         getProducts: '/Product/GetProducts',
         getProductsByStatus: '/api/v1/Product/GetProductsByStatus/{status}',
-        postProduct: '/Product/Product',
+        product: '/Product/Product',
         productDefault: '/api/v1/Product',
         searchProducts: '/Product/SearchProducts'
     };

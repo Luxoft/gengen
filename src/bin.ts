@@ -1,4 +1,5 @@
 import { program } from 'commander';
+
 import * as gengen from './gengen';
 
 program
@@ -25,6 +26,7 @@ program
     .option('--output <string>')
     .option('--configOutput <string>')
     .option('--all')
+    .option('--withRequestOptions')
     .description('Generates models and services')
     .action((params) => gengen.main(params));
 
