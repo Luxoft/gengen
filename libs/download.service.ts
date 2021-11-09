@@ -1,6 +1,6 @@
 import { HttpClient, HttpResponseBase } from '@angular/common/http';
 
-import { BaseHttpService } from './base-http.service';
+import { BaseHttpService, IAngularHttpRequestOptions } from './base-http.service';
 
 export interface IDownloadResult {
     filename: string;
@@ -20,21 +20,17 @@ export class DownloadFileService extends BaseHttpService {
         url: string,
         method: 'post' | 'get',
         data?: {},
-        saveAs?: string
+        saveAs?: string,
+        options?: IAngularHttpRequestOptions,
     ): Promise<IDownloadResult> {
         const request =
             method === 'get'
-                ? this.http.get(`${this.path}/${url}`, { observe: 'response', responseType: 'blob' })
-                : this.http.post(`${this.path}/${url}`, data, { observe: 'response', responseType: 'blob' });
+                ? this.http.get(`${this.path}/${url}`, { observe: 'response', responseType: 'blob' }, options)
+                : this.http.post(`${this.path}/${url}`, data, { observe: 'response', responseType: 'blob' }, options);
 
         const response = await request.toPromise();
         const filename = this.getFileName(response, saveAs);
         const result: IDownloadResult = { filename, response };
-
-        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-            const success = window.navigator.msSaveOrOpenBlob(response.body, filename);
-            return success ? Promise.resolve(result) : Promise.reject(result);
-        }
 
         const link = document.createElement('a');
         const href = window.URL.createObjectURL(response.body);
@@ -64,7 +60,7 @@ export class DownloadFileService extends BaseHttpService {
         if (!results?.[1]) {
             return this.defaultFileName;
         }
-        
+
         return results?.[1].replace(/['"]/g, '');
     }
 }

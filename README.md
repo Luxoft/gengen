@@ -45,14 +45,16 @@ gengen g --all
 
 ### Options
 
-| Option           | Description                                                            | Type    | Default value                                  |
-| ---------------- | ---------------------------------------------------------------------- | ------- | ---------------------------------------------- |
-| **all**          | Generate all                                                           | boolean | false                                          |
-| **url**          | Location of swagger.json                                               | string  | https://localhost:5001/swagger/v1/swagger.json |
-| **file**         | Local path to swagger.json                                             | string  |                                                |
-| **output**       | Output directory                                                       | string  | ./src/generated                                |
-| **configOutput** | Output directory using in 'Generate a part of API' scenario            | string  | ./.generated                                   |
-| **aliasName**    | Specify prefix for generated filenames. [more info](#aliasName) | string  |                                                |
+| Option                 | Description                                                                                | Type    | Default value                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------ | ------- | ---------------------------------------------- |
+| **all**                | Generate all                                                                               | boolean | false                                          |
+| **url**                | Location of swagger.json                                                                   | string  | https://localhost:5001/swagger/v1/swagger.json |
+| **file**               | Local path to swagger.json                                                                 | string  |                                                |
+| **output**             | Output directory                                                                           | string  | ./src/generated                                |
+| **configOutput**       | Output directory using in 'Generate a part of API' scenario                                | string  | ./.generated                                   |
+| **aliasName**          | Specify prefix for generated filenames. [more info](#aliasName)                            | string  |                                                |
+| **withRequestOptions** | Allows to pass http request options to generated methods. [more info](#withRequestOptions) | boolean | false                                     |
+|                        |
 
 ### Option details
 
@@ -64,6 +66,7 @@ Alias provides:
 2. A way to specify dynamic basePath for services.
 
 Example:
+
 ```shell
 gengen --aliasName myalias
 ```
@@ -74,6 +77,47 @@ GenGen would create files myalias-models.ts, myalias-services.ts in _output_ dir
 window.__gengen__basePathMap = {
     myalias: 'https://myexternalapi/api'
 };
+```
+
+#### withRequestOptions
+
+GenGen would generate optional parameter `options` for each method in services. With which you could provide any additional request options from the interface below (IAngularHttpRequestOptions).
+
+Example:
+
+```ts
+interface IAngularHttpRequestOptions {
+    headers?: HttpHeaders | { [header: string]: string | string[] };
+    observe?: 'body';
+    params?: HttpParams | { [param: string]: string | string[] };
+    reportProgress?: boolean;
+    responseType?: 'json';
+    withCredentials?: boolean;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ExampleService extends BaseHttpService {
+    // ...
+
+    public methodName(options?: IAngularHttpRequestOptions): Observable<void> {
+        return this.post<string>(`methodName`, options);
+    }
+
+    // ...
+}
+
+@Component(
+    // ...
+)
+export class MyComponent {
+    constructor(private exampleService: ExampleService) {
+        this.exampleService.methodName({
+            withCredentials: true
+        });
+    }
+}
 ```
 
 # License and copyright

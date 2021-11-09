@@ -1,4 +1,4 @@
-import { IndentationText, ModuleKind, ProjectOptions, QuoteKind, ScriptTarget } from 'ts-morph';
+import { IndentationText, ModuleKind, NewLineKind, ProjectOptions, QuoteKind, ScriptTarget } from 'ts-morph';
 
 export interface IOptions {
     all?: boolean;
@@ -7,12 +7,18 @@ export interface IOptions {
     file?: string;
     url?: string;
     aliasName?: string;
+    withRequestOptions: boolean;
+}
+
+export const pathOptions = {
+    separator: '/'
 }
 
 export const defaultOptions: IOptions = {
     configOutput: './.generated',
     output: './src/generated',
-    url: 'https://localhost:5001/swagger/v1/swagger.json'
+    url: 'https://localhost:5001/swagger/v1/swagger.json',
+    withRequestOptions: false
 };
 
 export const generatorsOptions: ProjectOptions = {
@@ -23,6 +29,7 @@ export const generatorsOptions: ProjectOptions = {
         esModuleInterop: true
     },
     manipulationSettings: {
+        newLineKind: NewLineKind.CarriageReturnLineFeed,
         quoteKind: QuoteKind.Single,
         insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
         indentationText: IndentationText.FourSpaces

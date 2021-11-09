@@ -16,7 +16,7 @@ interface IOperation {
     method: MethodOperation;
 }
 
-export type IOpenAPI3Operations = { [key: string]: { method: MethodOperation; operation: IOpenAPI3Operation } };
+export type IOpenAPI3Operations = { [key: string]: { method: MethodOperation; operation: IOpenAPI3Operation }[] };
 
 export class OpenAPIService {
     private readonly spec: IOpenAPI3;
@@ -39,8 +39,12 @@ export class OpenAPIService {
     }
 
     public getTagsByEndpoint(endpoint: string): string[] {
-        const result = this.getOperationByEndpoint(endpoint);
-        return result?.operation.tags ?? [];
+        const result = this.getOperationsByEndpoint(endpoint);
+        if (!result.length) {
+            return [];
+        }
+
+        return first(result).operation.tags ?? [];
     }
 
     public getSchemasByEndpoints(endpoints: Set<string>): OpenAPI3SchemaContainer {
@@ -49,13 +53,13 @@ export class OpenAPIService {
         }
 
         return [...endpoints]
-            .map((z) => this.getOperationByEndpoint(z))
-            .reduce((store, model) => {
-                if (!model) {
+            .map((z) => this.getOperationsByEndpoint(z))
+            .reduce((store, operations) => {
+                if (!operations.length) {
                     return store;
                 }
 
-                const refs = this.getReferencesByOperation(model.operation);
+                const refs = operations.flatMap(z => this.getReferencesByOperation(z.operation));
                 return { ...store, ...this.getSchemas(refs) };
             }, {});
     }
@@ -66,12 +70,13 @@ export class OpenAPIService {
         }
 
         return [...endpoints].reduce<IOpenAPI3Operations>((store, endpoint) => {
-            const model = this.getOperationByEndpoint(endpoint);
-            if (!model) {
+            const operations = this.getOperationsByEndpoint(endpoint);
+            if (!operations.length) {
                 return store;
             }
 
-            store[model.key] = { method: model.method, operation: model.operation };
+            store[first(operations).key] = operations.map(x => ({ method: x.method, operation: x.operation }))
+
             return store;
         }, {});
     }
@@ -85,42 +90,44 @@ export class OpenAPIService {
         return this.spec.components.schemas[refKey];
     }
 
+    public getOperationsByEndpoint(endpoint: string): IOperation[] {
+        if (!this.spec.paths) {
+            return [];
+        }
+
+        const path = Object.entries(this.spec.paths).find(([key]) => key === endpoint);
+        if (!path) {
+            return [];
+        }
+
+        const [name, pathItem] = path;
+
+        return Object.keys(pathItem).reduce<IOperation[]>((operations, method) => {
+            switch (method) {
+                case 'get':
+                    operations.push({ key: name, operation: pathItem.get, method: MethodOperation.GET } as IOperation);
+                    break;
+                case 'post':
+                    operations.push({ key: name, operation: pathItem.post, method: MethodOperation.POST } as IOperation);
+                    break;
+                case 'put':
+                    operations.push({ key: name, operation: pathItem.put, method: MethodOperation.PUT } as IOperation);
+                    break;
+                case 'delete':
+                    operations.push({ key: name, operation: pathItem.delete, method: MethodOperation.DELETE } as IOperation);
+                    break;
+            }
+
+            return operations;
+        }, [])
+    }
+
     private get majorVersion(): string | undefined {
         if (!this.spec.openapi) {
             return undefined;
         }
 
         return first(this.spec.openapi.split('.'));
-    }
-
-    private getOperationByEndpoint(endpoint: string): IOperation | undefined {
-        if (!this.spec.paths) {
-            return undefined;
-        }
-
-        const path = Object.entries(this.spec.paths).find(([key]) => key.endsWith(endpoint));
-        if (!path) {
-            return undefined;
-        }
-
-        const [name, pathItem] = path;
-        if (pathItem.get) {
-            return { key: name, operation: pathItem.get, method: MethodOperation.GET };
-        }
-
-        if (pathItem.post) {
-            return { key: name, operation: pathItem.post, method: MethodOperation.POST };
-        }
-
-        if (pathItem.put) {
-            return { key: name, operation: pathItem.put, method: MethodOperation.PUT };
-        }
-
-        if (pathItem.delete) {
-            return { key: name, operation: pathItem.delete, method: MethodOperation.DELETE };
-        }
-
-        return undefined;
     }
 
     private getReferencesByOperation(operation: IOpenAPI3Operation): IOpenAPI3Reference[] {

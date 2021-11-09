@@ -1,3 +1,4 @@
+import { HTTP_REQUEST_OPTIONS } from '../generators/angular/AngularServicesMethodGenerator';
 import { MethodKind } from '../models/kinds/MethodKind';
 import { MethodOperation } from '../models/kinds/MethodOperation';
 import { ParameterPlace } from '../models/kinds/ParameterPlace';
@@ -11,6 +12,7 @@ import { PathMethodParameterModel } from '../models/method-parameter/PathMethodP
 import { QueryMethodParameterModel } from '../models/method-parameter/QueryMethodParameterModel';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IServiceModel } from '../models/ServiceModel';
+import { IOptions } from '../options';
 import { IOpenAPI3Operations, OpenAPIService } from '../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Operation } from '../swagger/v3/operation';
@@ -18,8 +20,9 @@ import { IOpenAPI3Parameter } from '../swagger/v3/parameter';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3ArraySchema } from '../swagger/v3/schemas/array-schema';
 import { OpenAPI3ResponseSchema } from '../swagger/v3/schemas/schema';
-import { lowerFirst, sortBy } from '../utils';
-import { EndpointsService } from './EndpointsService';
+import { first, lowerFirst, sortBy } from '../utils';
+import { EndpointNameResolver } from './EndpointNameResolver';
+import { EndpointsService, IEndpointInfo } from './EndpointsService';
 import { TypesService } from './TypesService';
 
 interface IModel {
@@ -30,32 +33,56 @@ interface IModel {
 
 export class ServiceMappingService {
     constructor(
-        private readonly endpointsService: EndpointsService,
         private readonly openAPIService: OpenAPIService,
         private readonly typesService: TypesService,
-        private readonly typesGuard: OpenAPITypesGuard
-    ) {}
+        private readonly typesGuard: OpenAPITypesGuard,
+        private readonly endpointsService: EndpointsService,
+        private readonly endpointNameResolver: EndpointNameResolver,
+        private readonly settings: IOptions) {}
 
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
-        const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
+        const endpointInfos = Object.keys(operations).reduce<IEndpointInfo[]>((infos, endpoint) => {
             const info = this.endpointsService.parse(endpoint);
+            if (!info) {
+                return infos;
+            }
 
-            // TODO Handle paths without methods
-            if (!info || !info.action.name) {
+            infos.push(info);
+            return infos;
+        }, []);
+
+        this.endpointNameResolver.checkDuplicates(endpointInfos);
+
+        const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
+            const info = endpointInfos.find(z => z.origin === endpoint);
+            if (!info) {
                 return store;
             }
 
             const service = store.find((z) => z.name === info.name);
-            if (service) {
-                service.methods.push(this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin));
-                return store;
-            }
 
-            store.push({
-                name: info.name,
-                relativePath: info.relativePath,
-                methods: [this.getMethod(info.action.name, model.method, model.operation, models, info.action.origin)]
+            model.forEach(z => {
+                const action = model.length > 1 ?
+                    info.actions.find(x => x.name.startsWith(MethodOperation[z.method].toLocaleLowerCase()))
+                    :
+                    first(info.actions);
+
+                if (!action) {
+                    throw new Error(`Cannot find action in service ${info.name} by method ${z}`);
+                }
+
+                if (service) {
+                    service.methods.push(this.getMethod(action.name, z.method, z.operation, models, action.origin));
+                    return store;
+                }
+
+                store.push({
+                    name: info.name,
+                    relativePath: info.relativePath,
+                    methods: [this.getMethod(action.name, z.method, z.operation, models, action.origin)]
+                });
             });
+
             return store;
         }, []);
 
@@ -110,6 +137,17 @@ export class ServiceMappingService {
                 place: ParameterPlace.Body,
                 optional: true,
                 dtoType: 'string',
+                isCollection: false,
+                isModel: false
+            });
+        }
+
+        if (this.settings.withRequestOptions) {
+            model.parameters.push({
+                name: 'options',
+                place: ParameterPlace.Body,
+                optional: true,
+                dtoType: HTTP_REQUEST_OPTIONS,
                 isCollection: false,
                 isModel: false
             });

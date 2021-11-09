@@ -5,11 +5,13 @@ import { IPathParameter } from './IPathParameter';
 import { IQueryParameter } from './IQueryParameter';
 import { IReturnType } from './IReturnType';
 
+export type MethodParameter = IPathParameter | IQueryParameter | IBodyParameter;
+
 export interface IMethodModel {
     kind: MethodKind;
     operation: MethodOperation;
     name: string;
-    parameters: (IPathParameter | IQueryParameter | IBodyParameter)[];
+    parameters: MethodParameter[];
     returnType: IReturnType | undefined;
     originUri: string;
 }

@@ -15,6 +15,11 @@ export function lowerFirst(value: string): string {
     return first.toLocaleLowerCase() + other.join('');
 }
 
+export function upperFirst(value: string): string {
+    const [first, ...other] = value;
+    return first.toLocaleUpperCase() + other.join('');
+}
+
 export function last<T>(array: T[]): T {
     return array[array.length - 1];
 }
