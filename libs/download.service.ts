@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponseBase } from '@angular/common/http';
+import { HttpClient, HttpResponse, HttpResponseBase } from '@angular/common/http';
 
 import { BaseHttpService, IAngularHttpRequestOptions } from './base-http.service';
 
@@ -23,12 +23,12 @@ export class DownloadFileService extends BaseHttpService {
         saveAs?: string,
         options?: IAngularHttpRequestOptions,
     ): Promise<IDownloadResult> {
-        const defaultOptions: IAngularHttpRequestOptions = { observe: 'response', responseType: 'blob' };
+        const downloadOptions: IAngularHttpRequestOptions = { observe: 'response', responseType: 'blob' };
 
         const request =
             method === 'get'
-                ? this.http.get(`${this.path}/${url}`, { ...defaultOptions, ...options })
-                : this.http.post(`${this.path}/${url}`, data, { ...defaultOptions, ...options });
+                ? this.http.get<HttpResponse<Blob>>(`${this.path}/${url}`, { ...options, ...downloadOptions } as unknown)
+                : this.http.post<HttpResponse<Blob>>(`${this.path}/${url}`, data, { ...options, ...downloadOptions } as unknown);
 
         const response = await request.toPromise();
         const filename = this.getFileName(response, saveAs);
