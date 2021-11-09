@@ -81,13 +81,44 @@ window.__gengen__basePathMap = {
 
 #### withRequestOptions
 
-Provides GenGen to generate methods width optional parameter, that allows to pass http options in request.
+GenGen would generate optional parameter `options` for each method in services. With which you could provide any additional request options from the interface below (IAngularHttpRequestOptions).
 
-Example of generated service's method:
+Example:
 
-public product(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
-    return this.get<$models.IProduct[]>(`Product`, options,);
+```ts
+interface IAngularHttpRequestOptions {
+    headers?: HttpHeaders | { [header: string]: string | string[] };
+    observe?: 'body';
+    params?: HttpParams | { [param: string]: string | string[] };
+    reportProgress?: boolean;
+    responseType?: 'json';
+    withCredentials?: boolean;
 }
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ExampleService extends BaseHttpService {
+    // ...
+
+    public methodName(options?: IAngularHttpRequestOptions): Observable<void> {
+        return this.post<string>(`methodName`, options);
+    }
+
+    // ...
+}
+
+@Component(
+    // ...
+)
+export class MyComponent {
+    constructor(private exampleService: ExampleService) {
+        this.exampleService.methodName({
+            withCredentials: true
+        });
+    }
+}
+```
 
 # License and copyright
 
