@@ -25,7 +25,7 @@ export class OpenAPITypesGuard {
     }
 
     public isGuid(schema: SchemaType): schema is IOpenAPI3GuidSchema {
-        return this.isString(schema) && (schema as IOpenAPI3GuidSchema)?.format === 'uuid';
+        return this.isStringType(schema) && this.isGuidFormat(schema);
     }
 
     public isCollection(schema: SchemaType): schema is IOpenAPI3ArraySchema {
@@ -56,11 +56,11 @@ export class OpenAPITypesGuard {
     }
 
     public isString(schema: SchemaType): schema is IOpenAPI3StringSchema {
-        return (schema as IOpenAPI3StringSchema)?.type === 'string';
+        return this.isStringType(schema) && !this.isDateFormat(schema) && !this.isGuidFormat(schema);
     }
 
     public isDate(schema: SchemaType): schema is IOpenAPI3DateSchema {
-        return this.isString(schema) && (schema as IOpenAPI3DateSchema)?.format === 'date-time';
+        return this.isStringType(schema) && this.isDateFormat(schema);
     }
 
     public isBoolean(schema: SchemaType): schema is IOpenAPI3BooleanSchema {
@@ -68,6 +68,18 @@ export class OpenAPITypesGuard {
     }
 
     public isSimple(schema: SchemaType): schema is OpenAPI3SimpleSchema {
-        return this.isGuid(schema) || this.isNumber(schema) || this.isString(schema) || this.isDate(schema) || this.isBoolean(schema);
+        return this.isGuid(schema) || this.isNumber(schema) || this.isDate(schema) || this.isString(schema) || this.isBoolean(schema);
+    }
+
+    private isStringType(schema: SchemaType) {
+        return (schema as IOpenAPI3StringSchema)?.type === 'string';
+    }
+
+    private isDateFormat(schema: SchemaType): boolean {
+        return (schema as IOpenAPI3DateSchema)?.format === 'date-time';
+    }
+
+    private isGuidFormat(schema: SchemaType) {
+        return (schema as IOpenAPI3GuidSchema)?.format === 'uuid';
     }
 }

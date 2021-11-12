@@ -585,6 +585,14 @@
             "type": "string",
             "format": "date-time"
           },
+          "modifyDates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "nullable": true
+          },
           "category": {
             "$ref": "#/components/schemas/Category"
           },
