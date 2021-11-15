@@ -66,8 +66,18 @@ describe('OpenAPITypesGuard tests', () => {
         });
     });
 
-    test('isString', () => {
-        expect(guard.isString({ type: 'string' })).toBeTruthy();
+    describe('isString', () => {
+        test('date', () => {
+            expect(guard.isString({ type: 'string', format: 'date-time' })).toBeFalsy();
+        });
+
+        test('guid', () => {
+            expect(guard.isString({ type: 'string', format: 'uuid' })).toBeFalsy();
+        });
+
+        test('string', () => {
+            expect(guard.isString({ type: 'string' })).toBeTruthy();
+        });
     });
 
     test('isDate', () => {

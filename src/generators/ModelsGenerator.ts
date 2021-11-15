@@ -173,6 +173,10 @@ export class ModelsGenerator {
 
         switch (property.kind) {
             case PropertyKind.Date:
+                if (property.isCollection) {
+                    return `${modelProperty} ? ${modelProperty}.map(toDateOut) : ${UNDEFINED_STRING}`;
+                }
+
                 return `toDateOut(${modelProperty})`;
 
             case PropertyKind.Guid:
@@ -208,6 +212,10 @@ export class ModelsGenerator {
 
         switch (property.kind) {
             case PropertyKind.Date:
+                if (property.isCollection) {
+                    return `${dtoProperty} ? ${dtoProperty}.map(toDateIn) : []`;
+                }
+
                 return `toDateIn(${dtoProperty})`;
 
             case PropertyKind.Guid:
