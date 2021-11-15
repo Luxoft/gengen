@@ -17,6 +17,7 @@ export interface IProduct {
     expireDate: $types.TypeOrUndefined<string>;
     externalId: $types.TypeOrUndefinedNullable<string>;
     id: $types.TypeOrUndefined<string>;
+    modifyDates: $types.TypeOrUndefined<string[]>;
     name: $types.TypeOrUndefinedNullable<string>;
     status: $types.TypeOrUndefined<ProductStatus>;
 }
@@ -60,6 +61,7 @@ export class Product {
     public expireDate: $types.TypeOrUndefined<Date> = undefined;
     public externalId: $types.TypeOrUndefinedNullable<Guid> = undefined;
     public id: $types.TypeOrUndefined<Guid> = undefined;
+    public modifyDates: $types.TypeOrUndefined<Date[]> = undefined;
     public name: $types.TypeOrUndefinedNullable<string> = undefined;
     public status: $types.TypeOrUndefined<ProductStatus> = undefined;
     private __product!: string;
@@ -70,6 +72,7 @@ export class Product {
             expireDate: toDateOut(model.expireDate),
             externalId: model.externalId ? model.externalId.toString() : null,
             id: model.id ? model.id.toString() : Guid.empty.toString(),
+            modifyDates: model.modifyDates ? model.modifyDates.map(toDateOut) : undefined,
             name: model.name,
             status: model.status,
         };
@@ -81,6 +84,7 @@ export class Product {
         model.expireDate = toDateIn(dto.expireDate);
         model.externalId = dto.externalId ? new Guid(dto.externalId) : null;
         model.id = new Guid(dto.id);
+        model.modifyDates = dto.modifyDates ? dto.modifyDates.map(toDateIn) : [];
         model.name = dto.name;
         model.status = dto.status;
         return model;
