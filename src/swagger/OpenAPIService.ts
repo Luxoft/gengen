@@ -145,7 +145,7 @@ export class OpenAPIService {
         return refs;
     }
 
-    private getReferencesByObject(object: IOpenAPI3ObjectSchema): IOpenAPI3Reference[] {
+    private getReferencesByObject(object: IOpenAPI3ObjectSchema, objectRef: IOpenAPI3Reference): IOpenAPI3Reference[] {
         let refs: IOpenAPI3Reference[] = [];
 
         Object.values(object.properties || []).forEach((z) => {
@@ -158,12 +158,12 @@ export class OpenAPIService {
                 propertyRefs = z.allOf;
             }
 
-            propertyRefs.forEach((ref) => {
+            propertyRefs.filter((z) => z.$ref !== objectRef.$ref).forEach((ref) => {
                 refs.push(ref);
 
                 const schema = this.getRefSchema(ref);
                 if (this.typesGuard.isObject(schema)) {
-                    refs = refs.concat(this.getReferencesByObject(schema));
+                    refs = refs.concat(this.getReferencesByObject(schema, objectRef));
                 }
             });
         });
@@ -180,13 +180,20 @@ export class OpenAPIService {
     }
 
     private getSchemas(refs: IOpenAPI3Reference[]): OpenAPI3SchemaContainer {
-        const keys = new Set<string>(refs.map((z) => this.getSchemaKey(z)));
-
+        const keys = new Set<string>();
         const keysFromObjects = new Set<string>();
-        keys.forEach((z) => {
-            const schema = this.spec.components.schemas[z];
+
+        refs.forEach((ref) => {
+            const schemaKey = this.getSchemaKey(ref);
+            if (keys.has(schemaKey)) {
+                return;
+            }
+
+            keys.add(schemaKey);
+
+            const schema = this.spec.components.schemas[schemaKey];
             if (this.typesGuard.isObject(schema)) {
-                this.getReferencesByObject(schema).forEach((x) => {
+                this.getReferencesByObject(schema, ref).forEach((x) => {
                     keysFromObjects.add(this.getSchemaKey(x));
                 });
             }
