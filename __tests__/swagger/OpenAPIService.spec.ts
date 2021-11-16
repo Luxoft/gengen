@@ -102,6 +102,51 @@ describe('OpenAPIService tests', () => {
             expect(service.getSchemasByEndpoints(new Set<string>())).toEqual({});
         });
 
+        test('recursion', () => {
+            const spec = {
+                openapi: '3.0.1',
+                paths: {
+                    '/product/test': {
+                        get: {
+                            responses: {
+                                200: {
+                                    description: 'Success',
+                                    content: {
+                                        "application/json": {
+                                            schema: {
+                                                $ref: "#/components/schemas/SimpleObject"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                components: {
+                    schemas: {
+                        SimpleObject: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string', format: 'uuid' },
+                                children: {
+                                    type: "array",
+                                    items: {
+                                        $ref: "#/components/schemas/SimpleObject"
+                                    },
+                                    nullable: true
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const endpoints = service.getEndpoints();
+            expect(service.getSchemasByEndpoints(new Set<string>(endpoints))).toEqual(spec.components.schemas);
+        });
+
         test('all', () => {
             const spec = {
                 openapi: '3.0.1',
