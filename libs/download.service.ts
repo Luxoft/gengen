@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse, HttpResponseBase } from '@angular/common/http';
+import type { HttpClient, HttpContext, HttpHeaders, HttpParams, HttpResponseBase } from '@angular/common/http';
 
 import { BaseHttpService, IAngularHttpRequestOptions } from './base-http.service';
 
@@ -7,6 +7,22 @@ export interface IDownloadResult {
 
     response: HttpResponseBase;
 }
+
+interface IAngularHttpRequestOptionsBlob {
+    headers?: HttpHeaders | {
+        [header: string]: string | string[];
+    };
+    observe: 'response';
+    context?: HttpContext;
+    params?: HttpParams | {
+        [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean>;
+    };
+    reportProgress?: boolean;
+    responseType: 'blob';
+    withCredentials?: boolean;
+}
+
+
 
 export class DownloadFileService extends BaseHttpService {
     private readonly fileNameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
@@ -23,29 +39,33 @@ export class DownloadFileService extends BaseHttpService {
         saveAs?: string,
         options?: IAngularHttpRequestOptions,
     ): Promise<IDownloadResult> {
-        const downloadOptions: IAngularHttpRequestOptions = { observe: 'response', responseType: 'blob' };
+        const downloadOptions: IAngularHttpRequestOptionsBlob = {
+            ...options,
+            observe: 'response',
+            responseType: 'blob'
+        }
 
         const request =
             method === 'get'
-                ? this.http.get<HttpResponse<Blob>>(`${this.path}/${url}`, { ...options, ...downloadOptions } as unknown)
-                : this.http.post<HttpResponse<Blob>>(`${this.path}/${url}`, data, { ...options, ...downloadOptions } as unknown);
+                ? this.http.get(`${this.path}/${url}`, downloadOptions)
+                : this.http.post(`${this.path}/${url}`, data, downloadOptions);
 
-        const response = await request.toPromise();
+        const response = (await request.toPromise())!;
         const filename = this.getFileName(response, saveAs);
-        const result: IDownloadResult = { filename, response };
+        this.downloadBlob(filename, response.body!);
+        return { filename, response };
+    }
 
+    private downloadBlob(filename: string, data: Blob): void {
         const link = document.createElement('a');
-        const href = window.URL.createObjectURL(response.body);
+        const href = window.URL.createObjectURL(data);
         link.href = href;
         link.download = filename;
         link.style.display = 'none';
-
         document.body.appendChild(link);
         link.click();
         window.URL.revokeObjectURL(href);
         link.remove();
-
-        return Promise.resolve(result);
     }
 
     private getFileName(httpResponse: HttpResponseBase, saveAs?: string): string {
