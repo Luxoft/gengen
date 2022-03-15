@@ -1,5 +1,3 @@
-import { action } from 'commander';
-
 import { MethodOperation } from '../models/kinds/MethodOperation';
 import { pathOptions } from '../options';
 import { OpenAPIService } from '../swagger/OpenAPIService';

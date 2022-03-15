@@ -1,5 +1,12 @@
 import { IndentationText, ModuleKind, NewLineKind, ProjectOptions, QuoteKind, ScriptTarget } from 'ts-morph';
 
+export const defaultOptions: IOptions = {
+    configOutput: './.generated',
+    output: './src/generated',
+    url: 'https://localhost:5001/swagger/v1/swagger.json',
+    withRequestOptions: false
+};
+
 export interface IOptions {
     all?: boolean;
     configOutput: string;
@@ -12,13 +19,6 @@ export interface IOptions {
 
 export const pathOptions = {
     separator: '/'
-}
-
-export const defaultOptions: IOptions = {
-    configOutput: './.generated',
-    output: './src/generated',
-    url: 'https://localhost:5001/swagger/v1/swagger.json',
-    withRequestOptions: false
 };
 
 export const generatorsOptions: ProjectOptions = {
@@ -40,3 +40,7 @@ export const configOptions = {
     filename: 'endpoints.config.ts',
     className: 'Endpoints'
 };
+
+export function getOptions(options: Partial<IOptions>): IOptions {
+    return { ...defaultOptions, ...options };
+}

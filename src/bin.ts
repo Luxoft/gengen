@@ -1,6 +1,9 @@
 import { program } from 'commander';
 
 import * as gengen from './gengen';
+import { GenGenCodeGen } from './gengen/GenGenCodeGen';
+import { getOptions } from './options';
+import { getOpenAPISpec } from './swagger/getOpenAPISpec';
 
 program
     .command('init')
@@ -28,6 +31,11 @@ program
     .option('--all')
     .option('--withRequestOptions')
     .description('Generates models and services')
-    .action((params) => gengen.main(params));
+    .action(async (params) => {
+        const options = getOptions(params);
+        const spec = await getOpenAPISpec(options);
+        const codeGen = new GenGenCodeGen(options, spec);
+        await codeGen.run();
+    });
 
 program.parse(process.argv);

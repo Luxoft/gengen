@@ -23,27 +23,29 @@ interface IParameterType {
 }
 
 export class AngularServicesMethodGenerator {
-    constructor(private uriBuilder: UriBuilder) {}
+    constructor(protected uriBuilder: UriBuilder) {}
 
     public getMethodsCodeStructures(methodModels: IMethodModel[]): OptionalKind<MethodDeclarationStructure>[] {
-        return methodModels.map(
-            (methodModel): OptionalKind<MethodDeclarationStructure> => ({
-                scope: Scope.Public,
-                name: methodModel.name,
-                parameters: methodModel.parameters.map((p) => this.getParameterStatement(p)),
-                returnType: this.getMethodReturnType(methodModel),
-                statements: (writer) => {
-                    if (methodModel.kind === MethodKind.Download) {
-                        this.createDownloadMethod(writer, methodModel);
-                    } else {
-                        this.createMethod(writer, methodModel);
-                    }
-                }
-            })
-        );
+        return methodModels.map((x) => this.getMethodCodeStructures(x));
     }
 
-    private getParameterStatement(
+    protected getMethodCodeStructures(methodModel: IMethodModel): OptionalKind<MethodDeclarationStructure> {
+        return {
+            scope: Scope.Public,
+            name: methodModel.name,
+            parameters: methodModel.parameters.map((p) => this.getParameterStatement(p)),
+            returnType: this.getMethodReturnType(methodModel),
+            statements: (writer) => {
+                if (methodModel.kind === MethodKind.Download) {
+                    this.createDownloadMethod(writer, methodModel);
+                } else {
+                    this.createMethod(writer, methodModel);
+                }
+            }
+        };
+    }
+
+    protected getParameterStatement(
         parameter: IQueryParameter | IPathParameter | IBodyParameter
     ): OptionalKind<ParameterDeclarationStructure> {
         const statement: OptionalKind<ParameterDeclarationStructure> = {
@@ -82,7 +84,7 @@ export class AngularServicesMethodGenerator {
         return statement;
     }
 
-    private getReturnTypeName(returnType: IReturnType | undefined, targetType: string | undefined): string {
+    protected getReturnTypeName(returnType: IReturnType | undefined, targetType: string | undefined): string {
         if (!returnType || !targetType) {
             return 'void';
         }
@@ -95,7 +97,7 @@ export class AngularServicesMethodGenerator {
         });
     }
 
-    private getFullTypeName({ type, isCollection, isModel, isOptional }: IParameterType): string {
+    protected getFullTypeName({ type, isCollection, isModel, isOptional }: IParameterType): string {
         const typeName = `${isModel ? `${MODELS_NAMESPACE}.` : ''}${type}`;
 
         return new TypeSerializer({
@@ -105,14 +107,14 @@ export class AngularServicesMethodGenerator {
         }).toString();
     }
 
-    private needPipe(returnType: IReturnType | undefined): returnType is IReturnType {
+    protected needPipe(returnType: IReturnType | undefined): returnType is IReturnType {
         if (!returnType) {
             return false;
         }
 
         return [PropertyKind.Object, PropertyKind.Identity, PropertyKind.Guid, PropertyKind.Date].includes(returnType.type.kind);
     }
-    private createPipe(returnType: IReturnType): string {
+    protected createPipe(returnType: IReturnType): string {
         if (returnType.type.kind === PropertyKind.Guid) {
             return `${MAPPERS_NAMESPACE}.mapGuid()`;
         }
@@ -136,12 +138,12 @@ export class AngularServicesMethodGenerator {
 
         return `${MAPPERS_NAMESPACE}.mapSingle(${type})`;
     }
-    private getMethodReturnType(x: IMethodModel): string {
+    protected getMethodReturnType(x: IMethodModel): string {
         return x.kind === MethodKind.Download
             ? `Promise<${x.returnType?.type.type}>`
             : `Observable<${this.getReturnTypeName(x.returnType, x.returnType?.type.type)}>`;
     }
-    private createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel): void {
+    protected createDownloadMethod(writer: CodeBlockWriter, model: IMethodModel): void {
         const bodyParameters = model.parameters.filter((z) => z.name !== 'saveAs' && z.place === ParameterPlace.Body);
         const dataParameter = bodyParameters.find((z) => z.name !== 'options');
         const optionsParameter = bodyParameters.find((z) => z.name === 'options');
@@ -159,7 +161,7 @@ export class AngularServicesMethodGenerator {
         writer.writeLine(');');
     }
 
-    private createMethod(writer: CodeBlockWriter, model: IMethodModel): void {
+    protected createMethod(writer: CodeBlockWriter, model: IMethodModel): void {
         writer.writeLine(
             `return this.${MethodOperation[model.operation].toLowerCase()}<${this.getReturnTypeName(
                 model.returnType,
