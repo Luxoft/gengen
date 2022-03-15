@@ -6,16 +6,16 @@ import { IOpenAPI3ObjectSchema } from './schemas/object-schema';
 import { OpenAPI3ResponseSchema } from './schemas/schema';
 
 export interface IOpenAPI3Operation {
-    tags: string[];
+    tags?: string[];
     parameters?: IOpenAPI3Parameter[];
     responses: {
         200: {
-            description: 'Success';
+            description?: 'Success';
             content?: {
-                'application/json': {
+                'application/json'?: {
                     schema: OpenAPI3ResponseSchema;
                 };
-                'application/octet-stream': {
+                'application/octet-stream'?: {
                     schema: IOpenAPI3BinarySchema;
                 };
             };
@@ -23,11 +23,11 @@ export interface IOpenAPI3Operation {
     };
     requestBody?: {
         content: {
-            'application/json': {
+            'application/json'?: {
                 schema: IOpenAPI3ArraySchema | IOpenAPI3Reference;
             };
-            'multipart/form-data': {
-                schema: IOpenAPI3ObjectSchema
+            'multipart/form-data'?: {
+                schema: IOpenAPI3ObjectSchema;
             };
         };
     };

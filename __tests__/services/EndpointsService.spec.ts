@@ -4,8 +4,8 @@ import { OpenAPIService } from '../../src/swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
 
 describe('EndpointsService tests', () => {
-    function getService(spec: string): EndpointsService {
-        const openApiService = new OpenAPIService(spec, new OpenAPITypesGuard());
+    function getService(specJson: string): EndpointsService {
+        const openApiService = new OpenAPIService(JSON.parse(specJson), new OpenAPITypesGuard());
         return new EndpointsService(openApiService, new EndpointNameResolver());
     }
 
@@ -28,10 +28,10 @@ describe('EndpointsService tests', () => {
             };
 
             const expected = {
-                Category: { addCategory: "/api/v1/Category/AddCategory" },
+                Category: { addCategory: '/api/v1/Category/AddCategory' },
                 Product: {
-                    getProducts: "/Product/GetProducts",
-                    searchProducts: "/Product/SearchProducts",
+                    getProducts: '/Product/GetProducts',
+                    searchProducts: '/Product/SearchProducts'
                 }
             };
 
@@ -85,8 +85,13 @@ describe('EndpointsService tests', () => {
                         get: { tags: ['Product'] }
                     }
                 }
-            }
-            const expected = new Set(['/Product/GetProducts', '/Product/SearchProducts', '/api/v1/Category/AddCategory', '/api/v1/Product/Product/{id}']);
+            };
+            const expected = new Set([
+                '/Product/GetProducts',
+                '/Product/SearchProducts',
+                '/api/v1/Category/AddCategory',
+                '/api/v1/Product/Product/{id}'
+            ]);
             const service = getService(JSON.stringify(spec));
 
             // Act
@@ -108,7 +113,7 @@ describe('EndpointsService tests', () => {
             const service = getService(JSON.stringify(spec));
 
             // Act
-            const result = service.parse('/Product/SearchProducts')
+            const result = service.parse('/Product/SearchProducts');
 
             // Assert
             expect(result).toMatchObject({
