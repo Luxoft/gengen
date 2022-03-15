@@ -4,16 +4,15 @@ import {
     ImportDeclarationStructure,
     StatementStructures,
     StructureKind,
-    Writers,
+    Writers
 } from 'ts-morph';
-
+import { ServicesMethodGeneratorToken } from '../../gengen/GenGenCodeGenInjector';
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { IServiceModel } from '../../models/ServiceModel';
 import { IOptions } from '../../options';
 import { AliasResolver } from '../../services/AliasResolver';
-import { UriBuilder } from '../../services/UriBuilder';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, TYPES_NAMESPACE } from '../utils/consts';
-import { AngularServicesMethodGenerator, HTTP_REQUEST_OPTIONS } from './AngularServicesMethodGenerator';
+import { HTTP_REQUEST_OPTIONS } from './AngularServicesMethodGenerator';
 
 const BASE_SERVICE = 'BaseHttpService';
 const DOWNLOAD_SERVICE = 'DownloadFileService';
@@ -23,15 +22,17 @@ const GET_BASE_PATH_FUNCTION_NAME = 'getBasePath';
 const HTTP_CLIENT_VARIABLE_NAME = 'http';
 
 export class AngularServicesGenerator {
-    private methodGenerator: AngularServicesMethodGenerator;
-    constructor(protected aliasResolver: AliasResolver, uriBuilder: UriBuilder, private settings: IOptions) {
-        this.methodGenerator = new AngularServicesMethodGenerator(uriBuilder);
-    }
+    constructor(
+        protected aliasResolver: AliasResolver,
+        protected methodGenerator: ServicesMethodGeneratorToken,
+        protected settings: IOptions
+    ) {}
+
     public getServicesCodeStructure(services: IServiceModel[]): StatementStructures[] {
         return [...this.getImports(), ...this.getServices(services)];
     }
 
-    private getImports(): ImportDeclarationStructure[] {
+    protected getImports(): ImportDeclarationStructure[] {
         return [
             {
                 kind: StructureKind.ImportDeclaration,
@@ -89,7 +90,7 @@ export class AngularServicesGenerator {
         ];
     }
 
-    private getServices(services: IServiceModel[]): ClassDeclarationStructure[] {
+    protected getServices(services: IServiceModel[]): ClassDeclarationStructure[] {
         return services.map(
             (service): ClassDeclarationStructure => ({
                 kind: StructureKind.Class,
@@ -109,7 +110,7 @@ export class AngularServicesGenerator {
         );
     }
 
-    private getConstructorStatement(service: IServiceModel): ConstructorDeclarationStructure {
+    protected getConstructorStatement(service: IServiceModel): ConstructorDeclarationStructure {
         const superStatement = `super(${GET_BASE_PATH_FUNCTION_NAME}('${this.aliasResolver.alias}', '${service.relativePath}'), ${HTTP_CLIENT_VARIABLE_NAME});`;
         return {
             kind: StructureKind.Constructor,

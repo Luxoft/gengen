@@ -19,11 +19,7 @@ interface IOperation {
 export type IOpenAPI3Operations = { [key: string]: { method: MethodOperation; operation: IOpenAPI3Operation }[] };
 
 export class OpenAPIService {
-    private readonly spec: IOpenAPI3;
-
-    constructor(json: string, private readonly typesGuard: OpenAPITypesGuard) {
-        this.spec = JSON.parse(json);
-
+    constructor(private readonly spec: IOpenAPI3, private readonly typesGuard: OpenAPITypesGuard) {
         const majorVersion = this.majorVersion;
         if (majorVersion !== SUPPORTED_VERSION.toString()) {
             throw new Error(`Only OpenApi version ${SUPPORTED_VERSION} supported yet.`);
@@ -59,7 +55,7 @@ export class OpenAPIService {
                     return store;
                 }
 
-                const refs = operations.flatMap(z => this.getReferencesByOperation(z.operation));
+                const refs = operations.flatMap((z) => this.getReferencesByOperation(z.operation));
                 return { ...store, ...this.getSchemas(refs) };
             }, {});
     }
@@ -75,7 +71,7 @@ export class OpenAPIService {
                 return store;
             }
 
-            store[first(operations).key] = operations.map(x => ({ method: x.method, operation: x.operation }))
+            store[first(operations).key] = operations.map((x) => ({ method: x.method, operation: x.operation }));
 
             return store;
         }, {});
@@ -119,7 +115,7 @@ export class OpenAPIService {
             }
 
             return operations;
-        }, [])
+        }, []);
     }
 
     private get majorVersion(): string | undefined {
@@ -158,14 +154,16 @@ export class OpenAPIService {
                 propertyRefs = z.allOf;
             }
 
-            propertyRefs.filter((z) => z.$ref !== objectRef.$ref).forEach((ref) => {
-                refs.push(ref);
+            propertyRefs
+                .filter((z) => z.$ref !== objectRef.$ref)
+                .forEach((ref) => {
+                    refs.push(ref);
 
-                const schema = this.getRefSchema(ref);
-                if (this.typesGuard.isObject(schema)) {
-                    refs = refs.concat(this.getReferencesByObject(schema, objectRef));
-                }
-            });
+                    const schema = this.getRefSchema(ref);
+                    if (this.typesGuard.isObject(schema)) {
+                        refs = refs.concat(this.getReferencesByObject(schema, objectRef));
+                    }
+                });
         });
 
         return refs;
