@@ -1,56 +1,63 @@
 import { MethodOperation } from '../../src/models/kinds/MethodOperation';
 import { OpenAPIService } from '../../src/swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
+import { IOpenAPI3 } from '../../src/swagger/v3/open-api';
 
 describe('OpenAPIService tests', () => {
     let guard: OpenAPITypesGuard;
     beforeEach(() => (guard = new OpenAPITypesGuard()));
+    const defaultSpec: IOpenAPI3 = {
+        components: { schemas: {} },
+        openapi: '',
+        paths: {}
+    };
 
     describe('ctor', () => {
         test('old OpenApi version', () => {
-            const spec = { version: '1.0.1' };
-            expect(() => new OpenAPIService(JSON.stringify(spec), guard)).toThrow('Only OpenApi version 3 supported yet.');
+            const spec = { ...defaultSpec, openapi: '1.0.1' };
+            expect(() => new OpenAPIService(spec, guard)).toThrow('Only OpenApi version 3 supported yet.');
         });
 
         test('future OpenApi version', () => {
-            const spec = { openapi: '4.0.1' };
-            expect(() => new OpenAPIService(JSON.stringify(spec), guard)).toThrow('Only OpenApi version 3 supported yet.');
+            const spec = { ...defaultSpec, openapi: '4.0.1' };
+            expect(() => new OpenAPIService(spec, guard)).toThrow('Only OpenApi version 3 supported yet.');
         });
     });
 
     test('getSchemaKey', () => {
-        const spec = { openapi: '3.0.1' };
-        const service = new OpenAPIService(JSON.stringify(spec), guard);
+        const spec = { ...defaultSpec, openapi: '3.0.1' };
+        const service = new OpenAPIService(spec, guard);
         expect(service.getSchemaKey({ $ref: '#/components/schemas/Product' })).toEqual('Product');
     });
 
     describe('getEndpoints', () => {
         test('not found', () => {
-            const spec = { openapi: '3.0.1' };
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const spec = { ...defaultSpec, openapi: '3.0.1' };
+            const service = new OpenAPIService(spec, guard);
             expect(service.getEndpoints()).toEqual([]);
         });
 
         test('sorted', () => {
-            const spec = {
+            const spec: IOpenAPI3 = {
                 openapi: '3.0.1',
-                paths: { '/product/SearchProducts': {}, '/api/v1/Category/AddCategory': {}, '/product/GetProducts': {} }
+                paths: { '/product/SearchProducts': {}, '/api/v1/Category/AddCategory': {}, '/product/GetProducts': {} },
+                components: { schemas: {} }
             };
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const service = new OpenAPIService(spec, guard);
             expect(service.getEndpoints()).toEqual(['/api/v1/Category/AddCategory', '/product/GetProducts', '/product/SearchProducts']);
         });
     });
 
     describe('getTagsByEndpoint', () => {
         test('not found path', () => {
-            const spec = { openapi: '3.0.1' };
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const spec = { ...defaultSpec, openapi: '3.0.1' };
+            const service = new OpenAPIService(spec, guard);
             expect(service.getTagsByEndpoint('test')).toEqual([]);
         });
 
         test('not found path item', () => {
-            const spec = { openapi: '3.0.1', paths: { '/product/SearchProducts': {} } };
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const spec = { ...defaultSpec, openapi: '3.0.1', paths: { '/product/SearchProducts': {} } };
+            const service = new OpenAPIService(spec, guard);
             expect(service.getTagsByEndpoint('test')).toEqual([]);
         });
 
@@ -58,22 +65,22 @@ describe('OpenAPIService tests', () => {
             const operationObject: Record<string, { tags: string[] }> = {};
             operationObject[operation] = { tags: ['1', '2'] };
 
-            const spec = { openapi: '3.0.1', paths: { test: operationObject } };
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const spec = { ...defaultSpec, openapi: '3.0.1', paths: { test: operationObject } };
+            const service = new OpenAPIService(spec, guard);
             expect(service.getTagsByEndpoint('test')).toEqual(['1', '2']);
         });
     });
 
     describe('getOperationsByEndpoints', () => {
         test('not found path', () => {
-            const spec = { openapi: '3.0.1' };
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const spec = { ...defaultSpec, openapi: '3.0.1' };
+            const service = new OpenAPIService(spec, guard);
             expect(service.getOperationsByEndpoints(new Set('test'))).toEqual({});
         });
 
         test('not found path item', () => {
-            const spec = { openapi: '3.0.1', paths: { '/product/SearchProducts': {} } };
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const spec = { ...defaultSpec, openapi: '3.0.1', paths: { '/product/SearchProducts': {} } };
+            const service = new OpenAPIService(spec, guard);
             expect(service.getOperationsByEndpoints(new Set('test'))).toEqual({});
         });
 
@@ -86,8 +93,8 @@ describe('OpenAPIService tests', () => {
             const operationObject: Record<string, { tags: string[] }> = {};
             operationObject[operation] = { tags: ['1', '2'] };
 
-            const spec = { openapi: '3.0.1', paths: { test: operationObject, test2: operationObject } };
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const spec = { ...defaultSpec, openapi: '3.0.1', paths: { test: operationObject, test2: operationObject } };
+            const service = new OpenAPIService(spec, guard);
             expect(service.getOperationsByEndpoints(new Set(['test', 'test2']))).toMatchObject({
                 test: [{ operation: operationObject[operation], method: method }],
                 test2: [{ operation: operationObject[operation], method: method }]
@@ -97,13 +104,13 @@ describe('OpenAPIService tests', () => {
 
     describe('getSchemasByEndpoints', () => {
         test('undefined', () => {
-            const spec = { openapi: '3.0.1', paths: { '/product/SearchProducts': {} } };
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const spec = { ...defaultSpec, openapi: '3.0.1', paths: { '/product/SearchProducts': {} } };
+            const service = new OpenAPIService(spec, guard);
             expect(service.getSchemasByEndpoints(new Set<string>())).toEqual({});
         });
 
         test('recursion', () => {
-            const spec = {
+            const spec: IOpenAPI3 = {
                 openapi: '3.0.1',
                 paths: {
                     '/product/test': {
@@ -112,9 +119,9 @@ describe('OpenAPIService tests', () => {
                                 200: {
                                     description: 'Success',
                                     content: {
-                                        "application/json": {
+                                        'application/json': {
                                             schema: {
-                                                $ref: "#/components/schemas/SimpleObject"
+                                                $ref: '#/components/schemas/SimpleObject'
                                             }
                                         }
                                     }
@@ -130,9 +137,9 @@ describe('OpenAPIService tests', () => {
                             properties: {
                                 id: { type: 'string', format: 'uuid' },
                                 children: {
-                                    type: "array",
+                                    type: 'array',
                                     items: {
-                                        $ref: "#/components/schemas/SimpleObject"
+                                        $ref: '#/components/schemas/SimpleObject'
                                     },
                                     nullable: true
                                 }
@@ -142,19 +149,20 @@ describe('OpenAPIService tests', () => {
                 }
             };
 
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const service = new OpenAPIService(spec, guard);
             const endpoints = service.getEndpoints();
             expect(service.getSchemasByEndpoints(new Set<string>(endpoints))).toEqual(spec.components.schemas);
         });
 
         test('all', () => {
-            const spec = {
+            const spec: IOpenAPI3 = {
                 openapi: '3.0.1',
                 paths: {
                     '/product/Get': {
                         get: {
                             parameters: [
                                 {
+                                    in: 'query',
                                     name: 'id',
                                     schema: {
                                         type: 'string',
@@ -162,7 +170,11 @@ describe('OpenAPIService tests', () => {
                                     }
                                 },
                                 {
-                                    $ref: '#/components/schemas/FistEnum'
+                                    in: 'query',
+                                    name: 'name2',
+                                    schema: {
+                                        $ref: '#/components/schemas/FistEnum'
+                                    }
                                 }
                             ],
                             responses: {
@@ -182,13 +194,18 @@ describe('OpenAPIService tests', () => {
                         post: {
                             parameters: [
                                 {
+                                    in: 'path',
                                     name: 'name',
                                     schema: {
                                         type: 'string'
                                     }
                                 },
                                 {
-                                    $ref: '#/components/schemas/FistEnum'
+                                    name: 'name2',
+                                    in: 'query',
+                                    schema: {
+                                        $ref: '#/components/schemas/FistEnum'
+                                    }
                                 }
                             ],
                             requestBody: {
@@ -253,7 +270,7 @@ describe('OpenAPIService tests', () => {
                         delete: {
                             requestBody: {
                                 content: {
-                                    'application/json-patch+json': {
+                                    'application/json': {
                                         schema: {
                                             $ref: '#/components/schemas/SimpleObject'
                                         }
@@ -321,13 +338,13 @@ describe('OpenAPIService tests', () => {
                         },
                         EmptyObject: {
                             type: 'object',
-                            additionalProperties: false
+                            properties: {}
                         }
                     }
                 }
             };
 
-            const service = new OpenAPIService(JSON.stringify(spec), guard);
+            const service = new OpenAPIService(spec, guard);
             const endpoints = service.getEndpoints();
             expect(service.getSchemasByEndpoints(new Set<string>(endpoints))).toMatchObject(spec.components.schemas);
         });

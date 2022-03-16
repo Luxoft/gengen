@@ -1,4 +1,16 @@
+__mocks__/
+__tests__/
+.generated/
+.github/
 .output/
 .snapshot/
 .vscode/
-.generated/
+e2e/
+src/
+.eslintignore
+.eslintrc
+.prettierignore
+.prettierrc
+jest.config.js
+swagger.json
+tsconfig.json

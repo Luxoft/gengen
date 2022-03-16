@@ -6,9 +6,10 @@ import { IOpenAPI3ObjectSchema } from '../src/swagger/v3/schemas/object-schema';
 
 export class MockOpenAPIService extends OpenAPIService {
     constructor(
-        typesGuard: OpenAPITypesGuard, 
-        public getRefSchemaResult: IOpenAPI3ObjectSchema | IOpenAPI3EnumSchema | undefined = undefined) {
-        super('{ "openapi": "3.0.1" }', typesGuard);
+        typesGuard: OpenAPITypesGuard,
+        public getRefSchemaResult: IOpenAPI3ObjectSchema | IOpenAPI3EnumSchema | undefined = undefined
+    ) {
+        super(JSON.parse('{ "openapi": "3.0.1" }'), typesGuard);
     }
 
     public getRefSchema(reference: IOpenAPI3Reference): IOpenAPI3ObjectSchema | IOpenAPI3EnumSchema | undefined {
