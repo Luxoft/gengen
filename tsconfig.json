@@ -5,6 +5,7 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "./lib",
+    "declaration": true,
     "lib": [
       "es2019"
     ]
