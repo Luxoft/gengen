@@ -12,6 +12,74 @@ describe('OpenAPIService tests', () => {
         paths: {}
     };
 
+    describe('getSchemas', () => {
+        const schema: IOpenAPI3 = {
+            ...defaultSpec,
+            openapi: '3.0.1',
+            components: {
+                schemas: {
+                    modelName1: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid'
+                            }
+                        }
+                    },
+                    modelName2: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid'
+                            }
+                        }
+                    },
+                    modelName3: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid'
+                            },
+                            prop1: {
+                                $ref: '#/components/schemas/modelName1'
+                            },
+                            prop2: {
+                                $ref: '#/components/schemas/modelName2'
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        test('should return all models if no whitelist specified', () => {
+            const service = new OpenAPIService(schema, guard);
+            const result = service.getSchemas();
+            expect(Object.values(result).length).toBe(3);
+        });
+
+        test('should return only selected model if it has no ref fields', () => {
+            const service = new OpenAPIService(schema, guard);
+            const result = service.getSchemas(['modelName1']);
+            expect(Object.values(result).length).toBe(1);
+        });
+
+        test('should return model and all of ref field models', () => {
+            const service = new OpenAPIService(schema, guard);
+            const result = service.getSchemas(['modelName3']);
+            expect(Object.values(result).length).toBe(3);
+        });
+
+        test('should be empty if no model found', () => {
+            const service = new OpenAPIService(schema, guard);
+            const result = service.getSchemas(['someOtherModel']);
+            expect(Object.values(result).length).toBe(0);
+        });
+    });
+
     describe('ctor', () => {
         test('old OpenApi version', () => {
             const spec = { ...defaultSpec, openapi: '1.0.1' };

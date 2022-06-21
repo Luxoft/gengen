@@ -12,10 +12,14 @@ export class InterfacesGenerator {
         }));
     }
 
-    private getInterfaceProperty(model: IInterfacePropertyModel): OptionalKind<PropertySignatureStructure> {
+    protected getInterfaceProperty(model: IInterfacePropertyModel): OptionalKind<PropertySignatureStructure> {
         return {
             name: model.name,
-            type: TypeSerializer.fromInterfaceProperty(model).toString()
+            type: this.getInterfacePropertyType(model)
         };
+    }
+
+    protected getInterfacePropertyType(model: IInterfacePropertyModel): string {
+        return TypeSerializer.fromInterfaceProperty(model).toString();
     }
 }
