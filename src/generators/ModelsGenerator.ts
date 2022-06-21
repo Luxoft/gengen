@@ -19,7 +19,6 @@ import { lowerFirst } from '../utils';
 import { NULL_STRING, TYPES_NAMESPACE, UNDEFINED_STRING } from './utils/consts';
 import { InterfacesGenerator } from './models-generator/InterfacesGenerator';
 import { TypeSerializer } from './utils/TypeSerializer';
-import { typeOrUndefined } from './utils/typeOrUndefined';
 
 const TO_DTO_METHOD = 'toDTO';
 const FROM_DTO_METHOD = 'fromDTO';
@@ -92,6 +91,7 @@ export class ModelsGenerator {
                         isStatic: true,
                         name: TO_DTO_METHOD,
                         parameters: [{ name: z.property.name, type: z.property.type }],
+                        // TODO: would find first identity interface everytime
                         returnType: interfaces.find(
                             (i) =>
                                 i.properties.length === 1 &&

@@ -9,8 +9,8 @@ import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3EnumSchema } from '../swagger/v3/schemas/enum-schema';
 import { IOpenAPI3GuidSchema } from '../swagger/v3/schemas/guid-schema';
-import { IOpenAPI3ObjectSchema, OpenAPI3ObjectPropertySchema } from '../swagger/v3/schemas/object-schema';
-import { OpenAPI3SchemaContainer, OpenAPI3SimpleSchema } from '../swagger/v3/schemas/schema';
+import { IOpenAPI3ObjectSchema } from '../swagger/v3/schemas/object-schema';
+import { OpenAPI3Schema, OpenAPI3SchemaContainer, OpenAPI3SimpleSchema } from '../swagger/v3/schemas/schema';
 import { first, sortBy } from '../utils';
 import { TypesService } from './TypesService';
 
@@ -47,7 +47,7 @@ export class ModelMappingService {
                         }
                     });
                 } else {
-                    objects.push(this.toObjectModel(schemas, name, schema));
+                    objects.push(this.toObjectModel(name, schema));
                 }
             }
         });
@@ -72,7 +72,7 @@ export class ModelMappingService {
         };
     }
 
-    private toObjectModel(schemas: OpenAPI3SchemaContainer, name: string, schema: IOpenAPI3ObjectSchema): IObjectModel {
+    private toObjectModel(name: string, schema: IOpenAPI3ObjectSchema): IObjectModel {
         const model: IObjectModel = { name, dtoType: this.getInterfaceName(name), properties: [] };
         if (!schema.properties) {
             return model;
@@ -80,13 +80,13 @@ export class ModelMappingService {
 
         Object.entries(schema.properties)
             .filter(([name]) => !IGNORE_PROPERTIES.includes(name))
-            .forEach(([name, propertySchema]) => this.addProperty(schemas, model, name, propertySchema));
+            .forEach(([name, propertySchema]) => this.addProperty(model, name, propertySchema));
 
         model.properties = model.properties.sort(sortBy((z) => z.name));
         return model;
     }
 
-    private addProperty(schemas: OpenAPI3SchemaContainer, model: IObjectModel, name: string, schema: OpenAPI3ObjectPropertySchema): void {
+    private addProperty(model: IObjectModel, name: string, schema: OpenAPI3Schema): void {
         if (this.typesGuard.isSimple(schema)) {
             model.properties.push(this.getSimpleProperty(name, schema));
             return;

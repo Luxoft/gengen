@@ -6,7 +6,7 @@ import { IOpenAPI3Operation } from './v3/operation';
 import { IOpenAPI3Reference } from './v3/reference';
 import { IOpenAPI3EnumSchema } from './v3/schemas/enum-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
-import { OpenAPI3ResponseSchema, OpenAPI3SchemaContainer } from './v3/schemas/schema';
+import { OpenAPI3Schema, OpenAPI3SchemaContainer } from './v3/schemas/schema';
 
 const SUPPORTED_VERSION = 3;
 
@@ -56,8 +56,38 @@ export class OpenAPIService {
                 }
 
                 const refs = operations.flatMap((z) => this.getReferencesByOperation(z.operation));
-                return { ...store, ...this.getSchemas(refs) };
+                return { ...store, ...this.getSchemasByRefs(refs) };
             }, {});
+    }
+
+    public getSchemas(modelNames?: string[]): OpenAPI3SchemaContainer {
+        if (!modelNames) {
+            return this.spec.components.schemas;
+        }
+
+        return modelNames.reduce<OpenAPI3SchemaContainer>((store, modelName) => {
+            const modelSchema = this.spec.components.schemas[modelName];
+
+            if (!modelSchema) {
+                return store;
+            }
+
+            const result = {
+                ...store,
+                [modelName]: modelSchema
+            };
+
+            if (!this.typesGuard.isObject(modelSchema)) {
+                return result;
+            }
+
+            const refs: IOpenAPI3Reference[] = [];
+            Object.values(modelSchema.properties).forEach((propertySchema) => {
+                refs.push(...this.getRefsFromSchema(propertySchema));
+            });
+
+            return { ...result, ...this.getSchemasByRefs(refs) };
+        }, {});
     }
 
     public getOperationsByEndpoints(endpoints: Set<string>): IOpenAPI3Operations {
@@ -135,10 +165,11 @@ export class OpenAPIService {
             }
         });
 
-        this.getSchemaFromContent(refs, operation.requestBody?.content['application/json']?.schema);
-        this.getSchemaFromContent(refs, operation.responses[200].content?.['application/json']?.schema);
-
-        return refs;
+        return [
+            ...refs,
+            ...this.getRefsFromSchema(operation.requestBody?.content['application/json']?.schema),
+            ...this.getRefsFromSchema(operation.responses[200].content?.['application/json']?.schema)
+        ];
     }
 
     private getReferencesByObject(object: IOpenAPI3ObjectSchema, objectRef: IOpenAPI3Reference): IOpenAPI3Reference[] {
@@ -169,17 +200,18 @@ export class OpenAPIService {
         return refs;
     }
 
-    private getSchemaFromContent(refs: IOpenAPI3Reference[], schema: OpenAPI3ResponseSchema | undefined): void {
+    private getRefsFromSchema(schema: OpenAPI3Schema | undefined): IOpenAPI3Reference[] {
+        const refs: IOpenAPI3Reference[] = [];
         if (this.typesGuard.isCollection(schema) && this.typesGuard.isReference(schema.items)) {
             refs.push(schema.items);
         } else if (this.typesGuard.isReference(schema)) {
             refs.push(schema);
         }
+        return refs;
     }
 
-    private getSchemas(refs: IOpenAPI3Reference[]): OpenAPI3SchemaContainer {
+    private getSchemasByRefs(refs: IOpenAPI3Reference[]): OpenAPI3SchemaContainer {
         const keys = new Set<string>();
-        const keysFromObjects = new Set<string>();
 
         refs.forEach((ref) => {
             const schemaKey = this.getSchemaKey(ref);
@@ -192,12 +224,12 @@ export class OpenAPIService {
             const schema = this.spec.components.schemas[schemaKey];
             if (this.typesGuard.isObject(schema)) {
                 this.getReferencesByObject(schema, ref).forEach((x) => {
-                    keysFromObjects.add(this.getSchemaKey(x));
+                    keys.add(this.getSchemaKey(x));
                 });
             }
         });
 
-        return [...new Set<string>([...keys, ...keysFromObjects])].reduce<OpenAPI3SchemaContainer>((store, key) => {
+        return [...keys].reduce<OpenAPI3SchemaContainer>((store, key) => {
             store[key] = this.spec.components.schemas[key];
             return store;
         }, {});
