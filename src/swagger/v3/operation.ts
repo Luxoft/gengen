@@ -3,7 +3,7 @@ import { IOpenAPI3Reference } from './reference';
 import { IOpenAPI3ArraySchema } from './schemas/array-schema';
 import { IOpenAPI3BinarySchema } from './schemas/binary-schema';
 import { IOpenAPI3ObjectSchema } from './schemas/object-schema';
-import { OpenAPI3ResponseSchema } from './schemas/schema';
+import { OpenAPI3Schema } from './schemas/schema';
 
 export interface IOpenAPI3Operation {
     tags?: string[];
@@ -13,7 +13,7 @@ export interface IOpenAPI3Operation {
             description?: 'Success';
             content?: {
                 'application/json'?: {
-                    schema: OpenAPI3ResponseSchema;
+                    schema: OpenAPI3Schema;
                 };
                 'application/octet-stream'?: {
                     schema: IOpenAPI3BinarySchema;

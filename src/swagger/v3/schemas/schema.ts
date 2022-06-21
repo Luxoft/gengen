@@ -1,4 +1,5 @@
 import { IOpenAPI3Reference } from '../reference';
+import { IOpenAPI3AllOfSchema } from './all-of-schema';
 import { IOpenAPI3ArraySchema } from './array-schema';
 import { IOpenAPI3BooleanSchema } from './boolean-schema';
 import { IOpenAPI3DateSchema } from './date-schema';
@@ -15,6 +16,5 @@ export type OpenAPI3SimpleSchema =
     | IOpenAPI3DateSchema
     | IOpenAPI3BooleanSchema;
 
-export type OpenAPI3ResponseSchema = IOpenAPI3ArraySchema | OpenAPI3SimpleSchema | IOpenAPI3Reference;
-
+export type OpenAPI3Schema = IOpenAPI3ArraySchema | OpenAPI3SimpleSchema | IOpenAPI3Reference | IOpenAPI3AllOfSchema;
 export type OpenAPI3SchemaContainer = { [key: string]: IOpenAPI3ObjectSchema | IOpenAPI3EnumSchema };

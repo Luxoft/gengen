@@ -19,7 +19,7 @@ import { IOpenAPI3Operation } from '../swagger/v3/operation';
 import { IOpenAPI3Parameter } from '../swagger/v3/parameter';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IOpenAPI3ArraySchema } from '../swagger/v3/schemas/array-schema';
-import { OpenAPI3ResponseSchema } from '../swagger/v3/schemas/schema';
+import { OpenAPI3Schema } from '../swagger/v3/schemas/schema';
 import { first, lowerFirst, sortBy } from '../utils';
 import { EndpointNameResolver } from './EndpointNameResolver';
 import { EndpointsService, IEndpointInfo } from './EndpointsService';
@@ -38,7 +38,8 @@ export class ServiceMappingService {
         private readonly typesGuard: OpenAPITypesGuard,
         private readonly endpointsService: EndpointsService,
         private readonly endpointNameResolver: EndpointNameResolver,
-        private readonly settings: IOptions) {}
+        private readonly settings: IOptions
+    ) {}
 
     public toServiceModels(operations: IOpenAPI3Operations, models: IModelsContainer): IServiceModel[] {
         const endpointInfos = Object.keys(operations).reduce<IEndpointInfo[]>((infos, endpoint) => {
@@ -54,18 +55,18 @@ export class ServiceMappingService {
         this.endpointNameResolver.checkDuplicates(endpointInfos);
 
         const services = Object.entries(operations).reduce<IServiceModel[]>((store, [endpoint, model]) => {
-            const info = endpointInfos.find(z => z.origin === endpoint);
+            const info = endpointInfos.find((z) => z.origin === endpoint);
             if (!info) {
                 return store;
             }
 
             const service = store.find((z) => z.name === info.name);
 
-            model.forEach(z => {
-                const action = model.length > 1 ?
-                    info.actions.find(x => x.name.startsWith(MethodOperation[z.method].toLocaleLowerCase()))
-                    :
-                    first(info.actions);
+            model.forEach((z) => {
+                const action =
+                    model.length > 1
+                        ? info.actions.find((x) => x.name.startsWith(MethodOperation[z.method].toLocaleLowerCase()))
+                        : first(info.actions);
 
                 if (!action) {
                     throw new Error(`Cannot find action in service ${info.name} by method ${z}`);
@@ -199,7 +200,7 @@ export class ServiceMappingService {
         };
     }
 
-    private getReturnType(schema: OpenAPI3ResponseSchema | undefined, models: IModelsContainer): IReturnType | undefined {
+    private getReturnType(schema: OpenAPI3Schema | undefined, models: IModelsContainer): IReturnType | undefined {
         let model: IModel | undefined;
         let isCollection = false;
 
