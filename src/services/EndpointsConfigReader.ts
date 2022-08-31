@@ -1,7 +1,8 @@
+import { EndpointsToken } from '../gengen/GenGenCodeGenInjector';
 import { configOptions, IOptions } from '../options';
 
-export class EndpointsConfigReader {
-    constructor(private readonly options: IOptions) { }
+export class EndpointsConfigReader implements EndpointsToken {
+    constructor(private readonly options: IOptions) {}
 
     public async getEndpoints(): Promise<Set<string>> {
         require('ts-node').register({

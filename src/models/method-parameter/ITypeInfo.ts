@@ -1,6 +1,6 @@
 import { IType } from '../TypeModel';
 
-export interface IReturnType {
+export interface ITypeInfo {
     isCollection: boolean;
     type: IType;
     isModel: boolean;

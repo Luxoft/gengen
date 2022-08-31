@@ -26,6 +26,10 @@ export class OpenAPIService {
         }
     }
 
+    public getSpec(): IOpenAPI3 {
+        return this.spec;
+    }
+
     public getEndpoints(): string[] {
         if (!this.spec.paths) {
             return [];
@@ -55,7 +59,7 @@ export class OpenAPIService {
                     return store;
                 }
 
-                const refs = operations.flatMap((z) => this.getReferencesByOperation(z.operation));
+                const refs = operations.flatMap((z) => this.getRefsByOperation(z.operation));
                 return { ...store, ...this.getSchemasByRefs(refs) };
             }, {});
     }
@@ -82,7 +86,7 @@ export class OpenAPIService {
             }
 
             const refs: IOpenAPI3Reference[] = [];
-            Object.values(modelSchema.properties).forEach((propertySchema) => {
+            Object.values(modelSchema.properties || {}).forEach((propertySchema) => {
                 refs.push(...this.getRefsFromSchema(propertySchema));
             });
 
@@ -101,7 +105,7 @@ export class OpenAPIService {
                 return store;
             }
 
-            store[first(operations).key] = operations.map((x) => ({ method: x.method, operation: x.operation }));
+            store[first(operations).key] = operations;
 
             return store;
         }, {});
@@ -156,7 +160,7 @@ export class OpenAPIService {
         return first(this.spec.openapi.split('.'));
     }
 
-    private getReferencesByOperation(operation: IOpenAPI3Operation): IOpenAPI3Reference[] {
+    private getRefsByOperation(operation: IOpenAPI3Operation): IOpenAPI3Reference[] {
         const refs: IOpenAPI3Reference[] = [];
 
         operation.parameters?.forEach((z) => {
@@ -172,27 +176,49 @@ export class OpenAPIService {
         ];
     }
 
-    private getReferencesByObject(object: IOpenAPI3ObjectSchema, objectRef: IOpenAPI3Reference): IOpenAPI3Reference[] {
-        let refs: IOpenAPI3Reference[] = [];
+    /**
+     * @description Finds all refs from all objects and properties of a given refs
+     */
+    private expandRefs(refs: IOpenAPI3Reference[], refKeys = new Set<string>()): IOpenAPI3Reference[] {
+        const collectedRefs: IOpenAPI3Reference[] = [];
 
-        Object.values(object.properties || []).forEach((z) => {
-            let propertyRefs: IOpenAPI3Reference[] = [];
-            if (this.typesGuard.isCollection(z) && this.typesGuard.isReference(z.items)) {
-                propertyRefs.push(z.items);
-            } else if (this.typesGuard.isReference(z)) {
-                propertyRefs.push(z);
-            } else if (this.typesGuard.isAllOf(z)) {
-                propertyRefs = z.allOf;
+        refs.forEach((ref) => {
+            if (refKeys.has(ref.$ref)) {
+                return;
             }
 
-            propertyRefs
-                .filter((z) => z.$ref !== objectRef.$ref)
+            collectedRefs.push(ref);
+            refKeys.add(ref.$ref);
+
+            const schema = this.getSchemaByRef(ref);
+            if (this.typesGuard.isObject(schema)) {
+                const refsFromObject = this.getRefsByObject(schema, ref);
+                const expanded = this.expandRefs(refsFromObject, refKeys);
+                collectedRefs.push(...expanded);
+            }
+        });
+
+        return collectedRefs;
+    }
+
+    /**
+     * @description Gets refs from object schema only one level down
+     */
+    private getRefsByObject(
+        object: IOpenAPI3ObjectSchema,
+        objectRef: IOpenAPI3Reference,
+        outerRefs: IOpenAPI3Reference[] = []
+    ): IOpenAPI3Reference[] {
+        const refs = outerRefs;
+
+        Object.values(object.properties || []).forEach((property) => {
+            this.getRefsFromSchema(property)
+                .filter((ref) => ref.$ref !== objectRef.$ref && !outerRefs.find((x) => x.$ref === ref.$ref))
                 .forEach((ref) => {
                     refs.push(ref);
 
-                    const schema = this.getRefSchema(ref);
-                    if (this.typesGuard.isObject(schema)) {
-                        refs = refs.concat(this.getReferencesByObject(schema, objectRef));
+                    if (this.typesGuard.isObject(property)) {
+                        this.getRefsByObject(property, objectRef, refs);
                     }
                 });
         });
@@ -206,32 +232,24 @@ export class OpenAPIService {
             refs.push(schema.items);
         } else if (this.typesGuard.isReference(schema)) {
             refs.push(schema);
+        } else if (this.typesGuard.isAllOf(schema)) {
+            refs.push(...schema.allOf);
         }
         return refs;
     }
 
     private getSchemasByRefs(refs: IOpenAPI3Reference[]): OpenAPI3SchemaContainer {
-        const keys = new Set<string>();
+        return this.expandRefs(refs)
+            .map((x) => this.getSchemaKey(x))
+            .reduce<OpenAPI3SchemaContainer>((store, key) => {
+                store[key] = this.spec.components.schemas[key];
+                return store;
+            }, {});
+    }
 
-        refs.forEach((ref) => {
-            const schemaKey = this.getSchemaKey(ref);
-            if (keys.has(schemaKey)) {
-                return;
-            }
-
-            keys.add(schemaKey);
-
-            const schema = this.spec.components.schemas[schemaKey];
-            if (this.typesGuard.isObject(schema)) {
-                this.getReferencesByObject(schema, ref).forEach((x) => {
-                    keys.add(this.getSchemaKey(x));
-                });
-            }
-        });
-
-        return [...keys].reduce<OpenAPI3SchemaContainer>((store, key) => {
-            store[key] = this.spec.components.schemas[key];
-            return store;
-        }, {});
+    private getSchemaByRef(ref: IOpenAPI3Reference): IOpenAPI3ObjectSchema | IOpenAPI3EnumSchema | undefined {
+        const schemaKey = this.getSchemaKey(ref);
+        const schema = this.spec.components.schemas[schemaKey];
+        return schema;
     }
 }

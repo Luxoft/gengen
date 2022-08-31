@@ -8,7 +8,7 @@ import { IBodyParameter } from '../../models/method-parameter/IBodyParameter';
 import { IMethodModel } from '../../models/method-parameter/IMethodModel';
 import { IPathParameter } from '../../models/method-parameter/IPathParameter';
 import { IQueryParameter } from '../../models/method-parameter/IQueryParameter';
-import { IReturnType } from '../../models/method-parameter/IReturnType';
+import { ITypeInfo } from '../../models/method-parameter/ITypeInfo';
 import { UriBuilder } from '../../services/UriBuilder';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, UNDEFINED_STRING } from '../utils/consts';
 import { TypeSerializer } from '../utils/TypeSerializer';
@@ -84,7 +84,7 @@ export class AngularServicesMethodGenerator {
         return statement;
     }
 
-    protected getReturnTypeName(returnType: IReturnType | undefined, targetType: string | undefined): string {
+    protected getReturnTypeName(returnType: ITypeInfo | undefined, targetType: string | undefined): string {
         if (!returnType || !targetType) {
             return 'void';
         }
@@ -107,14 +107,14 @@ export class AngularServicesMethodGenerator {
         }).toString();
     }
 
-    protected needPipe(returnType: IReturnType | undefined): returnType is IReturnType {
+    protected needPipe(returnType: ITypeInfo | undefined): returnType is ITypeInfo {
         if (!returnType) {
             return false;
         }
 
         return [PropertyKind.Object, PropertyKind.Identity, PropertyKind.Guid, PropertyKind.Date].includes(returnType.type.kind);
     }
-    protected createPipe(returnType: IReturnType): string {
+    protected createPipe(returnType: ITypeInfo): string {
         if (returnType.type.kind === PropertyKind.Guid) {
             return `${MAPPERS_NAMESPACE}.mapGuid()`;
         }

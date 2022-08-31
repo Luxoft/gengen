@@ -84,6 +84,20 @@ export class ProductService extends DownloadFileService {
         ).pipe($mappers.mapCollection($models.Product));
     }
 
+    public itemsGetById(parameter: string): Observable<$models.Product[]> {
+        return this.post<$models.IProduct[]>(
+            `Items/GetById`,
+            parameter,
+        ).pipe($mappers.mapCollection($models.Product));
+    }
+
+    public itemsGetByIds(parameter: string[]): Observable<$models.Product[]> {
+        return this.post<$models.IProduct[]>(
+            `Items/GetByIds`,
+            parameter,
+        ).pipe($mappers.mapCollection($models.Product));
+    }
+
     public product(): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `Product`,

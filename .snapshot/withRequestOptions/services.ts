@@ -90,6 +90,22 @@ export class ProductService extends DownloadFileService {
         ).pipe($mappers.mapCollection($models.Product));
     }
 
+    public itemsGetById(parameter: string, options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
+        return this.post<$models.IProduct[]>(
+            `Items/GetById`,
+            parameter,
+            options,
+        ).pipe($mappers.mapCollection($models.Product));
+    }
+
+    public itemsGetByIds(parameter: string[], options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
+        return this.post<$models.IProduct[]>(
+            `Items/GetByIds`,
+            parameter,
+            options,
+        ).pipe($mappers.mapCollection($models.Product));
+    }
+
     public product(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `Product`,
