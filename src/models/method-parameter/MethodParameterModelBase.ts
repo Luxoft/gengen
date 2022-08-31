@@ -32,8 +32,8 @@ export abstract class MethodParameterModelBase implements IParameter {
         if (this.typesGuard.isSimple(this.model.schema)) {
             this.setupSimple(this.model.schema);
             return;
-        } 
-        
+        }
+
         if (this.typesGuard.isEnum(this.openAPIService.getRefSchema(this.model.schema))) {
             this.setupRef(this.model.schema);
             return;

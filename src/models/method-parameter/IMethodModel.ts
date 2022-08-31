@@ -3,7 +3,7 @@ import { MethodOperation } from '../kinds/MethodOperation';
 import { IBodyParameter } from './IBodyParameter';
 import { IPathParameter } from './IPathParameter';
 import { IQueryParameter } from './IQueryParameter';
-import { IReturnType } from './IReturnType';
+import { ITypeInfo } from './ITypeInfo';
 
 export type MethodParameter = IPathParameter | IQueryParameter | IBodyParameter;
 
@@ -12,6 +12,6 @@ export interface IMethodModel {
     operation: MethodOperation;
     name: string;
     parameters: MethodParameter[];
-    returnType: IReturnType | undefined;
+    returnType: ITypeInfo | undefined;
     originUri: string;
 }
