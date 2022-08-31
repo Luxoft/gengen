@@ -7,7 +7,7 @@ import { IBodyParameter } from '../models/method-parameter/IBodyParameter';
 import { IMethodModel } from '../models/method-parameter/IMethodModel';
 import { IPathParameter } from '../models/method-parameter/IPathParameter';
 import { IQueryParameter } from '../models/method-parameter/IQueryParameter';
-import { IReturnType } from '../models/method-parameter/IReturnType';
+import { ITypeInfo } from '../models/method-parameter/ITypeInfo';
 import { PathMethodParameterModel } from '../models/method-parameter/PathMethodParameterModel';
 import { QueryMethodParameterModel } from '../models/method-parameter/QueryMethodParameterModel';
 import { IModelsContainer } from '../models/ModelsContainer';
@@ -23,9 +23,10 @@ import { OpenAPI3Schema } from '../swagger/v3/schemas/schema';
 import { first, lowerFirst, sortBy } from '../utils';
 import { EndpointNameResolver } from './EndpointNameResolver';
 import { EndpointsService, IEndpointInfo } from './EndpointsService';
+import { ModelFinder } from './ModelFinder';
 import { TypesService } from './TypesService';
 
-interface IModel {
+export interface IModel {
     name: string;
     dtoType: string;
     kind: PropertyKind;
@@ -101,16 +102,17 @@ export class ServiceMappingService {
         models: IModelsContainer,
         originUri: string
     ): IMethodModel {
+        const modelFinder = new ModelFinder(this.openAPIService, models);
         const model: IMethodModel = {
             kind: this.hasDownloadResponse(operation) ? MethodKind.Download : MethodKind.Default,
             name: lowerFirst(actionName),
             operation: method,
             parameters: this.getUriParameters(operation.parameters),
-            returnType: this.getReturnType(operation.responses[200].content?.['application/json']?.schema, models),
+            returnType: this.getTypeInfo(operation.responses[200].content?.['application/json']?.schema, modelFinder),
             originUri
         };
 
-        const bodyParameter = this.getBodyParameter(operation.requestBody?.content['application/json']?.schema, models);
+        const bodyParameter = this.getBodyParameter(operation.requestBody?.content['application/json']?.schema, modelFinder);
         if (bodyParameter) {
             model.parameters.push(bodyParameter);
         }
@@ -175,32 +177,24 @@ export class ServiceMappingService {
 
     private getBodyParameter(
         schema: IOpenAPI3ArraySchema | IOpenAPI3Reference | undefined,
-        models: IModelsContainer
+        modelFinder: ModelFinder
     ): IBodyParameter | undefined {
-        let model: IModel | undefined;
-        let isCollection = false;
-        if (this.typesGuard.isReference(schema)) {
-            model = this.findModel(models, schema);
-        } else if (this.typesGuard.isCollection(schema) && this.typesGuard.isReference(schema.items)) {
-            isCollection = true;
-            model = this.findModel(models, schema.items);
-        }
-
-        if (!model) {
+        const typeInfo = this.getTypeInfo(schema, modelFinder);
+        if (!typeInfo) {
             return undefined;
         }
 
         return {
-            name: lowerFirst(model.name),
-            place: ParameterPlace.Body,
+            dtoType: typeInfo.type.dtoType,
+            isCollection: typeInfo.isCollection,
+            isModel: typeInfo.isModel,
             optional: false,
-            dtoType: model.dtoType,
-            isCollection,
-            isModel: true
+            place: ParameterPlace.Body,
+            name: typeInfo.isModel ? lowerFirst(typeInfo.type.type) : 'parameter'
         };
     }
 
-    private getReturnType(schema: OpenAPI3Schema | undefined, models: IModelsContainer): IReturnType | undefined {
+    private getTypeInfo(schema: OpenAPI3Schema | undefined, modelFinder: ModelFinder): ITypeInfo | undefined {
         let model: IModel | undefined;
         let isCollection = false;
 
@@ -209,7 +203,7 @@ export class ServiceMappingService {
         }
 
         if (this.typesGuard.isReference(schema)) {
-            model = this.findModel(models, schema);
+            model = modelFinder.find(schema);
         } else if (this.typesGuard.isCollection(schema)) {
             isCollection = true;
 
@@ -218,7 +212,7 @@ export class ServiceMappingService {
             }
 
             if (this.typesGuard.isReference(schema.items)) {
-                model = this.findModel(models, schema.items);
+                model = modelFinder.find(schema.items);
             }
         }
 
@@ -231,26 +225,5 @@ export class ServiceMappingService {
 
     private hasDownloadResponse(operation: IOpenAPI3Operation): boolean {
         return Boolean(operation.responses[200].content?.['application/octet-stream']);
-    }
-
-    private findModel(models: IModelsContainer, ref: IOpenAPI3Reference): IModel | undefined {
-        const name = this.openAPIService.getSchemaKey(ref);
-
-        const objectModel = models.objects.find((z) => z.name === name);
-        if (objectModel) {
-            return { kind: PropertyKind.Object, name, dtoType: objectModel.dtoType };
-        }
-
-        const identityModel = models.identities.find((z) => z.name === name);
-        if (identityModel) {
-            return { kind: PropertyKind.Identity, name, dtoType: identityModel.dtoType };
-        }
-
-        const enumModel = models.enums.find((z) => z.name === name);
-        if (enumModel) {
-            return { kind: PropertyKind.Enum, name, dtoType: name };
-        }
-
-        return undefined;
     }
 }
