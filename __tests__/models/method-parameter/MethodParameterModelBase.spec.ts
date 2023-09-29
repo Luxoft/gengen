@@ -1,10 +1,11 @@
+import { MockOpenAPIService } from '../../../__mocks__/MockOpenAPIService';
 import { ParameterPlace } from '../../../src/models/kinds/ParameterPlace';
+import { MethodParameterModelBase } from '../../../src/models/method-parameter/MethodParameterModelBase';
+import { defaultOptions } from '../../../src/options';
 import { TypesService } from '../../../src/services/TypesService';
+import { OpenAPIService } from '../../../src/swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../../src/swagger/OpenAPITypesGuard';
 import { IOpenAPI3Parameter } from '../../../src/swagger/v3/parameter';
-import { OpenAPIService } from '../../../src/swagger/OpenAPIService';
-import { MockOpenAPIService } from '../../../__mocks__/MockOpenAPIService';
-import { MethodParameterModelBase } from '../../../src/models/method-parameter/MethodParameterModelBase';
 import { IOpenAPI3EnumSchema } from '../../../src/swagger/v3/schemas/enum-schema';
 
 describe('MethodParameterModelBase tests', () => {
@@ -18,7 +19,7 @@ describe('MethodParameterModelBase tests', () => {
 
     beforeEach(() => {
         typesGuard = new OpenAPITypesGuard();
-        typesService = new TypesService(typesGuard);
+        typesService = new TypesService(typesGuard, defaultOptions);
         openAPIService = new MockOpenAPIService(typesGuard);
     });
 

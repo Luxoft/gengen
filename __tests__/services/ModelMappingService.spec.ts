@@ -1,4 +1,5 @@
 import { MockOpenAPIService } from '../../__mocks__/MockOpenAPIService';
+import { defaultOptions } from '../../src/options';
 import { ModelMappingService } from '../../src/services/ModelMappingService';
 import { TypesService } from '../../src/services/TypesService';
 import { OpenAPITypesGuard } from '../../src/swagger/OpenAPITypesGuard';
@@ -11,7 +12,7 @@ describe('ModelMappingService tests', () => {
     beforeEach(() => {
         const guard = new OpenAPITypesGuard();
         const openAPIService = new MockOpenAPIService(guard);
-        service = new ModelMappingService(openAPIService, guard, new TypesService(guard));
+        service = new ModelMappingService(openAPIService, guard, new TypesService(guard, defaultOptions));
     });
 
     describe('toModelsContainer', () => {

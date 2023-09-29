@@ -1,12 +1,12 @@
+import { MockOpenAPIService } from '../../../__mocks__/MockOpenAPIService';
 import { ParameterPlace } from '../../../src/models/kinds/ParameterPlace';
-import { IQueryParameter } from '../../../src/models/method-parameter/IQueryParameter';
 import { PathMethodParameterModel } from '../../../src/models/method-parameter/PathMethodParameterModel';
 import { QueryMethodParameterModel } from '../../../src/models/method-parameter/QueryMethodParameterModel';
+import { defaultOptions } from '../../../src/options';
 import { TypesService } from '../../../src/services/TypesService';
+import { OpenAPIService } from '../../../src/swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../../src/swagger/OpenAPITypesGuard';
 import { IOpenAPI3Parameter } from '../../../src/swagger/v3/parameter';
-import { OpenAPIService } from '../../../src/swagger/OpenAPIService';
-import { MockOpenAPIService } from '../../../__mocks__/MockOpenAPIService';
 
 describe('MethodParameterModel tests', () => {
     let typesGuard: OpenAPITypesGuard;
@@ -15,7 +15,7 @@ describe('MethodParameterModel tests', () => {
 
     beforeEach(() => {
         typesGuard = new OpenAPITypesGuard();
-        typesService = new TypesService(typesGuard);
+        typesService = new TypesService(typesGuard, defaultOptions);
         openAPIService = new MockOpenAPIService(typesGuard);
     });
 
