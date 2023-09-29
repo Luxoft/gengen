@@ -12,19 +12,22 @@ import {
 import { IEnumModel } from '../models/EnumModel';
 import { IIdentityModel } from '../models/IdentityModel';
 import { IInterfaceModel } from '../models/InterfaceModel';
-import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
+import { PropertyKind } from '../models/kinds/PropertyKind';
+import { IOptions } from '../options';
 import { lowerFirst } from '../utils';
-import { NULL_STRING, TYPES_NAMESPACE, UNDEFINED_STRING } from './utils/consts';
 import { InterfacesGenerator } from './models-generator/InterfacesGenerator';
 import { TypeSerializer } from './utils/TypeSerializer';
+import { NULL_STRING, TYPES_NAMESPACE, UNDEFINED_STRING } from './utils/consts';
 
 const TO_DTO_METHOD = 'toDTO';
 const FROM_DTO_METHOD = 'fromDTO';
 
 export class ModelsGenerator {
     private interfaceGenerator = new InterfacesGenerator();
+
+    constructor(private settings: IOptions) {}
 
     public getModelsCodeStructure(models: IModelsContainer): StatementStructures[] {
         return [
@@ -37,7 +40,7 @@ export class ModelsGenerator {
     }
 
     private getImports(): ImportDeclarationStructure[] {
-        return [
+        const imports: ImportDeclarationStructure[] = [
             {
                 kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: './Guid',
@@ -55,6 +58,8 @@ export class ModelsGenerator {
                 isTypeOnly: true
             }
         ];
+
+        return this.settings.unstrictId ? imports.filter((x) => x.moduleSpecifier !== './Guid') : imports;
     }
 
     private getEnums(enums: IEnumModel[]): StatementStructures[] {
@@ -78,10 +83,16 @@ export class ModelsGenerator {
                             {
                                 name: z.property.name,
                                 hasQuestionToken: true,
-                                type: TypeSerializer.fromTypeName(`${z.property.type} | ${z.property.dtoType}`).toString()
+                                type: TypeSerializer.fromTypeName(
+                                    z.property.type !== z.property.dtoType
+                                        ? `${z.property.type} | ${z.property.dtoType}`
+                                        : `${z.property.type}`
+                                ).toString()
                             }
                         ] as OptionalKind<ParameterDeclarationStructure>[],
-                        statements: `this.${z.property.name} = new ${z.property.type}(${z.property.name});`
+                        statements: this.settings.unstrictId
+                            ? `this.${z.property.name} = ${z.property.name} ?? '';`
+                            : `this.${z.property.name} = new ${z.property.type}(${z.property.name});`
                     }
                 ] as OptionalKind<ConstructorDeclarationStructure>[],
                 properties: [{ scope: Scope.Public, name: z.property.name, type: z.property.type }, this.getGuardProperty(z.name)],
@@ -97,7 +108,9 @@ export class ModelsGenerator {
                                 i.properties.length === 1 &&
                                 i.properties.every((x) => x.dtoType === z.property.dtoType && x.name === z.property.name)
                         )?.name,
-                        statements: `return { ${z.property.name}: ${z.property.name}.toString() };`
+                        statements: this.settings.unstrictId
+                            ? `return { ${z.property.name}: ${z.property.name} };`
+                            : `return { ${z.property.name}: ${z.property.name}.toString() };`
                     }
                 ]
             })

@@ -1,7 +1,7 @@
 import { promises } from 'fs';
 import { resolve } from 'path';
 import { Project, StatementStructures } from 'ts-morph';
-import { generatorsOptions, IOptions } from '../options';
+import { IOptions, generatorsOptions } from '../options';
 import { IOpenAPI3 } from '../swagger/v3/open-api';
 import { GenGenCodeGenInjector } from './GenGenCodeGenInjector';
 
@@ -56,7 +56,11 @@ export class GenGenCodeGen {
     protected copyLibs(settings: IOptions): void {
         const output = settings.output;
         promises.copyFile(resolve(__dirname, '../../libs/types.ts'), `${output}/types.ts`);
-        promises.copyFile(resolve(__dirname, '../../libs/Guid.ts'), `${output}/Guid.ts`);
+
+        if (!settings.unstrictId) {
+            promises.copyFile(resolve(__dirname, '../../libs/Guid.ts'), `${output}/Guid.ts`);
+        }
+
         promises.copyFile(resolve(__dirname, '../../libs/utils.ts'), `${output}/utils.ts`);
         promises.copyFile(resolve(__dirname, '../../libs/mappers.ts'), `${output}/mappers.ts`);
         promises.copyFile(resolve(__dirname, '../../libs/date-converters.ts'), `${output}/date-converters.ts`);

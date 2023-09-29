@@ -1,13 +1,14 @@
 import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IType } from '../models/TypeModel';
+import { IOptions } from '../options';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { OpenAPI3SimpleSchema } from '../swagger/v3/schemas/schema';
 
 export class TypesService {
-    constructor(private readonly typesGuard: OpenAPITypesGuard) { }
+    constructor(private readonly typesGuard: OpenAPITypesGuard, private readonly settings: IOptions) {}
 
     public getSimpleType(schema: OpenAPI3SimpleSchema): IType {
-        if (this.typesGuard.isGuid(schema)) {
+        if (!this.settings.unstrictId && this.typesGuard.isGuid(schema)) {
             return { kind: PropertyKind.Guid, type: 'Guid', dtoType: 'string' };
         }
 

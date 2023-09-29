@@ -4,7 +4,8 @@ export const defaultOptions: IOptions = {
     configOutput: './.generated',
     output: './src/generated',
     url: 'https://localhost:5001/swagger/v1/swagger.json',
-    withRequestOptions: false
+    withRequestOptions: false,
+    unstrictId: false
 };
 
 export interface IOptions {
@@ -15,6 +16,7 @@ export interface IOptions {
     url?: string;
     aliasName?: string;
     withRequestOptions: boolean;
+    unstrictId: boolean;
 }
 
 export const pathOptions = {
