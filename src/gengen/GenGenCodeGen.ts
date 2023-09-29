@@ -1,7 +1,7 @@
 import { promises } from 'fs';
 import { resolve } from 'path';
 import { Project, StatementStructures } from 'ts-morph';
-import { generatorsOptions, IOptions } from '../options';
+import { IOptions, generatorsOptions } from '../options';
 import { IOpenAPI3 } from '../swagger/v3/open-api';
 import { GenGenCodeGenInjector } from './GenGenCodeGenInjector';
 

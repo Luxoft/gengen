@@ -54,7 +54,7 @@ gengen g --all
 | **configOutput**       | Output directory using in 'Generate a part of API' scenario                                | string  | ./.generated                                   |
 | **aliasName**          | Specify prefix for generated filenames. [more info](#aliasName)                            | string  |                                                |
 | **withRequestOptions** | Allows to pass http request options to generated methods. [more info](#withRequestOptions) | boolean | false                                     |
-| **strictGuid** | Convert 'id' properties to strong Guid type. [more info](#strictGuid) | boolean | true                                     |
+| **unstrictId** | Disable converting 'id' properties to strong Guid type. [more info](#unstrictId) | boolean | true                                     |
 |                        |
 
 ### Option details
@@ -121,9 +121,9 @@ export class MyComponent {
 }
 ```
 
-#### strictGuid
+#### unstrictId
 
-GenGen would convert all 'id' properties from string type to custom Guid type.
+By default, GenGen converts all 'id' properties from string type to custom Guid type. You can disable this behaviour by setting it to true
 
 Example:
 

@@ -1,8 +1,8 @@
 import { MethodDeclarationStructure, OptionalKind } from 'ts-morph';
 import { Injector } from '../container/Injector';
+import { ModelsGenerator } from '../generators/ModelsGenerator';
 import { AngularServicesGenerator } from '../generators/angular/AngularServicesGenerator';
 import { AngularServicesMethodGenerator } from '../generators/angular/AngularServicesMethodGenerator';
-import { ModelsGenerator } from '../generators/ModelsGenerator';
 import { IMethodModel } from '../models/method-parameter/IMethodModel';
 import { IOptions } from '../options';
 import { AliasResolver } from '../services/AliasResolver';
@@ -61,7 +61,7 @@ export class GenGenCodeGenInjector {
             )
             .provide(OpenAPITypesGuard)
             .provide(EndpointNameResolver)
-            .provide(ModelsGenerator)
+            .provide(ModelsGenerator, () => new ModelsGenerator(this.options))
             .provide(UriBuilder)
             .provide(ServicesMethodGeneratorToken, (x) => new AngularServicesMethodGenerator(x.get(UriBuilder)))
             .provide(AliasResolver, () => new AliasResolver(this.options))

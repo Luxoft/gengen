@@ -7,8 +7,8 @@ import {
     Writers
 } from 'ts-morph';
 import { ServicesMethodGeneratorToken } from '../../gengen/GenGenCodeGenInjector';
-import { MethodKind } from '../../models/kinds/MethodKind';
 import { IServiceModel } from '../../models/ServiceModel';
+import { MethodKind } from '../../models/kinds/MethodKind';
 import { IOptions } from '../../options';
 import { AliasResolver } from '../../services/AliasResolver';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, TYPES_NAMESPACE } from '../utils/consts';
@@ -33,7 +33,7 @@ export class AngularServicesGenerator {
     }
 
     protected getImports(): ImportDeclarationStructure[] {
-        return [
+        const imports: ImportDeclarationStructure[] = [
             {
                 kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: '@angular/common/http',
@@ -88,6 +88,8 @@ export class AngularServicesGenerator {
                 namespaceImport: MODELS_NAMESPACE
             }
         ];
+
+        return this.settings.unstrictId ? imports.filter((x) => x.moduleSpecifier !== './Guid') : imports;
     }
 
     protected getServices(services: IServiceModel[]): ClassDeclarationStructure[] {
