@@ -30,6 +30,7 @@ program
     .option('--configOutput <string>')
     .option('--all')
     .option('--withRequestOptions')
+    .option('--strictGuid')
     .description('Generates models and services')
     .action(async (params) => {
         const options = getOptions(params);
