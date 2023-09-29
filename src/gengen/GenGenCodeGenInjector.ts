@@ -87,7 +87,7 @@ export class GenGenCodeGenInjector {
                 ModelMappingService,
                 (x) => new ModelMappingService(x.get(OpenAPIService), x.get(OpenAPITypesGuard), x.get(TypesService))
             )
-            .provide(TypesService, (x) => new TypesService(x.get(OpenAPITypesGuard)))
+            .provide(TypesService, (x) => new TypesService(x.get(OpenAPITypesGuard), this.options))
             .provide(OpenAPIService, (x) => new OpenAPIService(this.spec, x.get(OpenAPITypesGuard)))
     );
     constructor(private options: IOptions, private spec: IOpenAPI3) {}
