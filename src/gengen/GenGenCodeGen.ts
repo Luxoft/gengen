@@ -56,7 +56,11 @@ export class GenGenCodeGen {
     protected copyLibs(settings: IOptions): void {
         const output = settings.output;
         promises.copyFile(resolve(__dirname, '../../libs/types.ts'), `${output}/types.ts`);
-        promises.copyFile(resolve(__dirname, '../../libs/Guid.ts'), `${output}/Guid.ts`);
+
+        if (!settings.unstrictId) {
+            promises.copyFile(resolve(__dirname, '../../libs/Guid.ts'), `${output}/Guid.ts`);
+        }
+
         promises.copyFile(resolve(__dirname, '../../libs/utils.ts'), `${output}/utils.ts`);
         promises.copyFile(resolve(__dirname, '../../libs/mappers.ts'), `${output}/mappers.ts`);
         promises.copyFile(resolve(__dirname, '../../libs/date-converters.ts'), `${output}/date-converters.ts`);
