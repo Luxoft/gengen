@@ -13,7 +13,6 @@
         "g": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/all",
         "g:withRequestOptions": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/withRequestOptions --withRequestOptions",
         "g:alias": "node ./bin/index.js g --file=./swagger.json --aliasName alias --output=./.output/selected",
-        "g:unstrictId": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/all --unstrictId",
         "e2e": "npm run g && npm run g:withRequestOptions && ts-node ./e2e/e2e.ts",
         "test": "jest",
         "test:w": "jest --watch",
