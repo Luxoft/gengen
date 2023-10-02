@@ -3,6 +3,7 @@ import { IndentationText, ModuleKind, NewLineKind, ProjectOptions, QuoteKind, Sc
 export const defaultOptions: IOptions = {
     configOutput: './.generated',
     output: './src/generated',
+    utilsRelativePath: '',
     url: 'https://localhost:5001/swagger/v1/swagger.json',
     withRequestOptions: false,
     unstrictId: false
@@ -17,6 +18,7 @@ export interface IOptions {
     aliasName?: string;
     withRequestOptions: boolean;
     unstrictId: boolean;
+    utilsRelativePath: string;
 }
 
 export const pathOptions = {
