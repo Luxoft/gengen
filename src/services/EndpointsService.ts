@@ -17,9 +17,7 @@ export interface IEndpointInfo {
 }
 
 export class EndpointsService {
-    constructor(
-        private readonly openAPIService: OpenAPIService,
-        private readonly endpointNameResolver: EndpointNameResolver) {}
+    constructor(private readonly openAPIService: OpenAPIService, private readonly endpointNameResolver: EndpointNameResolver) {}
 
     public getActionsGroupedByController(): Record<string, Record<string, string>> {
         const result: Record<string, Record<string, string>> = {};
@@ -30,9 +28,10 @@ export class EndpointsService {
             .forEach((key) => {
                 result[key] = {};
                 controllers[key]
-                    .flatMap(endpointInfo => endpointInfo.actions).sort(sortBy(action => action.name))
-                    .forEach(action => {
-                        const info = controllers[key].find(endpointInfo => endpointInfo.actions.includes(action));
+                    .flatMap((endpointInfo) => endpointInfo.actions)
+                    .sort(sortBy((action) => action.name))
+                    .forEach((action) => {
+                        const info = controllers[key].find((endpointInfo) => endpointInfo.actions.includes(action));
                         if (info) {
                             result[key][action.name] = info.origin;
                         }
@@ -44,42 +43,38 @@ export class EndpointsService {
 
     public getEndpoints(): Set<string> {
         const controllers = this.getControllers();
-        const actions = Object.values(controllers).reduce<string[]>(
-            (store, endpoints) => store.concat(endpoints.map((z) => z.origin)),
-            []
-        );
+        const actions = Object.values(controllers).reduce<string[]>((store, endpoints) => store.concat(endpoints.map((z) => z.origin)), []);
 
         return new Set(actions.sort());
     }
 
     public parse(endpoint: string): IEndpointInfo | undefined {
-        const controller = first(this.openAPIService.getTagsByEndpoint(endpoint));
-        if (!controller) {
+        const rawGroupName = first(this.openAPIService.getTagsByEndpoint(endpoint));
+        if (!rawGroupName) {
             return undefined;
         }
 
-        const controllerStartIndex = endpoint.indexOf(controller);
-        if (controllerStartIndex < 0) {
+        const groupNameStartIndex = endpoint.indexOf(rawGroupName);
+        if (groupNameStartIndex < 0) {
             return undefined;
         }
 
+        const groupName = this.normalizeGroupName(rawGroupName);
         const methods = this.openAPIService.getOperationsByEndpoint(endpoint);
-        const rawAction = endpoint.slice(controllerStartIndex + controller.length + pathOptions.separator.length);
+        const rawEndpointName = endpoint.slice(groupNameStartIndex + rawGroupName.length + pathOptions.separator.length);
 
         return {
-            name: controller,
+            name: groupName,
             origin: endpoint,
-            relativePath: endpoint.slice(0, controllerStartIndex) + controller,
-            actions: methods.map(z => {
-                const name = rawAction
-                    ? this.endpointNameResolver.generateNameByPath(rawAction)
-                    : this.endpointNameResolver.generateNameDefault(controller);
+            relativePath: endpoint.slice(0, groupNameStartIndex) + rawGroupName,
+            actions: methods.map((z) => {
+                const name = rawEndpointName
+                    ? this.endpointNameResolver.generateNameByPath(rawEndpointName)
+                    : this.endpointNameResolver.generateNameDefault(groupName);
 
                 return {
-                    name: `${methods.length > 1
-                        ? `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}`
-                        : name}`,
-                    origin: rawAction
+                    name: `${methods.length > 1 ? `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}` : name}`,
+                    origin: rawEndpointName
                 };
             })
         };
@@ -103,5 +98,12 @@ export class EndpointsService {
             store[info.name].push(info);
             return store;
         }, {});
+    }
+
+    private normalizeGroupName(name: string): string {
+        return name
+            .split('-')
+            .map((x) => upperFirst(x))
+            .join('');
     }
 }
