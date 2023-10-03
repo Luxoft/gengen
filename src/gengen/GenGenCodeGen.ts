@@ -1,7 +1,8 @@
-import { promises } from 'fs';
+import { existsSync, mkdirSync, promises } from 'fs';
 import { resolve } from 'path';
 import { Project, StatementStructures } from 'ts-morph';
 import { IOptions, generatorsOptions } from '../options';
+import { PathBuilder } from '../services/PathBuilder';
 import { IOpenAPI3 } from '../swagger/v3/open-api';
 import { GenGenCodeGenInjector } from './GenGenCodeGenInjector';
 
@@ -54,17 +55,21 @@ export class GenGenCodeGen {
     }
 
     protected copyLibs(settings: IOptions): void {
-        const output = settings.output;
-        promises.copyFile(resolve(__dirname, '../../libs/types.ts'), `${output}/types.ts`);
+        const output = new PathBuilder().normalizePath(`${settings.output}/${settings.utilsRelativePath}`);
 
-        if (!settings.unstrictId) {
-            promises.copyFile(resolve(__dirname, '../../libs/Guid.ts'), `${output}/Guid.ts`);
+        if (!existsSync(output)) {
+            mkdirSync(output, { recursive: true });
         }
 
+        promises.copyFile(resolve(__dirname, '../../libs/types.ts'), `${output}/types.ts`);
         promises.copyFile(resolve(__dirname, '../../libs/utils.ts'), `${output}/utils.ts`);
         promises.copyFile(resolve(__dirname, '../../libs/mappers.ts'), `${output}/mappers.ts`);
         promises.copyFile(resolve(__dirname, '../../libs/date-converters.ts'), `${output}/date-converters.ts`);
         promises.copyFile(resolve(__dirname, '../../libs/base-http.service.ts'), `${output}/base-http.service.ts`);
         promises.copyFile(resolve(__dirname, '../../libs/download.service.ts'), `${output}/download.service.ts`);
+
+        if (!settings.unstrictId) {
+            promises.copyFile(resolve(__dirname, '../../libs/Guid.ts'), `${output}/Guid.ts`);
+        }
     }
 }

@@ -54,6 +54,7 @@ gengen g --all
 | **configOutput**       | Output directory using in 'Generate a part of API' scenario                                | string  | ./.generated                                   |
 | **aliasName**          | Specify prefix for generated filenames. [more info](#aliasName)                            | string  |                                                |
 | **withRequestOptions** | Allows to pass http request options to generated methods. [more info](#withRequestOptions) | boolean | false                                     |
+| **utilsRelativePath** | Relative path to utils files. It may be useful when you have multiple generation sources | string |                                      |
 | **unstrictId** | Disable converting 'id' properties to strong Guid type. [more info](#unstrictId) | boolean | false                                     |
 |                        |
 

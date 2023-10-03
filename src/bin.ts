@@ -28,6 +28,7 @@ program
     .option('--url <string>')
     .option('--output <string>')
     .option('--configOutput <string>')
+    .option('--utilsRelativePath <string>')
     .option('--all')
     .option('--withRequestOptions')
     .option('--unstrictId')

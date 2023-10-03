@@ -16,6 +16,7 @@ import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
 import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IOptions } from '../options';
+import { PathBuilder } from '../services/PathBuilder';
 import { lowerFirst } from '../utils';
 import { InterfacesGenerator } from './models-generator/InterfacesGenerator';
 import { TypeSerializer } from './utils/TypeSerializer';
@@ -26,6 +27,7 @@ const FROM_DTO_METHOD = 'fromDTO';
 
 export class ModelsGenerator {
     private interfaceGenerator = new InterfacesGenerator();
+    private pathBuilder = new PathBuilder();
 
     constructor(private settings: IOptions) {}
 
@@ -40,26 +42,27 @@ export class ModelsGenerator {
     }
 
     private getImports(): ImportDeclarationStructure[] {
+        const path = this.pathBuilder.normalizePath(`./${this.settings.utilsRelativePath}`);
         const imports: ImportDeclarationStructure[] = [
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './Guid',
+                moduleSpecifier: `${path}/Guid`,
                 namedImports: [{ name: 'Guid' }]
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './date-converters',
+                moduleSpecifier: `${path}/date-converters`,
                 namedImports: [{ name: 'toDateIn' }, { name: 'toDateOut' }]
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './types',
+                moduleSpecifier: `${path}/types`,
                 namespaceImport: TYPES_NAMESPACE,
                 isTypeOnly: true
             }
         ];
 
-        return this.settings.unstrictId ? imports.filter((x) => x.moduleSpecifier !== './Guid') : imports;
+        return this.settings.unstrictId ? imports.filter((x) => !x.moduleSpecifier.includes('Guid')) : imports;
     }
 
     private getEnums(enums: IEnumModel[]): StatementStructures[] {

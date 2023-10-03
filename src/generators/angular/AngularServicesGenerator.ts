@@ -11,6 +11,7 @@ import { IServiceModel } from '../../models/ServiceModel';
 import { MethodKind } from '../../models/kinds/MethodKind';
 import { IOptions } from '../../options';
 import { AliasResolver } from '../../services/AliasResolver';
+import { PathBuilder } from '../../services/PathBuilder';
 import { MAPPERS_NAMESPACE, MODELS_NAMESPACE, TYPES_NAMESPACE } from '../utils/consts';
 import { HTTP_REQUEST_OPTIONS } from './AngularServicesMethodGenerator';
 
@@ -22,6 +23,8 @@ const GET_BASE_PATH_FUNCTION_NAME = 'getBasePath';
 const HTTP_CLIENT_VARIABLE_NAME = 'http';
 
 export class AngularServicesGenerator {
+    private pathBuilder = new PathBuilder();
+
     constructor(
         protected aliasResolver: AliasResolver,
         protected methodGenerator: ServicesMethodGeneratorToken,
@@ -33,6 +36,7 @@ export class AngularServicesGenerator {
     }
 
     protected getImports(): ImportDeclarationStructure[] {
+        const path = this.pathBuilder.normalizePath(`./${this.settings.utilsRelativePath}`);
         const imports: ImportDeclarationStructure[] = [
             {
                 kind: StructureKind.ImportDeclaration,
@@ -51,34 +55,34 @@ export class AngularServicesGenerator {
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './Guid',
+                moduleSpecifier: `${path}/Guid`,
                 namedImports: [{ name: 'Guid' }]
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './base-http.service',
+                moduleSpecifier: `${path}/base-http.service`,
                 namedImports: this.settings.withRequestOptions
                     ? [{ name: BASE_SERVICE }, { name: HTTP_REQUEST_OPTIONS }]
                     : [{ name: BASE_SERVICE }]
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './download.service',
+                moduleSpecifier: `${path}/download.service`,
                 namedImports: [{ name: DOWNLOAD_SERVICE }, { name: 'IDownloadResult' }]
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './utils',
+                moduleSpecifier: `${path}/utils`,
                 namedImports: [{ name: GET_BASE_PATH_FUNCTION_NAME }]
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './mappers',
+                moduleSpecifier: `${path}/mappers`,
                 namespaceImport: MAPPERS_NAMESPACE
             },
             {
                 kind: StructureKind.ImportDeclaration,
-                moduleSpecifier: './types',
+                moduleSpecifier: `${path}/types`,
                 namespaceImport: TYPES_NAMESPACE,
                 isTypeOnly: true
             },
@@ -89,7 +93,7 @@ export class AngularServicesGenerator {
             }
         ];
 
-        return this.settings.unstrictId ? imports.filter((x) => x.moduleSpecifier !== './Guid') : imports;
+        return this.settings.unstrictId ? imports.filter((x) => !x.moduleSpecifier.includes('Guid')) : imports;
     }
 
     protected getServices(services: IServiceModel[]): ClassDeclarationStructure[] {
