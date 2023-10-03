@@ -56,7 +56,7 @@ export class AngularServicesGenerator {
             {
                 kind: StructureKind.ImportDeclaration,
                 moduleSpecifier: `${path}/Guid`,
-                namedImports: [{ name: 'Guid' }]
+                namedImports: [{ name: 'Guid' }, { name: 'mapGuid' }]
             },
             {
                 kind: StructureKind.ImportDeclaration,

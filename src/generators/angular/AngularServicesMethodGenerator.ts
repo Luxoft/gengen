@@ -116,7 +116,7 @@ export class AngularServicesMethodGenerator {
     }
     protected createPipe(returnType: ITypeInfo): string {
         if (returnType.type.kind === PropertyKind.Guid) {
-            return `${MAPPERS_NAMESPACE}.mapGuid()`;
+            return 'mapGuid()';
         }
 
         if (returnType.type.kind === PropertyKind.Date) {

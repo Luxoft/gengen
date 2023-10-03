@@ -1,3 +1,6 @@
+import { OperatorFunction } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 import type { TypeOrUndefined } from './types';
 
 export class Guid {
@@ -65,4 +68,8 @@ export class Guid {
             throw new Error(`Incorrect guid format. Raw value '${value}'`);
         }
     }
+}
+
+export function mapGuid(): OperatorFunction<string, Guid> {
+    return map((z: string) => (z ? new Guid(z) : Guid.empty));
 }
