@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Guid } from './Guid';
+import { Guid, mapGuid } from './Guid';
 import { BaseHttpService } from './base-http.service';
 import { DownloadFileService, IDownloadResult } from './download.service';
 import { getBasePath } from './utils';
@@ -21,14 +21,14 @@ export class CategoryService extends BaseHttpService {
         return this.post<string>(
             `AddCategory`,
             category,
-        ).pipe($mappers.mapGuid());
+        ).pipe(mapGuid());
     }
 
     public upload(data: FormData): Observable<Guid> {
         return this.post<string>(
             `Upload`,
             data,
-        ).pipe($mappers.mapGuid());
+        ).pipe(mapGuid());
     }
 }
 
