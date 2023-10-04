@@ -1,4 +1,3 @@
-import { MethodOperation } from '../models/kinds/MethodOperation';
 import { pathOptions } from '../options';
 import { OpenAPIService } from '../swagger/OpenAPIService';
 import { first, sortBy, upperFirst } from '../utils';
@@ -67,16 +66,10 @@ export class EndpointsService {
             name: groupName,
             origin: endpoint,
             relativePath: endpoint.slice(0, groupNameStartIndex) + rawGroupName,
-            actions: methods.map((z) => {
-                const name = rawEndpointName
-                    ? this.endpointNameResolver.generateNameByPath(rawEndpointName)
-                    : this.endpointNameResolver.generateNameDefault(groupName);
-
-                return {
-                    name: `${methods.length > 1 ? `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}` : name}`,
-                    origin: rawEndpointName
-                };
-            })
+            actions: methods.map((z) => ({
+                name: this.endpointNameResolver.generateName(groupName, rawEndpointName, z.methodName, methods.length),
+                origin: rawEndpointName
+            }))
         };
     }
 
