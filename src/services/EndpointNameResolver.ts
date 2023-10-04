@@ -24,16 +24,21 @@ export class EndpointNameResolver {
         });
     }
 
-    public generateNameByPath(path: string): string {
-        return path
-            .split(pathOptions.separator)
-            .filter((z) => z && !this.queryParameterRegExp.test(z))
-            .map((z, i) => (i ? upperFirst(z) : lowerFirst(z)))
-            .join('');
-    }
+    public generateName(groupName: string, enpoint: string, verb: string, verbCount: number): string {
+        if (!enpoint) {
+            return `${verb}${groupName}`;
+        }
+        const parts = enpoint.split(pathOptions.separator).filter((x) => x);
+        if (parts.length === 1 && this.queryParameterRegExp.test(parts[0])) {
+            return `${verb}${groupName}By${upperFirst(parts[0].substring(1, parts[0].length - 1))}`;
+        }
 
-    public generateNameDefault(groupName: string, operation: string): string {
-        return lowerFirst(`${operation}${groupName}`);
+        const name = parts
+            .filter((x) => !this.queryParameterRegExp.test(x))
+            .map((x, i) => (i ? upperFirst(x) : lowerFirst(x)))
+            .join('');
+
+        return verbCount > 1 ? `${verb}${upperFirst(name)}` : name;
     }
 
     private findDuplicates(info: IEndpointInfoItem, infos: IEndpointInfoItem[]): IEndpointInfoItem[] {

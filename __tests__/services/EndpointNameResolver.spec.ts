@@ -12,10 +12,12 @@ describe('EndpointNameResolver tests', () => {
         };
     }
 
+    let service: EndpointNameResolver;
+    beforeEach(() => (service = new EndpointNameResolver()));
+
     describe('checkDuplicates', () => {
         test('store with duplicates', () => {
             // Arrange
-            const service = new EndpointNameResolver();
             const origin = '/api/v1/Product/Product';
             const infos = [
                 toEndpointInfo({ actions: [{ name: 'product', origin: '' }], origin }),
@@ -29,42 +31,57 @@ describe('EndpointNameResolver tests', () => {
         });
     });
 
-    describe('generateNameByPath', () => {
-        test('short path', () => {
+    describe('generateName', () => {
+        test('empty', () => {
             // Arrange
-            const service = new EndpointNameResolver();
+            const group = 'Product';
+            const verb = 'get';
+            const endpoint = '';
 
             // Act
-            const result = service.generateNameByPath('SearchProducts');
+            const result = service.generateName(group, endpoint, verb, 1);
 
             // Assert
-            expect(result).toEqual('searchProducts');
+            expect(result).toEqual('getProduct');
+        });
+
+        test('only one query parameter', () => {
+            // Arrange
+            const group = 'Product';
+            const verb = 'get';
+            const endpoint = '{id}';
+
+            // Act
+            const result = service.generateName(group, endpoint, verb, 1);
+
+            // Assert
+            expect(result).toEqual('getProductById');
         });
 
         test('long path', () => {
             // Arrange
-            const service = new EndpointNameResolver();
-
-            // Act
-            const result = service.generateNameByPath('getByCustomer/{customer}/type/{type}');
-
-            // Assert
-            expect(result).toEqual('getByCustomerType');
-        });
-    });
-
-    describe('generateNameDefault', () => {
-        test('name', () => {
-            // Arrange
-            const service = new EndpointNameResolver();
-            const name = 'Product';
+            const group = 'Product';
             const verb = 'get';
+            const endpoint = 'customer/{customer}/type/{type}';
 
             // Act
-            const result = service.generateNameDefault(name, verb);
+            const result = service.generateName(group, endpoint, verb, 1);
 
             // Assert
-            expect(result).toEqual(`${verb}${name}`);
+            expect(result).toEqual('customerType');
+        });
+
+        test('multiple verbs', () => {
+            // Arrange
+            const group = 'Product';
+            const verb = 'get';
+            const endpoint = 'customer/{customer}/type/{type}';
+
+            // Act
+            const result = service.generateName(group, endpoint, verb, 2);
+
+            // Assert
+            expect(result).toEqual('getCustomerType');
         });
     });
 });
