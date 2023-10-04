@@ -76,6 +76,13 @@ export class ProductService extends DownloadFileService {
         ).pipe($mappers.mapSingle($models.Product));
     }
 
+    public getProduct(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
+        return this.get<$models.IProduct[]>(
+            ``,
+            options,
+        ).pipe($mappers.mapCollection($models.Product));
+    }
+
     public getProducts(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `GetProducts`,
@@ -109,13 +116,6 @@ export class ProductService extends DownloadFileService {
     public product(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
         return this.get<$models.IProduct[]>(
             `Product`,
-            options,
-        ).pipe($mappers.mapCollection($models.Product));
-    }
-
-    public productDefault(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<$models.Product[]> {
-        return this.get<$models.IProduct[]>(
-            ``,
             options,
         ).pipe($mappers.mapCollection($models.Product));
     }
