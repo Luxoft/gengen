@@ -70,7 +70,7 @@ export class EndpointsService {
             actions: methods.map((z) => {
                 const name = rawEndpointName
                     ? this.endpointNameResolver.generateNameByPath(rawEndpointName)
-                    : this.endpointNameResolver.generateNameDefault(groupName);
+                    : this.endpointNameResolver.generateNameDefault(groupName, z.methodName);
 
                 return {
                     name: `${methods.length > 1 ? `${MethodOperation[z.method].toLocaleLowerCase()}${upperFirst(name)}` : name}`,

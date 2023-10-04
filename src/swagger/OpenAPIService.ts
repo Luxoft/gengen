@@ -14,6 +14,7 @@ interface IOperation {
     key: string;
     operation: IOpenAPI3Operation;
     method: MethodOperation;
+    methodName: string;
 }
 
 export type IOpenAPI3Operations = { [key: string]: { method: MethodOperation; operation: IOpenAPI3Operation }[] };
@@ -133,21 +134,27 @@ export class OpenAPIService {
         const [name, pathItem] = path;
 
         return Object.keys(pathItem).reduce<IOperation[]>((operations, method) => {
+            const operation: Partial<IOperation> = { key: name, methodName: method };
             switch (method) {
                 case 'get':
-                    operations.push({ key: name, operation: pathItem.get, method: MethodOperation.GET } as IOperation);
+                    operation.method = MethodOperation.GET;
+                    operation.operation = pathItem.get;
                     break;
                 case 'post':
-                    operations.push({ key: name, operation: pathItem.post, method: MethodOperation.POST } as IOperation);
+                    operation.method = MethodOperation.POST;
+                    operation.operation = pathItem.post;
                     break;
                 case 'put':
-                    operations.push({ key: name, operation: pathItem.put, method: MethodOperation.PUT } as IOperation);
+                    operation.method = MethodOperation.PUT;
+                    operation.operation = pathItem.put;
                     break;
                 case 'delete':
-                    operations.push({ key: name, operation: pathItem.delete, method: MethodOperation.DELETE } as IOperation);
+                    operation.method = MethodOperation.DELETE;
+                    operation.operation = pathItem.delete;
                     break;
             }
 
+            operations.push(operation as IOperation);
             return operations;
         }, []);
     }

@@ -23,7 +23,9 @@ describe('EndpointNameResolver tests', () => {
             ];
 
             // Assert
-            expect(() => { service.checkDuplicates(infos) }).toThrowError(new Error(`Duplicate by path: '${origin}' was detected. Please, rename your endpoints`));
+            expect(() => {
+                service.checkDuplicates(infos);
+            }).toThrowError(new Error(`Duplicate by path: '${origin}' was detected. Please, rename your endpoints`));
         });
     });
 
@@ -33,7 +35,7 @@ describe('EndpointNameResolver tests', () => {
             const service = new EndpointNameResolver();
 
             // Act
-            const result = service.generateNameByPath('SearchProducts')
+            const result = service.generateNameByPath('SearchProducts');
 
             // Assert
             expect(result).toEqual('searchProducts');
@@ -44,7 +46,7 @@ describe('EndpointNameResolver tests', () => {
             const service = new EndpointNameResolver();
 
             // Act
-            const result = service.generateNameByPath('getByCustomer/{customer}/type/{type}')
+            const result = service.generateNameByPath('getByCustomer/{customer}/type/{type}');
 
             // Assert
             expect(result).toEqual('getByCustomerType');
@@ -55,13 +57,14 @@ describe('EndpointNameResolver tests', () => {
         test('name', () => {
             // Arrange
             const service = new EndpointNameResolver();
-            const name = 'product';
+            const name = 'Product';
+            const verb = 'get';
 
             // Act
-            const result = service.generateNameDefault(name);
+            const result = service.generateNameDefault(name, verb);
 
             // Assert
-            expect(result).toEqual(`${name}Default`);
+            expect(result).toEqual(`${verb}${name}`);
         });
     });
 });
