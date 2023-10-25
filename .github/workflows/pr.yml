@@ -11,14 +11,15 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 16.14.0
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16.14.0'
-    - run: npm ci
-    - run: npm run build
-    - run: npm t
-    - run: npm run e2e
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Use Node.js 19.9.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: '19.9.0'
+      - run: npm ci
+      - run: npm run build
+      - run: npm t
+      - run: npm run e2e

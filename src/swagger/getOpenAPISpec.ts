@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import { readFile } from 'fs/promises';
 import { IOptions } from '../options';
 import { IOpenAPI3 } from './v3/open-api';
