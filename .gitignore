@@ -10,6 +10,9 @@
 # dependencies
 /node_modules
 
+# IDEs and editors
+/.idea
+
 # IDE - VSCode
 .vscode/*
 .vs/*
@@ -20,3 +23,6 @@
 
 # code coverage
 /coverage
+
+# System Files
+.DS_Store
