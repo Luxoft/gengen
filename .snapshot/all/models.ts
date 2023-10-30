@@ -14,6 +14,7 @@ export interface ICategory {
 
 export interface IProduct {
     category: $types.TypeOrUndefinedNullable<ICategory>;
+    colors: $types.TypeOrUndefined<string[]>;
     expireDate: $types.TypeOrUndefined<string>;
     externalId: $types.TypeOrUndefinedNullable<string>;
     id: $types.TypeOrUndefined<string>;
@@ -58,10 +59,11 @@ export class Category {
 
 export class Product {
     public category: $types.TypeOrUndefinedNullable<Category> = undefined;
+    public colors: string[] = [];
     public expireDate: $types.TypeOrUndefined<Date> = undefined;
     public externalId: $types.TypeOrUndefinedNullable<Guid> = undefined;
     public id: $types.TypeOrUndefined<Guid> = undefined;
-    public modifyDates: $types.TypeOrUndefined<Date[]> = undefined;
+    public modifyDates: Date[] = [];
     public name: $types.TypeOrUndefinedNullable<string> = undefined;
     public status: $types.TypeOrUndefined<ProductStatus> = undefined;
     private __product!: string;
@@ -69,6 +71,7 @@ export class Product {
     public static toDTO(model: Partial<Product>): IProduct {
         return {
             category: model.category ? Category.toDTO(model.category) : undefined,
+            colors: model.colors,
             expireDate: toDateOut(model.expireDate),
             externalId: model.externalId ? model.externalId.toString() : null,
             id: model.id ? model.id.toString() : Guid.empty.toString(),
@@ -81,6 +84,7 @@ export class Product {
     public static fromDTO(dto: IProduct): Product {
         const model = new Product();
         model.category = dto.category ? Category.fromDTO(dto.category) : undefined;
+        model.colors = dto.colors ? dto.colors : [];
         model.expireDate = toDateIn(dto.expireDate);
         model.externalId = dto.externalId ? new Guid(dto.externalId) : null;
         model.id = new Guid(dto.id);

@@ -6,7 +6,7 @@ describe('TypeSerializer tests', () => {
             // Arrange
             // Act
             const result = new TypeSerializer({
-                type: 'MyType'
+                type: { name: 'MyType' }
             }).toString();
 
             // Assert
@@ -17,7 +17,7 @@ describe('TypeSerializer tests', () => {
             // Arrange
             // Act
             const result = new TypeSerializer({
-                type: 'MyType',
+                type: { name: 'MyType' },
                 isOptional: false
             }).toString();
 
@@ -25,23 +25,36 @@ describe('TypeSerializer tests', () => {
             expect(result).toEqual('MyType');
         });
 
-        test('isCollection should return collection optional type', () => {
+        test('isCollection should return collection of type', () => {
             // Arrange
             // Act
             const result = new TypeSerializer({
-                type: 'MyType',
+                type: { name: 'MyType' },
                 isCollection: true
             }).toString();
 
             // Assert
-            expect(result).toEqual('$types.TypeOrUndefined<MyType[]>');
+            expect(result).toEqual('MyType[]');
+        });
+
+        test('isCollection and isOptional should return collection of type', () => {
+            // Arrange
+            // Act
+            const result = new TypeSerializer({
+                type: { name: 'MyType' },
+                isCollection: true,
+                isOptional: true
+            }).toString();
+
+            // Assert
+            expect(result).toEqual('MyType[]');
         });
 
         test('isNullable should return nullable type', () => {
             // Arrange
             // Act
             const result = new TypeSerializer({
-                type: 'MyType',
+                type: { name: 'MyType' },
                 isNullable: true
             }).toString();
 
