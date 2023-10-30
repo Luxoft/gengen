@@ -2,11 +2,16 @@ import { IInterfacePropertyModel } from '../../models/InterfaceModel';
 import { TYPES_NAMESPACE } from './consts';
 import { typeOrUndefined } from './typeOrUndefined';
 
+interface IType {
+    name: string;
+    isInterface?: boolean;
+}
+
 interface ITypeSerializerOptions {
     isCollection?: boolean;
     isNullable?: boolean;
     isOptional?: boolean;
-    type: string;
+    type: IType;
 }
 
 export class TypeSerializer {
@@ -14,20 +19,23 @@ export class TypeSerializer {
         return new TypeSerializer({
             isCollection: param.isCollection,
             isNullable: param.isNullable,
-            type: param.dtoType
+            type: {
+                name: param.dtoType,
+                isInterface: true
+            }
         });
     }
 
     public static fromTypeName(typeName: string): TypeSerializer {
         return new TypeSerializer({
-            type: typeName
+            type: { name: typeName }
         });
     }
 
     private isCollection: boolean;
     private isNullable: boolean;
     private isOptional: boolean;
-    private type: string;
+    private type: IType;
 
     constructor(options: ITypeSerializerOptions) {
         this.isCollection = options.isCollection ?? false;
@@ -37,7 +45,12 @@ export class TypeSerializer {
     }
 
     public toString(): string {
-        const typeName = this.isCollection ? `${this.type}[]` : this.type;
+        const typeName = this.isCollection ? `${this.type.name}[]` : this.type.name;
+
+        if (this.isCollection && !this.type.isInterface) {
+            return typeName;
+        }
+
         switch (true) {
             case this.isNullable:
                 return this.typeOrUndefinedNullable(typeName);

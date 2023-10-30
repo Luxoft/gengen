@@ -20,7 +20,7 @@ import { PathBuilder } from '../services/PathBuilder';
 import { lowerFirst } from '../utils';
 import { InterfacesGenerator } from './models-generator/InterfacesGenerator';
 import { TypeSerializer } from './utils/TypeSerializer';
-import { NULL_STRING, TYPES_NAMESPACE, UNDEFINED_STRING } from './utils/consts';
+import { ARRAY_STRING, NULL_STRING, TYPES_NAMESPACE, UNDEFINED_STRING } from './utils/consts';
 
 const TO_DTO_METHOD = 'toDTO';
 const FROM_DTO_METHOD = 'fromDTO';
@@ -166,8 +166,12 @@ export class ModelsGenerator {
                     kind: StructureKind.Property,
                     scope: Scope.Public,
                     name: objectProperty.name,
-                    type: new TypeSerializer(objectProperty).toString(),
-                    initializer: UNDEFINED_STRING
+                    type: new TypeSerializer({
+                        type: { name: objectProperty.type },
+                        isNullable: objectProperty.isNullable,
+                        isCollection: objectProperty.isCollection
+                    }).toString(),
+                    initializer: objectProperty.isCollection ? ARRAY_STRING : UNDEFINED_STRING
                 })
             ),
             this.getGuardProperty(objectModel.name)
@@ -229,14 +233,14 @@ export class ModelsGenerator {
         switch (property.kind) {
             case PropertyKind.Date:
                 if (property.isCollection) {
-                    return `${dtoProperty} ? ${dtoProperty}.map(toDateIn) : []`;
+                    return `${dtoProperty} ? ${dtoProperty}.map(toDateIn) : ${ARRAY_STRING}`;
                 }
 
                 return `toDateIn(${dtoProperty})`;
 
             case PropertyKind.Guid:
                 if (property.isCollection) {
-                    return `${dtoProperty} ? ${dtoProperty}.map(x => new ${property.type}(x)) : []`;
+                    return `${dtoProperty} ? ${dtoProperty}.map(x => new ${property.type}(x)) : ${ARRAY_STRING}`;
                 }
 
                 if (property.isNullable) {
@@ -247,19 +251,24 @@ export class ModelsGenerator {
 
             case PropertyKind.Identity:
                 if (property.isCollection) {
-                    return `${dtoProperty} ? ${dtoProperty}.map(x => new ${property.type}(x.id)) : []`;
+                    return `${dtoProperty} ? ${dtoProperty}.map(x => new ${property.type}(x.id)) : ${ARRAY_STRING}`;
                 }
 
                 return `${dtoProperty} ? new ${property.type}(${dtoProperty}.id) : ${UNDEFINED_STRING}`;
 
             case PropertyKind.Object:
                 if (property.isCollection) {
-                    return `${dtoProperty} ? ${dtoProperty}.map(x => ${property.type}.${FROM_DTO_METHOD}(x)) : []`;
+                    return `${dtoProperty} ? ${dtoProperty}.map(x => ${property.type}.${FROM_DTO_METHOD}(x)) : ${ARRAY_STRING}`;
                 }
 
                 return `${dtoProperty} ? ${property.type}.${FROM_DTO_METHOD}(${dtoProperty}) : ${UNDEFINED_STRING}`;
-        }
 
-        return dtoProperty;
+            default:
+                if (property.isCollection) {
+                    return `${dtoProperty} ? ${dtoProperty} : ${ARRAY_STRING}`;
+                }
+
+                return dtoProperty;
+        }
     }
 }

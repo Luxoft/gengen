@@ -101,7 +101,7 @@ export class AngularServicesMethodGenerator {
         const typeName = `${isModel ? `${MODELS_NAMESPACE}.` : ''}${type}`;
 
         return new TypeSerializer({
-            type: typeName,
+            type: { name: typeName },
             isCollection,
             isOptional
         }).toString();
