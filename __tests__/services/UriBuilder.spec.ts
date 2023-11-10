@@ -31,7 +31,8 @@ describe('UriBuilder tests', () => {
                         type: {
                             dtoType: 'IProduct',
                             kind: PropertyKind.Object,
-                            type: 'Product'
+                            type: 'Product',
+                            isNullable: true
                         }
                     },
                     originUri: 'get/{id}'
@@ -67,7 +68,8 @@ describe('UriBuilder tests', () => {
                         type: {
                             dtoType: 'IProduct',
                             kind: PropertyKind.Object,
-                            type: 'Product'
+                            type: 'Product',
+                            isNullable: true
                         }
                     },
                     originUri: 'get'
@@ -109,7 +111,8 @@ describe('UriBuilder tests', () => {
                         type: {
                             dtoType: 'IProduct',
                             kind: PropertyKind.Object,
-                            type: 'Product'
+                            type: 'Product',
+                            isNullable: true
                         }
                     },
                     originUri: 'get/{id}'
@@ -157,7 +160,8 @@ describe('UriBuilder tests', () => {
                         type: {
                             dtoType: 'IProduct',
                             kind: PropertyKind.Object,
-                            type: 'Product'
+                            type: 'Product',
+                            isNullable: true
                         }
                     },
                     originUri: 'getByCustomer/{customer}/type/{type}'

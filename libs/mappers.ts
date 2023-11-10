@@ -9,7 +9,7 @@ export function mapCollection<TDTO, TModel>(dtoMapper: { fromDTO(value: TDTO): T
 }
 
 export function mapSingle<TDTO, TModel>(dtoMapper: { fromDTO(value: TDTO): TModel }): OperatorFunction<TypeOrUndefined<TDTO>, TypeOrUndefined<TModel>> {
-    return map((z: TypeOrUndefined<TDTO>) => (z ? dtoMapper.fromDTO(z) : undefined));
+    return map((x: TypeOrUndefined<TDTO>) => (x ? dtoMapper.fromDTO(x) : undefined));
 }
 
 export function mapIdentityCollection<TModel>(identity: { new (id: TypeOrUndefined<string>): TModel }): OperatorFunction<DTOIdentityType[], TModel[]> {
@@ -17,9 +17,13 @@ export function mapIdentityCollection<TModel>(identity: { new (id: TypeOrUndefin
 }
 
 export function mapIdentitySingle<TModel>(identity: { new (id: TypeOrUndefined<string>): TModel }): OperatorFunction<TypeOrUndefined<DTOIdentityType>, TypeOrUndefined<TModel>> {
-    return map((z: TypeOrUndefined<DTOIdentityType>) => (z ? new identity(z.id) : undefined));
+    return map((x: TypeOrUndefined<DTOIdentityType>) => (x ? new identity(x.id) : undefined));
 }
 
 export function mapDate(): OperatorFunction<string, TypeOrUndefined<Date>> {
     return map(toDateIn);
+}
+
+export function mapDateStrict(): OperatorFunction<string, Date> {
+    return map((x) => toDateIn(x)!);
 }

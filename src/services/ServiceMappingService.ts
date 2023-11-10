@@ -29,6 +29,7 @@ import { TypesService } from './TypesService';
 export interface IModel {
     name: string;
     dtoType: string;
+    isNullable: boolean;
     kind: PropertyKind;
 }
 
@@ -132,7 +133,7 @@ export class ServiceMappingService {
             model.returnType = {
                 isCollection: false,
                 isModel: false,
-                type: { kind: PropertyKind.Object, type: 'IDownloadResult', dtoType: 'IDownloadResult' }
+                type: { kind: PropertyKind.Object, type: 'IDownloadResult', dtoType: 'IDownloadResult', isNullable: false }
             };
 
             model.parameters.push({
@@ -220,7 +221,11 @@ export class ServiceMappingService {
             return undefined;
         }
 
-        return { isCollection, isModel: true, type: { kind: model.kind, dtoType: model.dtoType, type: model.name } };
+        return {
+            isCollection,
+            isModel: true,
+            type: { kind: model.kind, dtoType: model.dtoType, type: model.name, isNullable: model.isNullable }
+        };
     }
 
     private hasDownloadResponse(operation: IOpenAPI3Operation): boolean {

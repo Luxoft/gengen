@@ -38,6 +38,7 @@ export class ModelMappingService {
                 if (this.isIdentity(schema)) {
                     identities.push({
                         name,
+                        isNullable: false,
                         dtoType: this.getInterfaceName(name),
                         property: {
                             ...this.typesService.getSimpleType(schema.properties['id'] as IOpenAPI3GuidSchema),
@@ -63,6 +64,7 @@ export class ModelMappingService {
     private toEnumModel(name: string, schema: IOpenAPI3EnumSchema): IEnumModel {
         return {
             name,
+            isNullable: schema.nullable ?? false,
             items: schema.enum
                 .map((value, index) => ({
                     key: schema['x-enumNames'][index],
@@ -73,7 +75,7 @@ export class ModelMappingService {
     }
 
     private toObjectModel(name: string, schema: IOpenAPI3ObjectSchema): IObjectModel {
-        const model: IObjectModel = { name, dtoType: this.getInterfaceName(name), properties: [] };
+        const model: IObjectModel = { name, isNullable: schema.nullable ?? false, dtoType: this.getInterfaceName(name), properties: [] };
         if (!schema.properties) {
             return model;
         }
