@@ -4,4 +4,5 @@ export interface IType {
     kind: PropertyKind;
     type: string;
     dtoType: string;
+    isNullable: boolean;
 }

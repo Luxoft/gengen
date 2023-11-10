@@ -9,5 +9,6 @@ export interface IObjectPropertyModel extends IType {
 export interface IObjectModel {
     name: string;
     dtoType: string;
+    isNullable: boolean;
     properties: IObjectPropertyModel[];
 }

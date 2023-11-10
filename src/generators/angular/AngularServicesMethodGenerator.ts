@@ -114,13 +114,14 @@ export class AngularServicesMethodGenerator {
 
         return [PropertyKind.Object, PropertyKind.Identity, PropertyKind.Guid, PropertyKind.Date].includes(returnType.type.kind);
     }
+
     protected createPipe(returnType: ITypeInfo): string {
         if (returnType.type.kind === PropertyKind.Guid) {
             return 'mapGuid()';
         }
 
         if (returnType.type.kind === PropertyKind.Date) {
-            return `${MAPPERS_NAMESPACE}.mapDate()`;
+            return returnType.type.isNullable ? `${MAPPERS_NAMESPACE}.mapDate()` : `${MAPPERS_NAMESPACE}.mapDateStrict()`;
         }
 
         const type = `${MODELS_NAMESPACE}.${returnType.type.type}`;
