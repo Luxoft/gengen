@@ -30,6 +30,14 @@ export abstract class BaseHttpService {
         return this.http.post<TResult>(this.getPath(url), data, options);
     }
 
+    protected put<TResult, TData = {}>(
+        url: string,
+        data?: TData,
+        options?: IAngularHttpRequestOptions
+    ): Observable<TResult> {
+        return this.http.put<TResult>(this.getPath(url), data, options);
+    }
+
     protected delete<TResult>(url: string, options?: IAngularHttpRequestOptions): Observable<TResult> {
         return this.http.delete<TResult>(this.getPath(url), options);
     }
