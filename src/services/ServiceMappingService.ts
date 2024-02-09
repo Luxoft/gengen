@@ -62,9 +62,10 @@ export class ServiceMappingService {
                 return store;
             }
 
-            const service = store.find((z) => z.name === info.name);
+            let service = store.find((z) => z.name === info.name);
             if (!service && model.length) {
-                store.push({ name: info.name, relativePath: info.relativePath, methods: [] });
+                service = { name: info.name, relativePath: info.relativePath, methods: [] };
+                store.push(service);
             }
 
             model.forEach((z) => {
