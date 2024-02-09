@@ -63,6 +63,9 @@ export class ServiceMappingService {
             }
 
             const service = store.find((z) => z.name === info.name);
+            if (!service && model.length) {
+                store.push({ name: info.name, relativePath: info.relativePath, methods: [] });
+            }
 
             model.forEach((z) => {
                 const action =
@@ -74,16 +77,7 @@ export class ServiceMappingService {
                     throw new Error(`Cannot find action in service ${info.name} by method ${z}`);
                 }
 
-                if (service) {
-                    service.methods.push(this.getMethod(action.name, z.method, z.operation, models, action.origin));
-                    return store;
-                }
-
-                store.push({
-                    name: info.name,
-                    relativePath: info.relativePath,
-                    methods: [this.getMethod(action.name, z.method, z.operation, models, action.origin)]
-                });
+                service!.methods.push(this.getMethod(action.name, z.method, z.operation, models, action.origin));
             });
 
             return store;
