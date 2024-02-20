@@ -1,40 +1,40 @@
 import type { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import type { Observable } from 'rxjs';
+import { pruneEmptyQueryParams } from './utils';
 
 export interface IAngularHttpRequestOptions {
-    headers?: HttpHeaders | {
-        [header: string]: string | string[];
-    };
+    headers?:
+        | HttpHeaders
+        | {
+              [header: string]: string | string[];
+          };
     observe?: 'body';
     context?: HttpContext;
-    params?: HttpParams | {
-        [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean>;
-    };
+    params?:
+        | HttpParams
+        | {
+              [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean>;
+          };
     reportProgress?: boolean;
     responseType?: 'json';
     withCredentials?: boolean;
 }
 
 export abstract class BaseHttpService {
-    constructor(private relativePath: string, protected http: HttpClient) { }
+    constructor(
+        private relativePath: string,
+        protected http: HttpClient
+    ) {}
 
     protected get<TResult>(url: string, options?: IAngularHttpRequestOptions): Observable<TResult> {
         return this.http.get<TResult>(this.getPath(url), options);
     }
 
-    protected post<TResult, TData = {}>(
-        url: string,
-        data?: TData,
-        options?: IAngularHttpRequestOptions
-    ): Observable<TResult> {
+    protected post<TResult, TData = {}>(url: string, data?: TData, options?: IAngularHttpRequestOptions): Observable<TResult> {
         return this.http.post<TResult>(this.getPath(url), data, options);
     }
 
-    protected put<TResult, TData = {}>(
-        url: string,
-        data?: TData,
-        options?: IAngularHttpRequestOptions
-    ): Observable<TResult> {
+    protected put<TResult, TData = {}>(url: string, data?: TData, options?: IAngularHttpRequestOptions): Observable<TResult> {
         return this.http.put<TResult>(this.getPath(url), data, options);
     }
 
@@ -46,7 +46,8 @@ export abstract class BaseHttpService {
         return this.relativePath;
     }
 
-    private getPath(url: string): string {
-        return `${this.relativePath}${url ? `/${url}` : ''}`;
+    protected getPath(url: string): string {
+        const prunedUrl = pruneEmptyQueryParams(url);
+        return `${this.relativePath}${prunedUrl ? `/${prunedUrl}` : ''}`;
     }
 }
