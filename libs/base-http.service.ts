@@ -1,20 +1,11 @@
 import type { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import type { Observable } from 'rxjs';
-import { pruneEmptyQueryParams } from './utils';
 
 export interface IAngularHttpRequestOptions {
-    headers?:
-        | HttpHeaders
-        | {
-              [header: string]: string | string[];
-          };
+    headers?: HttpHeaders | { [header: string]: string | string[] };
     observe?: 'body';
     context?: HttpContext;
-    params?:
-        | HttpParams
-        | {
-              [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean>;
-          };
+    params?: HttpParams | { [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean> };
     reportProgress?: boolean;
     responseType?: 'json';
     withCredentials?: boolean;
@@ -46,8 +37,24 @@ export abstract class BaseHttpService {
         return this.relativePath;
     }
 
-    protected getPath(url: string): string {
-        const prunedUrl = pruneEmptyQueryParams(url);
-        return `${this.relativePath}${prunedUrl ? `/${prunedUrl}` : ''}`;
+    protected prune(url: string): string {
+        const uri = new URL(url, window.location.origin);
+        if (!uri.search) {
+            return url;
+        }
+
+        const toDelete: string[] = [];
+        uri.searchParams.forEach((value, key) => {
+            if (!value) {
+                toDelete.push(key);
+            }
+        });
+
+        toDelete.forEach((key) => uri.searchParams.delete(key));
+        return `${uri.pathname}${uri.search}`;
+    }
+
+    private getPath(url: string): string {
+        return this.prune(`${this.relativePath}${url ? `/${url}` : ''}`);
     }
 }

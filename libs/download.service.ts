@@ -9,18 +9,10 @@ export interface IDownloadResult {
 }
 
 interface IAngularHttpRequestOptionsBlob {
-    headers?:
-        | HttpHeaders
-        | {
-              [header: string]: string | string[];
-          };
+    headers?: HttpHeaders | { [header: string]: string | string[] };
     observe: 'response';
     context?: HttpContext;
-    params?:
-        | HttpParams
-        | {
-              [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean>;
-          };
+    params?: HttpParams | { [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean> };
     reportProgress?: boolean;
     responseType: 'blob';
     withCredentials?: boolean;
@@ -48,7 +40,9 @@ export class DownloadFileService extends BaseHttpService {
         };
 
         const request =
-            method === 'get' ? this.http.get(this.getPath(url), downloadOptions) : this.http.post(this.getPath(url), data, downloadOptions);
+            method === 'get'
+                ? this.http.get(this.prune(`${this.path}/${url}`), downloadOptions)
+                : this.http.post(this.prune(`${this.path}/${url}`), data, downloadOptions);
 
         const response = (await request.toPromise())!;
         const filename = this.getFileName(response, saveAs);

@@ -12,22 +12,3 @@ export function getBasePath(alias: string, relativePath: string): string {
 
     return `${basePath}${relativePath}`;
 }
-
-export function pruneEmptyQueryParams(url: string): string {
-    const querySeparator = '?';
-    const queryParamsSeparator = '&';
-
-    if (!url || !url.includes(querySeparator)) {
-        return url;
-    }
-
-    const [path, query] = url.split(querySeparator);
-
-    const prunedQuery = query
-        .split(queryParamsSeparator)
-        .filter((x) => !x.trimEnd().endsWith('='))
-        .join(queryParamsSeparator)
-        .slice(0);
-
-    return prunedQuery.length ? `${path}${querySeparator}${prunedQuery}` : path;
-}
