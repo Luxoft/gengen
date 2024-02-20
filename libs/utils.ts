@@ -15,21 +15,18 @@ export function getBasePath(alias: string, relativePath: string): string {
 
 export function pruneEmptyQueryParams(url: string): string {
     const querySeparator = '?';
-    const queryParametersSeparator = '&';
+    const queryParamsSeparator = '&';
 
     if (!url || !url.includes(querySeparator)) {
         return url;
     }
 
-    const splitedUrl = url.split(querySeparator);
-
-    const path = splitedUrl[0];
-    const query = splitedUrl[1];
+    const [path, query] = url.split(querySeparator);
 
     const prunedQuery = query
-        .split(queryParametersSeparator)
+        .split(queryParamsSeparator)
         .filter((x) => !x.trimEnd().endsWith('='))
-        .join(queryParametersSeparator)
+        .join(queryParamsSeparator)
         .slice(0);
 
     return prunedQuery.length ? `${path}${querySeparator}${prunedQuery}` : path;
