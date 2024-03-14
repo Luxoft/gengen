@@ -1,5 +1,6 @@
 import {
     ClassDeclarationStructure,
+    CodeBlockWriter,
     ConstructorDeclarationStructure,
     ImportDeclarationStructure,
     OptionalKind,
@@ -125,7 +126,7 @@ export class ModelsGenerator {
             kind: StructureKind.Class,
             isExported: true,
             name: z.name,
-            properties: this.getObjectProperties(z),
+            properties: this.getObjectProperties(z, objects),
             methods: [
                 {
                     scope: Scope.Public,
@@ -136,6 +137,9 @@ export class ModelsGenerator {
                     statements: (x) => {
                         x.writeLine('return {');
                         z.properties.forEach((p) =>
+                            x.withIndentationLevel(3, () => x.writeLine(`${p.name}: ${this.getToDtoPropertyInitializer(p)},`))
+                        );
+                        this.printCombinedProprs(z, x, objects, (p) =>
                             x.withIndentationLevel(3, () => x.writeLine(`${p.name}: ${this.getToDtoPropertyInitializer(p)},`))
                         );
                         x.writeLine('};');
@@ -152,6 +156,9 @@ export class ModelsGenerator {
                         z.properties.forEach((p) =>
                             x.withIndentationLevel(2, () => x.writeLine(`model.${p.name} = ${this.getFromDtoPropertyInitializer(p)};`))
                         );
+                        this.printCombinedProprs(z, x, objects, (p) =>
+                            x.withIndentationLevel(2, () => x.writeLine(`model.${p.name} = ${this.getFromDtoPropertyInitializer(p)};`))
+                        );
                         x.writeLine('return model;');
                     }
                 }
@@ -159,23 +166,37 @@ export class ModelsGenerator {
         }));
     }
 
-    private getObjectProperties(objectModel: IObjectModel): PropertyDeclarationStructure[] {
+    private getObjectProperties(objectModel: IObjectModel, objects: IObjectModel[]): PropertyDeclarationStructure[] {
         return [
-            ...objectModel.properties.map(
-                (objectProperty): PropertyDeclarationStructure => ({
-                    kind: StructureKind.Property,
-                    scope: Scope.Public,
-                    name: objectProperty.name,
-                    type: new TypeSerializer({
-                        type: { name: objectProperty.type },
-                        isNullable: objectProperty.isNullable,
-                        isCollection: objectProperty.isCollection
-                    }).toString(),
-                    initializer: objectProperty.isCollection ? ARRAY_STRING : UNDEFINED_STRING
-                })
-            ),
+            ...this.getObjectCombinedProperties(objectModel, objects),
+            ...objectModel.properties.map((objectProperty) => this.getDeclarationStructure(objectProperty)),
             this.getGuardProperty(objectModel.name)
         ];
+    }
+
+    private getObjectCombinedProperties(objectModel: IObjectModel, objects: IObjectModel[]): PropertyDeclarationStructure[] {
+        return objectModel.combineTypes.reduce((acc, item) => {
+            const model = objects.find((x) => x.name === item);
+            const props = (model?.properties ?? []).map((objectProperty) => this.getDeclarationStructure(objectProperty));
+            if (model) {
+                props.push(...this.getObjectCombinedProperties(model, objects));
+            }
+            return [...acc, ...props];
+        }, [] as PropertyDeclarationStructure[]);
+    }
+
+    private getDeclarationStructure(objectProperty: IObjectPropertyModel): PropertyDeclarationStructure {
+        return {
+            kind: StructureKind.Property,
+            scope: Scope.Public,
+            name: objectProperty.name,
+            type: new TypeSerializer({
+                type: { name: objectProperty.type },
+                isNullable: objectProperty.isNullable,
+                isCollection: objectProperty.isCollection
+            }).toString(),
+            initializer: objectProperty.isCollection ? ARRAY_STRING : UNDEFINED_STRING
+        };
     }
 
     private getGuardProperty(name: string): PropertyDeclarationStructure {
@@ -270,5 +291,25 @@ export class ModelsGenerator {
 
                 return dtoProperty;
         }
+    }
+
+    private printCombinedProprs(
+        model: IObjectModel | undefined,
+        writer: CodeBlockWriter,
+        objectsCollection: IObjectModel[],
+        printFunction: (p: IObjectPropertyModel) => void
+    ): void {
+        if (!model) {
+            return;
+        }
+        model.combineTypes.forEach((y) => {
+            (objectsCollection.find((x) => x.name === y)?.properties ?? []).forEach((p) => printFunction(p));
+            this.printCombinedProprs(
+                objectsCollection.find((x) => x.name === y),
+                writer,
+                objectsCollection,
+                printFunction
+            );
+        });
     }
 }

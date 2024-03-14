@@ -8,4 +8,5 @@ export interface IInterfacePropertyModel {
 export interface IInterfaceModel {
     name: string;
     properties: IInterfacePropertyModel[];
+    combineInterfaces: string[];
 }

@@ -7,6 +7,7 @@ import { IOpenAPI3EnumSchema } from './v3/schemas/enum-schema';
 import { IOpenAPI3GuidSchema } from './v3/schemas/guid-schema';
 import { IOpenAPI3NumberSchema } from './v3/schemas/number-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
+import { IOpenAPI3OneOfSchema } from './v3/schemas/one-of-schema';
 import { OpenAPI3SimpleSchema } from './v3/schemas/schema';
 import { IOpenAPI3StringSchema } from './v3/schemas/string-schema';
 
@@ -17,6 +18,7 @@ type SchemaType =
     | IOpenAPI3ObjectSchema
     | IOpenAPI3EnumSchema
     | IOpenAPI3AllOfSchema
+    | IOpenAPI3OneOfSchema
     | undefined;
 
 export class OpenAPITypesGuard {
@@ -38,6 +40,10 @@ export class OpenAPITypesGuard {
 
     public isAllOf(schema: SchemaType): schema is IOpenAPI3AllOfSchema {
         return Boolean((schema as IOpenAPI3AllOfSchema)?.allOf);
+    }
+
+    public isOneOf(schema: SchemaType): schema is IOpenAPI3OneOfSchema {
+        return Boolean((schema as IOpenAPI3OneOfSchema).oneOf);
     }
 
     public isEnum(schema: SchemaType): schema is IOpenAPI3EnumSchema {

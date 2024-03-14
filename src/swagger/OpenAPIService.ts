@@ -20,7 +20,10 @@ interface IOperation {
 export type IOpenAPI3Operations = { [key: string]: { method: MethodOperation; operation: IOpenAPI3Operation }[] };
 
 export class OpenAPIService {
-    constructor(private readonly spec: IOpenAPI3, private readonly typesGuard: OpenAPITypesGuard) {
+    constructor(
+        private readonly spec: IOpenAPI3,
+        private readonly typesGuard: OpenAPITypesGuard
+    ) {
         const majorVersion = this.majorVersion;
         if (majorVersion !== SUPPORTED_VERSION.toString()) {
             throw new Error(`Only OpenApi version ${SUPPORTED_VERSION} supported yet.`);
