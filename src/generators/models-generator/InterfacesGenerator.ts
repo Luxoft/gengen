@@ -6,8 +6,9 @@ import {
     TypeAliasDeclarationStructure
 } from 'ts-morph';
 
-import { IInterfaceModel, IInterfacePropertyModel } from '../../models/InterfaceModel';
+import { IInterfaceModel, IInterfacePropertyModel, IInterfaceUnionModel } from '../../models/InterfaceModel';
 import { TypeSerializer } from '../utils/TypeSerializer';
+import { getInterfaceName } from '../../utils';
 
 export class InterfacesGenerator {
     public getCodeStructure(interfaces: IInterfaceModel[]): (InterfaceDeclarationStructure | TypeAliasDeclarationStructure)[] {
@@ -37,6 +38,26 @@ export class InterfacesGenerator {
             }
         });
         return [...baseInterfaces, ...types];
+    }
+
+    public getCodeUnionsStructure(interfaces: IInterfaceUnionModel[]): TypeAliasDeclarationStructure[] {
+        const classUnion: TypeAliasDeclarationStructure[] = interfaces.map((z) => {
+            return {
+                kind: StructureKind.TypeAlias,
+                type: z.parentInterface + '|' + z.unionInterfaces.join(' | '),
+                name: z.name,
+                isExported: true
+            };
+        });
+        const interfacesUnion: TypeAliasDeclarationStructure[] = interfaces.map((z) => {
+            return {
+                kind: StructureKind.TypeAlias,
+                type: getInterfaceName(z.parentInterface) + '|' + z.unionInterfaces.map((x) => getInterfaceName(x)).join(' | '),
+                name: getInterfaceName(z.name),
+                isExported: true
+            };
+        });
+        return [...classUnion, ...interfacesUnion];
     }
 
     protected getInterfaceProperty(model: IInterfacePropertyModel): OptionalKind<PropertySignatureStructure> {

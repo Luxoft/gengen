@@ -1,10 +1,11 @@
-import { IOpenAPI3Reference } from '../swagger/v3/reference';
 import { IType } from './TypeModel';
 
 export interface IObjectPropertyModel extends IType {
     name: string;
     isNullable: boolean;
     isCollection: boolean;
+    typeAlias?: string;
+    dtoTypeAlias?: string;
 }
 
 export interface IObjectModel {
@@ -13,5 +14,10 @@ export interface IObjectModel {
     isNullable: boolean;
     properties: IObjectPropertyModel[];
     combineTypes: string[];
-    combineTypesRefs: IOpenAPI3Reference[];
+}
+
+export interface IObjectUnionModel {
+    name: string;
+    baseTypeName: string;
+    unionTypesNames: string[];
 }

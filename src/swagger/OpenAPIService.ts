@@ -4,6 +4,7 @@ import { OpenAPITypesGuard } from './OpenAPITypesGuard';
 import { IOpenAPI3 } from './v3/open-api';
 import { IOpenAPI3Operation } from './v3/operation';
 import { IOpenAPI3Reference } from './v3/reference';
+import { IOpenAPI3AllOfSchema } from './v3/schemas/all-of-schema';
 import { IOpenAPI3EnumSchema } from './v3/schemas/enum-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
 import { OpenAPI3Schema, OpenAPI3SchemaContainer } from './v3/schemas/schema';
@@ -172,7 +173,6 @@ export class OpenAPIService {
 
     private getRefsByOperation(operation: IOpenAPI3Operation): IOpenAPI3Reference[] {
         const refs: IOpenAPI3Reference[] = [];
-
         operation.parameters?.forEach((z) => {
             if (this.typesGuard.isReference(z.schema)) {
                 refs.push(z.schema);
@@ -206,6 +206,12 @@ export class OpenAPIService {
                 const expanded = this.expandRefs(refsFromObject, refKeys);
                 collectedRefs.push(...expanded);
             }
+
+            if (this.typesGuard.isAllOf(schema)) {
+                const refsFromObject = this.getRefsByAllOf(schema, ref);
+                const expanded = this.expandRefs(refsFromObject, refKeys);
+                collectedRefs.push(...expanded);
+            }
         });
 
         return collectedRefs;
@@ -236,9 +242,38 @@ export class OpenAPIService {
         return refs;
     }
 
+    /**
+     * @description Gets refs from allof schema only one level down
+     */
+    private getRefsByAllOf(
+        object: IOpenAPI3AllOfSchema,
+        objectRef: IOpenAPI3Reference,
+        outerRefs: IOpenAPI3Reference[] = []
+    ): IOpenAPI3Reference[] {
+        const refs = outerRefs;
+
+        Object.values(object.allOf || []).forEach((property) => {
+            this.getRefsFromSchema(property)
+                .filter((ref) => ref.$ref !== objectRef.$ref && !outerRefs.find((x) => x.$ref === ref.$ref))
+                .forEach((ref) => {
+                    refs.push(ref);
+
+                    if (this.typesGuard.isObject(property)) {
+                        this.getRefsByObject(property, objectRef, refs);
+                    }
+                });
+        });
+
+        return refs;
+    }
+
     private getRefsFromSchema(schema: OpenAPI3Schema | undefined): IOpenAPI3Reference[] {
         const refs: IOpenAPI3Reference[] = [];
-        if (this.typesGuard.isCollection(schema) && this.typesGuard.isReference(schema.items)) {
+        if (this.typesGuard.isCollection(schema) && this.typesGuard.isOneOf(schema.items)) {
+            refs.push(...schema.items.oneOf);
+        } else if (this.typesGuard.isOneOf(schema)) {
+            refs.push(...schema.oneOf);
+        } else if (this.typesGuard.isCollection(schema) && this.typesGuard.isReference(schema.items)) {
             refs.push(schema.items);
         } else if (this.typesGuard.isReference(schema)) {
             refs.push(schema);
