@@ -642,11 +642,51 @@
       "Category": {
         "type": "object",
         "properties": {
+          "type": {
+            "type": "string"
+          },
           "name": {
             "type": "string",
             "nullable": true
           }
+          },
+        "additionalProperties": false,
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "1": "#/components/schemas/CategoryElectronicsDto",
+            "2": "#/components/schemas/CategoryMotorsDto"
+          }
+        }
+      },
+      "CategoryMotorsDto": {
+        "type": "object",
+        "properties": {
+          "volume": {
+            "type": "number",
+            "nullable": true
+          }
         },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Category"
+          }
+      ],
+        "additionalProperties": false
+      },
+      "CategoryElectronicsDto": {
+        "type": "object",
+        "properties": {
+          "syntheticTest": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Category"
+          }
+      ],
         "additionalProperties": false
       },
       "ProductStatus": {
@@ -699,7 +739,34 @@
             "nullable": true
           },
           "category": {
-            "$ref": "#/components/schemas/Category"
+            "type": "object",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              },
+              {
+                "$ref": "#/components/schemas/CategoryElectronicsDto"
+              },
+              {
+                "$ref": "#/components/schemas/CategoryMotorsDto"
+              }
+            ]
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/Category"
+                },
+                {
+                  "$ref": "#/components/schemas/CategoryElectronicsDto"
+                },
+                {
+                  "$ref": "#/components/schemas/CategoryMotorsDto"
+                }
+              ]
+            }
           },
           "status": {
             "allOf": [

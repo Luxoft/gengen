@@ -19,3 +19,7 @@ export function last<T>(array: T[]): T {
 export function sortBy<T>(fn: (value: T) => string): (a: T, b: T) => number {
     return (a: T, b: T) => (fn(a) || '').localeCompare(fn(b) || '');
 }
+
+export function getInterfaceName(name: string): string {
+    return `I${name}`;
+}

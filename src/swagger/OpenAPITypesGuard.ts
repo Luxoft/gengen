@@ -3,6 +3,7 @@ import { IOpenAPI3AllOfSchema } from './v3/schemas/all-of-schema';
 import { IOpenAPI3ArraySchema } from './v3/schemas/array-schema';
 import { IOpenAPI3BooleanSchema } from './v3/schemas/boolean-schema';
 import { IOpenAPI3DateSchema } from './v3/schemas/date-schema';
+import { IOpenAPI3DiscriminatorSchema } from './v3/schemas/discriminator-schema';
 import { IOpenAPI3EnumSchema } from './v3/schemas/enum-schema';
 import { IOpenAPI3GuidSchema } from './v3/schemas/guid-schema';
 import { IOpenAPI3NumberSchema } from './v3/schemas/number-schema';
@@ -38,12 +39,16 @@ export class OpenAPITypesGuard {
         return (schema as IOpenAPI3ObjectSchema)?.type === 'object';
     }
 
+    public isDiscriminator(schema: SchemaType): schema is IOpenAPI3DiscriminatorSchema {
+        return Boolean((schema as IOpenAPI3DiscriminatorSchema)?.discriminator);
+    }
+
     public isAllOf(schema: SchemaType): schema is IOpenAPI3AllOfSchema {
         return Boolean((schema as IOpenAPI3AllOfSchema)?.allOf);
     }
 
     public isOneOf(schema: SchemaType): schema is IOpenAPI3OneOfSchema {
-        return Boolean((schema as IOpenAPI3OneOfSchema).oneOf);
+        return Boolean((schema as IOpenAPI3OneOfSchema)?.oneOf);
     }
 
     public isEnum(schema: SchemaType): schema is IOpenAPI3EnumSchema {

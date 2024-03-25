@@ -12,13 +12,13 @@ import {
 } from 'ts-morph';
 import { IEnumModel } from '../models/EnumModel';
 import { IIdentityModel } from '../models/IdentityModel';
-import { IInterfaceModel } from '../models/InterfaceModel';
+import { IInterfaceModel, IInterfaceUnionModel } from '../models/InterfaceModel';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
 import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IOptions } from '../options';
 import { PathBuilder } from '../services/PathBuilder';
-import { lowerFirst } from '../utils';
+import { getInterfaceName, lowerFirst } from '../utils';
 import { InterfacesGenerator } from './models-generator/InterfacesGenerator';
 import { TypeSerializer } from './utils/TypeSerializer';
 import { ARRAY_STRING, NULL_STRING, TYPES_NAMESPACE, UNDEFINED_STRING } from './utils/consts';
@@ -37,6 +37,8 @@ export class ModelsGenerator {
             ...this.getImports(),
             ...this.getEnums(models.enums),
             ...this.interfaceGenerator.getCodeStructure(models.interfaces),
+            ...this.interfaceGenerator.getCodeUnionsStructure(models.unionInterfaces),
+            ...this.getUnionObjects(models.unionInterfaces),
             ...this.getIdentities(models.identities, models.interfaces),
             ...this.getObjects(models.objects)
         ];
@@ -120,6 +122,71 @@ export class ModelsGenerator {
             })
         );
     }
+    private getUnionObjects(objects: IInterfaceUnionModel[]): ClassDeclarationStructure[] {
+        return objects.map((z) => ({
+            kind: StructureKind.Class,
+            isExported: true,
+            name: z.name + 'Class',
+            properties: [],
+            methods: [
+                {
+                    scope: Scope.Public,
+                    isStatic: true,
+                    name: FROM_DTO_METHOD,
+                    parameters: [{ name: 'dto', type: getInterfaceName(z.name) }],
+                    returnType: z.name,
+                    statements: (x) => {
+                        z.unionInterfaces.forEach((i) => {
+                            x.writeLine('if (this.is' + i + '(dto)){');
+                            x.writeLine('return ' + i + '.fromDTO(dto);');
+                            x.writeLine('}');
+                        });
+
+                        x.writeLine('return ' + z.parentInterface + '.fromDTO(dto);');
+                    }
+                },
+
+                {
+                    scope: Scope.Public,
+                    isStatic: true,
+                    name: TO_DTO_METHOD,
+                    parameters: [{ name: 'model', type: z.name }],
+                    returnType: getInterfaceName(z.name),
+                    statements: (x) => {
+                        z.unionInterfaces.forEach((i) => {
+                            x.writeLine('if (this.is' + getInterfaceName(i) + '(model)){');
+                            x.writeLine('return ' + i + '.toDTO(model);');
+                            x.writeLine('}');
+                        });
+
+                        x.writeLine('return ' + z.parentInterface + '.toDTO(model);');
+                    }
+                },
+
+                ...z.unionInterfaces.map((i) => ({
+                    scope: Scope.Private,
+                    isStatic: true,
+                    name: 'is' + i,
+                    parameters: [{ name: 'dto', type: getInterfaceName(z.name) }],
+                    returnType: 'dto is ' + getInterfaceName(i),
+                    statements: (x: CodeBlockWriter) => {
+                        x.writeLine('return dto.type === ' + z.name + 'Types.' + i + ';');
+                    }
+                })),
+
+                ...z.unionInterfaces.map((i) => ({
+                    scope: Scope.Private,
+                    isStatic: true,
+                    name: 'is' + getInterfaceName(i),
+                    parameters: [{ name: 'dto', type: z.name }],
+                    returnType: 'dto is ' + i,
+                    statements: (x: CodeBlockWriter) => {
+                        x.writeLine('return dto.type === ' + z.name + 'Types.' + i + ';');
+                    }
+                }))
+            ]
+        }));
+    }
 
     private getObjects(objects: IObjectModel[]): ClassDeclarationStructure[] {
         return objects.map((z) => ({
@@ -191,7 +258,7 @@ export class ModelsGenerator {
             scope: Scope.Public,
             name: objectProperty.name,
             type: new TypeSerializer({
-                type: { name: objectProperty.type },
+                type: { name: objectProperty.typeAlias ?? objectProperty.type },
                 isNullable: objectProperty.isNullable,
                 isCollection: objectProperty.isCollection
             }).toString(),
@@ -239,7 +306,9 @@ export class ModelsGenerator {
 
             case PropertyKind.Object:
                 if (property.isCollection) {
-                    return `${modelProperty} ? ${modelProperty}.map(x => ${property.type}.${TO_DTO_METHOD}(x)) : ${UNDEFINED_STRING}`;
+                    return `${modelProperty} ? ${modelProperty}.map(x => ${
+                        property.dtoTypeAlias ?? property.type
+                    }.${TO_DTO_METHOD}(x)) : ${UNDEFINED_STRING}`;
                 }
 
                 return `${modelProperty} ? ${property.type}.${TO_DTO_METHOD}(${modelProperty}) : ${UNDEFINED_STRING}`;
@@ -279,7 +348,9 @@ export class ModelsGenerator {
 
             case PropertyKind.Object:
                 if (property.isCollection) {
-                    return `${dtoProperty} ? ${dtoProperty}.map(x => ${property.type}.${FROM_DTO_METHOD}(x)) : ${ARRAY_STRING}`;
+                    return `${dtoProperty} ? ${dtoProperty}.map(x => ${
+                        property.dtoTypeAlias ?? property.type
+                    }.${FROM_DTO_METHOD}(x)) : ${ARRAY_STRING}`;
                 }
 
                 return `${dtoProperty} ? ${property.type}.${FROM_DTO_METHOD}(${dtoProperty}) : ${UNDEFINED_STRING}`;
