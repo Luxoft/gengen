@@ -4,7 +4,6 @@ import { OpenAPITypesGuard } from './OpenAPITypesGuard';
 import { IOpenAPI3 } from './v3/open-api';
 import { IOpenAPI3Operation } from './v3/operation';
 import { IOpenAPI3Reference } from './v3/reference';
-import { IOpenAPI3AllOfSchema } from './v3/schemas/all-of-schema';
 import { IOpenAPI3EnumSchema } from './v3/schemas/enum-schema';
 import { IOpenAPI3ObjectSchema } from './v3/schemas/object-schema';
 import { OpenAPI3Schema, OpenAPI3SchemaContainer } from './v3/schemas/schema';
@@ -201,14 +200,8 @@ export class OpenAPIService {
             refKeys.add(ref.$ref);
 
             const schema = this.getSchemaByRef(ref);
-            if (this.typesGuard.isObject(schema)) {
+            if (schema) {
                 const refsFromObject = this.getRefsByObject(schema, ref);
-                const expanded = this.expandRefs(refsFromObject, refKeys);
-                collectedRefs.push(...expanded);
-            }
-
-            if (this.typesGuard.isAllOf(schema)) {
-                const refsFromObject = this.getRefsByAllOf(schema, ref);
                 const expanded = this.expandRefs(refsFromObject, refKeys);
                 collectedRefs.push(...expanded);
             }
@@ -221,46 +214,29 @@ export class OpenAPIService {
      * @description Gets refs from object schema only one level down
      */
     private getRefsByObject(
-        object: IOpenAPI3ObjectSchema,
+        schema: IOpenAPI3ObjectSchema | IOpenAPI3EnumSchema | OpenAPI3Schema,
         objectRef: IOpenAPI3Reference,
         outerRefs: IOpenAPI3Reference[] = []
     ): IOpenAPI3Reference[] {
         const refs = outerRefs;
 
-        Object.values(object.properties || []).forEach((property) => {
+        const properties: OpenAPI3Schema[] = [];
+
+        if (this.typesGuard.isAllOf(schema)) {
+            properties.push(...schema.allOf);
+        }
+
+        if (this.typesGuard.isObject(schema)) {
+            properties.push(...Object.values(schema.properties || []));
+        }
+
+        properties.forEach((property) => {
             this.getRefsFromSchema(property)
                 .filter((ref) => ref.$ref !== objectRef.$ref && !outerRefs.find((x) => x.$ref === ref.$ref))
                 .forEach((ref) => {
                     refs.push(ref);
-
-                    if (this.typesGuard.isObject(property)) {
-                        this.getRefsByObject(property, objectRef, refs);
-                    }
-                });
-        });
-
-        return refs;
-    }
-
-    /**
-     * @description Gets refs from allof schema only one level down
-     */
-    private getRefsByAllOf(
-        object: IOpenAPI3AllOfSchema,
-        objectRef: IOpenAPI3Reference,
-        outerRefs: IOpenAPI3Reference[] = []
-    ): IOpenAPI3Reference[] {
-        const refs = outerRefs;
-
-        Object.values(object.allOf || []).forEach((property) => {
-            this.getRefsFromSchema(property)
-                .filter((ref) => ref.$ref !== objectRef.$ref && !outerRefs.find((x) => x.$ref === ref.$ref))
-                .forEach((ref) => {
-                    refs.push(ref);
-
-                    if (this.typesGuard.isObject(property)) {
-                        this.getRefsByObject(property, objectRef, refs);
-                    }
+                    this.getRefsByObject(property, objectRef, refs);
+                    this.getRefsByObject(property, objectRef, refs);
                 });
         });
 
