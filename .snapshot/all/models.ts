@@ -13,25 +13,29 @@ export enum ProductStatus {
     UnderTheOrder = 1
 }
 
-interface ICategoryElectronicsDtoBaseInterface {
-    syntheticTest: $types.TypeOrUndefinedNullable<number>;
-}
-
-interface ICategoryMotorsDtoBaseInterface {
-    volume: $types.TypeOrUndefinedNullable<number>;
-}
+export type CategoryUnion = Category | CategoryElectronicsDto | CategoryMotorsDto;
+export type ICategoryUnion = ICategory | ICategoryElectronicsDto | ICategoryMotorsDto;
 
 export interface ICategory {
     name: $types.TypeOrUndefinedNullable<string>;
     type: $types.TypeOrUndefined<string>;
 }
 
+interface ICategoryElectronicsDtoBaseInterface {
+    syntheticTest: $types.TypeOrUndefinedNullable<number>;
+}
+
 export type ICategoryElectronicsDto = ICategoryElectronicsDtoBaseInterface & ICategory;
+
+interface ICategoryMotorsDtoBaseInterface {
+    volume: $types.TypeOrUndefinedNullable<number>;
+}
+
 export type ICategoryMotorsDto = ICategoryMotorsDtoBaseInterface & ICategory;
 
 export interface IProduct {
-    categories: $types.TypeOrUndefinedNullable<ICategory[]>;
-    category: $types.TypeOrUndefinedNullable<ICategory>;
+    categories: $types.TypeOrUndefined<ICategoryUnion[]>;
+    category: $types.TypeOrUndefined<ICategoryUnion>;
     colors: $types.TypeOrUndefined<string[]>;
     expireDate: $types.TypeOrUndefined<string>;
     externalId: $types.TypeOrUndefinedNullable<string>;
@@ -44,9 +48,6 @@ export interface IProduct {
 export interface IProductIdentityDTO {
     id: $types.TypeOrUndefined<string>;
 }
-
-export type CategoryUnion = Category | CategoryElectronicsDto | CategoryMotorsDto;
-export type ICategoryUnion = ICategory | ICategoryElectronicsDto | ICategoryMotorsDto;
 
 export class CategoryUnionClass {
     public static fromDTO(dto: ICategoryUnion): CategoryUnion {
@@ -166,8 +167,8 @@ export class CategoryMotorsDto {
 }
 
 export class Product {
-    public categories: CategoryUnionClass[] = [];
-    public category: $types.TypeOrUndefinedNullable<CategoryUnionClass> = undefined;
+    public categories: CategoryUnion[] = [];
+    public category: $types.TypeOrUndefined<CategoryUnion> = undefined;
     public colors: string[] = [];
     public expireDate: $types.TypeOrUndefined<Date> = undefined;
     public externalId: $types.TypeOrUndefinedNullable<Guid> = undefined;
@@ -179,8 +180,8 @@ export class Product {
 
     public static toDTO(model: Partial<Product>): IProduct {
         return {
-            categories: model.categories ? model.categories.map(x => Category.toDTO(x)) : undefined,
-            category: model.category ? Category.toDTO(model.category) : undefined,
+            categories: model.categories ? model.categories.map(x => CategoryUnionClass.toDTO(x)) : undefined,
+            category: model.category ? CategoryUnionClass.toDTO(model.category) : undefined,
             colors: model.colors,
             expireDate: toDateOut(model.expireDate),
             externalId: model.externalId ? model.externalId.toString() : null,
@@ -193,8 +194,8 @@ export class Product {
 
     public static fromDTO(dto: IProduct): Product {
         const model = new Product();
-        model.categories = dto.categories ? dto.categories.map(x => Category.fromDTO(x)) : [];
-        model.category = dto.category ? Category.fromDTO(dto.category) : undefined;
+        model.categories = dto.categories ? dto.categories.map(x => CategoryUnionClass.fromDTO(x)) : [];
+        model.category = dto.category ? CategoryUnionClass.fromDTO(dto.category) : undefined;
         model.colors = dto.colors ? dto.colors : [];
         model.expireDate = toDateIn(dto.expireDate);
         model.externalId = dto.externalId ? new Guid(dto.externalId) : null;

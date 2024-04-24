@@ -6,58 +6,70 @@ import {
     TypeAliasDeclarationStructure
 } from 'ts-morph';
 
-import { IInterfaceModel, IInterfacePropertyModel, IInterfaceUnionModel } from '../../models/InterfaceModel';
+import { IExtendedInterfaceModel, IInterfaceModel, IInterfacePropertyModel, InterfaceModel } from '../../models/InterfaceModel';
+import { IUnionModel } from '../../models/UnionModel';
+import { getInterfaceName, getUnionName } from '../../utils';
 import { TypeSerializer } from '../utils/TypeSerializer';
-import { getInterfaceName } from '../../utils';
+
+type InterfacesSructures = InterfaceDeclarationStructure | TypeAliasDeclarationStructure;
 
 export class InterfacesGenerator {
-    public getCodeStructure(interfaces: IInterfaceModel[]): (InterfaceDeclarationStructure | TypeAliasDeclarationStructure)[] {
-        const baseInterfaces: InterfaceDeclarationStructure[] = [];
-        const types: (InterfaceDeclarationStructure | TypeAliasDeclarationStructure)[] = interfaces.map((z) => {
-            if (z.combineInterfaces.length) {
-                const name = z.name + 'BaseInterface';
-                baseInterfaces.push({
-                    kind: StructureKind.Interface,
-                    name: name,
-                    isExported: false,
-                    properties: z.properties.map((x) => this.getInterfaceProperty(x))
-                });
-                return {
-                    kind: StructureKind.TypeAlias,
-                    type: name + ' & ' + z.combineInterfaces.join(' & '),
-                    name: z.name,
-                    isExported: true
-                };
-            } else {
-                return {
-                    kind: StructureKind.Interface,
-                    name: z.name,
-                    isExported: true,
-                    properties: z.properties.map((x) => this.getInterfaceProperty(x))
-                };
-            }
-        });
-        return [...baseInterfaces, ...types];
+    public getCodeStructure(interfaces: InterfaceModel[], unions: IUnionModel[]): InterfacesSructures[] {
+        return [
+            ...unions.reduce((acc, curr) => {
+                this.generateUnionInterface(acc, curr);
+                return acc;
+            }, [] as InterfacesSructures[]),
+            ...interfaces.reduce((acc, curr) => {
+                if (this.isIExtendedInterfaceModel(curr)) {
+                    this.generateExtendednterface(acc, curr);
+                } else {
+                    this.generateCommonInterface(acc, curr);
+                }
+                return acc;
+            }, [] as InterfacesSructures[])
+        ];
     }
 
-    public getCodeUnionsStructure(interfaces: IInterfaceUnionModel[]): TypeAliasDeclarationStructure[] {
-        const classUnion: TypeAliasDeclarationStructure[] = interfaces.map((z) => {
-            return {
-                kind: StructureKind.TypeAlias,
-                type: z.parentInterface + '|' + z.unionInterfaces.join(' | '),
-                name: z.name,
-                isExported: true
-            };
+    private generateExtendednterface(acc: InterfacesSructures[], curr: IExtendedInterfaceModel): void {
+        const name = curr.name + 'BaseInterface';
+        acc.push({
+            kind: StructureKind.Interface,
+            name: name,
+            isExported: false,
+            properties: curr.properties.map((x) => this.getInterfaceProperty(x))
         });
-        const interfacesUnion: TypeAliasDeclarationStructure[] = interfaces.map((z) => {
-            return {
-                kind: StructureKind.TypeAlias,
-                type: getInterfaceName(z.parentInterface) + '|' + z.unionInterfaces.map((x) => getInterfaceName(x)).join(' | '),
-                name: getInterfaceName(z.name),
-                isExported: true
-            };
+        acc.push({
+            kind: StructureKind.TypeAlias,
+            type: name + ' & ' + curr.extendingInterfaces.join(' & '),
+            name: curr.name,
+            isExported: true
         });
-        return [...classUnion, ...interfacesUnion];
+    }
+
+    private generateUnionInterface(acc: InterfacesSructures[], curr: IUnionModel): void {
+        acc.push({
+            kind: StructureKind.TypeAlias,
+            type: curr.name + '|' + curr.unionInterfaces.join(' | '),
+            name: getUnionName(curr.name),
+            isExported: true
+        });
+
+        acc.push({
+            kind: StructureKind.TypeAlias,
+            type: getInterfaceName(curr.name) + '|' + curr.unionInterfaces.map((x) => getInterfaceName(x)).join(' | '),
+            name: getInterfaceName(getUnionName(curr.name)),
+            isExported: true
+        });
+    }
+
+    private generateCommonInterface(acc: InterfacesSructures[], curr: IInterfaceModel): void {
+        acc.push({
+            kind: StructureKind.Interface,
+            name: curr.name,
+            isExported: true,
+            properties: curr.properties.map((x) => this.getInterfaceProperty(x))
+        });
     }
 
     protected getInterfaceProperty(model: IInterfacePropertyModel): OptionalKind<PropertySignatureStructure> {
@@ -69,5 +81,9 @@ export class InterfacesGenerator {
 
     protected getInterfacePropertyType(model: IInterfacePropertyModel): string {
         return TypeSerializer.fromInterfaceProperty(model).toString();
+    }
+
+    private isIExtendedInterfaceModel(objects: InterfaceModel): objects is IExtendedInterfaceModel {
+        return Boolean((objects as IExtendedInterfaceModel)?.extendingInterfaces);
     }
 }

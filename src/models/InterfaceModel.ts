@@ -8,11 +8,10 @@ export interface IInterfacePropertyModel {
 export interface IInterfaceModel {
     name: string;
     properties: IInterfacePropertyModel[];
-    combineInterfaces: string[];
 }
 
-export interface IInterfaceUnionModel {
-    name: string;
-    parentInterface: string;
-    unionInterfaces: string[];
+export interface IExtendedInterfaceModel extends IInterfaceModel {
+    extendingInterfaces: string[];
 }
+
+export type InterfaceModel = IInterfaceModel | IExtendedInterfaceModel;
