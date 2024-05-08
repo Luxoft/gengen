@@ -12,7 +12,7 @@ export interface ICategory {
     name: $types.TypeOrUndefinedNullable<string>;
 }
 
-export interface IMyProduct.Core.Models.Feedback {
+export interface IMyProductCoreModelsFeedback {
     name: $types.TypeOrUndefinedNullable<string>;
 }
 
@@ -61,18 +61,18 @@ export class Category {
     }
 }
 
-export class MyProduct.Core.Models.Feedback {
+export class MyProductCoreModelsFeedback {
     public name: $types.TypeOrUndefinedNullable<string> = undefined;
-    private __myProduct.Core.Models.Feedback!: string;
+    private __myProductCoreModelsFeedback!: string;
 
-    public static toDTO(model: Partial<MyProduct.Core.Models.Feedback>): IMyProduct.Core.Models.Feedback {
+    public static toDTO(model: Partial<MyProductCoreModelsFeedback>): IMyProductCoreModelsFeedback {
         return {
             name: model.name,
         };
     }
 
-    public static fromDTO(dto: IMyProduct.Core.Models.Feedback): MyProduct.Core.Models.Feedback {
-        const model = new MyProduct.Core.Models.Feedback();
+    public static fromDTO(dto: IMyProductCoreModelsFeedback): MyProductCoreModelsFeedback {
+        const model = new MyProductCoreModelsFeedback();
         model.name = dto.name;
         return model;
     }

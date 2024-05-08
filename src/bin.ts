@@ -32,6 +32,8 @@ program
     .option('--all')
     .option('--withRequestOptions')
     .option('--unstrictId')
+    .option('--joinNamespace')
+    .option('--truncateNamespace')
     .description('Generates models and services')
     .action(async (params) => {
         const options = getOptions(params);

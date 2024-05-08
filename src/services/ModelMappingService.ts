@@ -13,6 +13,7 @@ import { IOpenAPI3ObjectSchema } from '../swagger/v3/schemas/object-schema';
 import { OpenAPI3Schema, OpenAPI3SchemaContainer, OpenAPI3SimpleSchema } from '../swagger/v3/schemas/schema';
 import { first, sortBy } from '../utils';
 import { TypesService } from './TypesService';
+import { IOptions } from '../options';
 
 const IGNORE_PROPERTIES = ['startRow', 'rowCount'];
 
@@ -20,7 +21,8 @@ export class ModelMappingService {
     constructor(
         private readonly openAPIService: OpenAPIService,
         private readonly typesGuard: OpenAPITypesGuard,
-        private readonly typesService: TypesService
+        private readonly typesService: TypesService,
+        private readonly settings: IOptions
     ) {}
 
     public toModelsContainer(schemas: OpenAPI3SchemaContainer): IModelsContainer {
@@ -29,6 +31,8 @@ export class ModelMappingService {
         const objects: IObjectModel[] = [];
 
         Object.entries(schemas).forEach(([name, schema]) => {
+            name = this.transformName(name, this.settings.joinNamespace, this.settings.truncateNamespace);
+
             if (this.typesGuard.isEnum(schema)) {
                 enums.push(this.toEnumModel(name, schema));
                 return;
@@ -185,5 +189,31 @@ export class ModelMappingService {
             return false;
         }
         return schema.properties && Object.keys(schema.properties)?.length === 1 && this.typesGuard.isGuid(schema.properties['id']);
+    }
+
+    private transformName(name: string, joinNamespace: boolean, truncateNamespace: boolean): string {
+        const namespaceSeparator = '.';
+
+        if (!joinNamespace && !truncateNamespace) {
+            return name;
+        }
+
+        if (joinNamespace) {
+            return this.joinBy(name, namespaceSeparator);
+        }
+
+        if (truncateNamespace) {
+            return this.truncateNamespace(name, namespaceSeparator);
+        }
+
+        return name;
+    }
+
+    private joinBy(value: string, separator: string, replaceWith = ''): string {
+        return value.replaceAll(separator, replaceWith);
+    }
+
+    private truncateNamespace(value: string, separator: string): string {
+        return value.split(separator).slice(-1)[0];
     }
 }

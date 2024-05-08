@@ -11,6 +11,8 @@ async function main() {
     snapshotter('./.snapshot/all/models.ts', './.output/all/models.ts', 'Models');
     snapshotter('./.snapshot/all/services.ts', './.output/all/services.ts', 'Services without RequestOptions');
     snapshotter('./.snapshot/withRequestOptions/services.ts', './.output/withRequestOptions/services.ts', 'Services with RequestOptions');
+    snapshotter('./.snapshot/joinNamespace/models.ts', './.output/joinNamespace/models.ts', 'Models with JoinNamespace');
+    snapshotter('./.snapshot/truncateNamespace/models.ts', './.output/truncateNamespace/models.ts', 'Models with TruncateNamespace');
 }
 
 async function snapshotter(pathA: string, pathB: string, name: string) {

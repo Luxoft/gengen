@@ -42,9 +42,10 @@ export class FeedbackService extends BaseHttpService {
         super(getBasePath('', '/api/feedback'), http);
     }
 
-    public postFeedback(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<void> {
+    public postFeedback(myProduct.Core.Models.Feedback: $models.IMyProduct.Core.Models.Feedback, options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<void> {
         return this.post<void>(
             ``,
+            myProduct.Core.Models.Feedback,
             options,
         );
     }

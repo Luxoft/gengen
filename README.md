@@ -46,16 +46,18 @@ gengen g --all
 ### Options
 
 | Option                 | Description                                                                                | Type    | Default value                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------ | ------- | ---------------------------------------------- |
+|------------------------|--------------------------------------------------------------------------------------------|---------|------------------------------------------------|
 | **all**                | Generate all                                                                               | boolean | false                                          |
 | **url**                | Location of swagger.json                                                                   | string  | https://localhost:5001/swagger/v1/swagger.json |
 | **file**               | Local path to swagger.json                                                                 | string  |                                                |
 | **output**             | Output directory                                                                           | string  | ./src/generated                                |
 | **configOutput**       | Output directory using in 'Generate a part of API' scenario                                | string  | ./.generated                                   |
 | **aliasName**          | Specify prefix for generated filenames. [more info](#aliasName)                            | string  |                                                |
-| **withRequestOptions** | Allows to pass http request options to generated methods. [more info](#withRequestOptions) | boolean | false                                     |
-| **utilsRelativePath** | Relative path to utils files. It may be useful when you have multiple generation sources | string |                                      |
-| **unstrictId** | Disable converting 'id' properties to strong Guid type. [more info](#unstrictId) | boolean | false                                     |
+| **withRequestOptions** | Allows to pass http request options to generated methods. [more info](#withRequestOptions) | boolean | false                                          |
+| **utilsRelativePath**  | Relative path to utils files. It may be useful when you have multiple generation sources   | string  |                                                |
+| **unstrictId**         | Disable converting 'id' properties to strong Guid type. [more info](#unstrictId)           | boolean | false                                          |
+| **truncateNamespace**  | Generate schema object name with truncating namespace [more info](#fixNamespace)           | boolean | false                                          |
+| **joinNamespace**      | Join schema object name by dot [more info](#fixNamespace)                                  | boolean | false                                          |
 |                        |
 
 ### Option details
@@ -144,8 +146,78 @@ public static fromDTO(dto: IProduct): Product {
 }
 ```
 
+#### fixNamespace
+
+By default, GenGen generates model names with dots if any.
+
+Example:
+
+Object name in `Schemas` definition:
+
+`MyProduct.Core.Models.Product`
+
+Default behavior:
+
+```ts
+export interface IMyProduct.Core.Models.Product {}
+
+export class MyProduct.Core.Models.Product {
+   private __myProduct.Core.Models.Product!: string;
+
+   public static toDTO(model: Partial<MyProduct.Core.Models.Product>): IMyProduct.Core.Models.Product {
+      return {};
+   }
+   
+   public static fromDTO(dto: IMyProduct.Core.Models.Product): MyProduct.Core.Models.Product {
+      const model = new MyProduct.Core.Models.Product();
+      return model;
+   }
+}
+```
+
+You can truncate or join namespace for the model name by using these options:
+
+1. With `truncateNamespace` option enabled:
+
+```ts
+export interface IProduct {}
+
+export class Product {
+    private __product!: string;
+
+    public static toDTO(model: Partial<Product>): IProduct {
+        return {
+        };
+    }
+
+    public static fromDTO(dto: IProduct): Product {
+        const model = new Product();
+        return model;
+    }
+}
+```
+
+2. With `joinNamespace` option enabled:
+
+```ts
+export interface IMyProductCoreModelsProduct {}
+
+export class MyProductCoreModelsProduct {
+   private __myProductCoreModelsProduct!: string;
+
+   public static toDTO(model: Partial<MyProductCoreModelsProduct>): IMyProductCoreModelsProduct {
+      return {};
+   }
+
+   public static fromDTO(dto: IMyProductCoreModelsProduct): MyProductCoreModelsProduct {
+      const model = new MyProductCoreModelsProduct();
+      return model;
+   }
+}
+```
+
 # License and copyright
 
-Copyright (c) 2020-2023 Luxoft
+Copyright (c) 2020-2024 Luxoft
 
 Licensed under the MIT license

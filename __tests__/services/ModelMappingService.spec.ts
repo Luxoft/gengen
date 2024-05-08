@@ -8,11 +8,11 @@ import { first } from '../../src/utils';
 
 describe('ModelMappingService tests', () => {
     let service: ModelMappingService;
+    const guard = new OpenAPITypesGuard();
+    const openAPIService = new MockOpenAPIService(guard);
 
     beforeEach(() => {
-        const guard = new OpenAPITypesGuard();
-        const openAPIService = new MockOpenAPIService(guard);
-        service = new ModelMappingService(openAPIService, guard, new TypesService(guard, defaultOptions));
+        service = new ModelMappingService(openAPIService, guard, new TypesService(guard, defaultOptions), defaultOptions);
     });
 
     describe('toModelsContainer', () => {
@@ -35,6 +35,56 @@ describe('ModelMappingService tests', () => {
                         { key: 'OutOfStock', value: -1 },
                         { key: 'UnderTheOrder', value: 1 }
                     ]
+                });
+            });
+        });
+
+        describe('toObjectModel', () => {
+            test('join namespace', () => {
+                service = service = new ModelMappingService(
+                    openAPIService,
+                    guard,
+                    new TypesService(guard, defaultOptions),
+                    {
+                        ...defaultOptions,
+                        joinNamespace: true,
+                    }
+                );
+
+                const schemas: OpenAPI3SchemaContainer = {
+                    "MyProduct.Core.Models.Product": {
+                        "type": "object",
+                        "properties": {}
+                    }
+                };
+
+                const objectModel = first(service.toModelsContainer(schemas).objects);
+                expect(objectModel).toMatchObject({
+                    name: 'MyProductCoreModelsProduct'
+                });
+            });
+
+            test('truncate namespace', () => {
+                service = service = new ModelMappingService(
+                    openAPIService,
+                    guard,
+                    new TypesService(guard, defaultOptions),
+                    {
+                        ...defaultOptions,
+                        truncateNamespace: true,
+                    }
+                );
+
+                const schemas: OpenAPI3SchemaContainer = {
+                    "MyProduct.Core.Models.Product": {
+                        "type": "object",
+                        "properties": {}
+                    }
+                };
+
+                const objectModel = first(service.toModelsContainer(schemas).objects);
+                expect(objectModel).toMatchObject({
+                    name: 'Product'
                 });
             });
         });
