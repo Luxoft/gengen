@@ -37,6 +37,22 @@ export class CategoryService extends BaseHttpService {
 @Injectable({
     providedIn: 'root'
 })
+export class FeedbackService extends BaseHttpService {
+    constructor(http: HttpClient) {
+        super(getBasePath('', '/api/feedback'), http);
+    }
+
+    public postFeedback(options?: $types.TypeOrUndefined<IAngularHttpRequestOptions>): Observable<void> {
+        return this.post<void>(
+            ``,
+            options,
+        );
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class ProductService extends DownloadFileService {
     constructor(http: HttpClient) {
         super(getBasePath('', '/Product'), http);
