@@ -9,7 +9,7 @@ export interface IOpenAPI3Operation {
     tags?: string[];
     parameters?: IOpenAPI3Parameter[];
     responses: {
-        200: {
+        200?: {
             description?: 'Success';
             content?: {
                 'application/json'?: {
@@ -19,6 +19,9 @@ export interface IOpenAPI3Operation {
                     schema: IOpenAPI3BinarySchema;
                 };
             };
+        };
+        201?: {
+            description?: 'Created';
         };
     };
     requestBody?: {
