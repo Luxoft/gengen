@@ -104,7 +104,7 @@ export class ServiceMappingService {
             name: lowerFirst(actionName),
             operation: method,
             parameters: this.getUriParameters(operation.parameters),
-            returnType: this.getTypeInfo(operation.responses[200].content?.['application/json']?.schema, modelFinder),
+            returnType: this.getTypeInfo(operation.responses[200]?.content?.['application/json']?.schema, modelFinder),
             originUri
         };
 
@@ -224,6 +224,6 @@ export class ServiceMappingService {
     }
 
     private hasDownloadResponse(operation: IOpenAPI3Operation): boolean {
-        return Boolean(operation.responses[200].content?.['application/octet-stream']);
+        return Boolean(operation.responses[200]?.content?.['application/octet-stream']);
     }
 }

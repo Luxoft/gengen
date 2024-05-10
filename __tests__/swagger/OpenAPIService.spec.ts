@@ -177,6 +177,28 @@ describe('OpenAPIService tests', () => {
             expect(service.getSchemasByEndpoints(new Set<string>())).toEqual({});
         });
 
+        test('response with not 200 code', () => {
+            const spec: IOpenAPI3 = {
+                ...defaultSpec,
+                openapi: '3.0.1',
+                paths: {
+                    '/product/test': {
+                        post: {
+                            responses: {
+                                201: {
+                                    description: 'Created'
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            const service = new OpenAPIService(spec, guard);
+            const endpoints = service.getEndpoints();
+            expect(service.getSchemasByEndpoints(new Set<string>(endpoints))).toEqual({});
+        });
+
         test('recursion', () => {
             const spec: IOpenAPI3 = {
                 openapi: '3.0.1',
