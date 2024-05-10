@@ -181,7 +181,7 @@ export class OpenAPIService {
         return [
             ...refs,
             ...this.getRefsFromSchema(operation.requestBody?.content['application/json']?.schema),
-            ...this.getRefsFromSchema(operation.responses[200].content?.['application/json']?.schema)
+            ...this.getRefsFromSchema(operation.responses[200]?.content?.['application/json']?.schema)
         ];
     }
 
