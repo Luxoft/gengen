@@ -12,8 +12,8 @@ import { IIdentityModel } from '../../models/IdentityModel';
 import { InterfaceModel } from '../../models/InterfaceModel';
 import { IOptions } from '../../options';
 import { TO_DTO_METHOD } from '../ModelsGenerator';
-import { PropertiesGenerator } from './PropertiesGenerator';
 import { TypeSerializer } from '../utils/TypeSerializer';
+import { PropertiesGenerator } from './PropertiesGenerator';
 
 export class IdentitiesGenerator {
     private propertiesGenerator = new PropertiesGenerator();

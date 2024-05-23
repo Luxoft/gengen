@@ -22,8 +22,8 @@ export class InterfacesGenerator {
         const baseInterfaceName = `${curr.name}BaseInterface`;
 
         return [
-            this.propertiesGenerator.getExtendedInterfaceTypeAlias(baseInterfaceName, curr),
-            this.propertiesGenerator.getExtendedInterface(baseInterfaceName, curr)
+            this.propertiesGenerator.getExtendedInterface(baseInterfaceName, curr),
+            this.propertiesGenerator.getExtendedInterfaceTypeAlias(baseInterfaceName, curr)
         ];
     }
 

@@ -5,8 +5,8 @@ import { IExtendedObjectModel, IObjectPropertyModel, ObjectModel } from '../../m
 import { NameService } from '../../swagger/nameService';
 import { FROM_DTO_METHOD, TO_DTO_METHOD } from '../ModelsGenerator';
 import { ARRAY_STRING, NULL_STRING, UNDEFINED_STRING } from '../utils/consts';
-import { PropertiesGenerator } from './PropertiesGenerator';
 import { TypeSerializer } from '../utils/TypeSerializer';
+import { PropertiesGenerator } from './PropertiesGenerator';
 
 export class ObjectGenerator {
     private nameService = new NameService();
