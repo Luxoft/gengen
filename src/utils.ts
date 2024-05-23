@@ -19,19 +19,3 @@ export function last<T>(array: T[]): T {
 export function sortBy<T>(fn: (value: T) => string): (a: T, b: T) => number {
     return (a: T, b: T) => (fn(a) || '').localeCompare(fn(b) || '');
 }
-
-export function getInterfaceName(name: string): string {
-    return `I${name}`;
-}
-
-export function getUnionName(name: string): string {
-    return `${name}Union`;
-}
-
-export function getUnionTypesName(name: string): string {
-    return `${name}UnionTypes`;
-}
-
-export function getClassName(name: string): string {
-    return `${name}Class`;
-}

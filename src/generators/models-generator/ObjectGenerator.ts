@@ -2,13 +2,16 @@ import { ClassDeclarationStructure, CodeBlockWriter, PropertyDeclarationStructur
 
 import { PropertyKind } from '../../models/kinds/PropertyKind';
 import { IExtendedObjectModel, IObjectPropertyModel, ObjectModel } from '../../models/ObjectModel';
+import { NameService } from '../../swagger/nameService';
 import { FROM_DTO_METHOD, TO_DTO_METHOD } from '../ModelsGenerator';
 import { ARRAY_STRING, NULL_STRING, UNDEFINED_STRING } from '../utils/consts';
-import { getGuardProperty } from '../utils/propertyDeclaration';
+import { PropertiesGenerator } from './PropertiesGenerator';
 import { TypeSerializer } from '../utils/TypeSerializer';
-import { getClassName } from '../../utils';
 
 export class ObjectGenerator {
+    private nameService = new NameService();
+    private propertiesGenerator = new PropertiesGenerator();
+
     public getObjects(objects: ObjectModel[]): ClassDeclarationStructure[] {
         return objects.map((z) => ({
             kind: StructureKind.Class,
@@ -58,7 +61,7 @@ export class ObjectGenerator {
         return [
             ...this.getObjectCombinedProperties(objectModel, objects),
             ...objectModel.properties.map((objectProperty) => this.getDeclarationStructure(objectProperty)),
-            getGuardProperty(objectModel.name)
+            this.propertiesGenerator.getGuardProperty(objectModel.name)
         ];
     }
 
@@ -120,12 +123,14 @@ export class ObjectGenerator {
 
             case PropertyKind.Union:
                 if (property.isCollection) {
-                    return `${modelProperty} ? ${modelProperty}.map(x => ${getClassName(
+                    return `${modelProperty} ? ${modelProperty}.map(x => ${this.nameService.getClassName(
                         property.type
                     )}.${TO_DTO_METHOD}(x)) : ${UNDEFINED_STRING}`;
                 }
 
-                return `${modelProperty} ? ${getClassName(property.type)}.${TO_DTO_METHOD}(${modelProperty}) : ${UNDEFINED_STRING}`;
+                return `${modelProperty} ? ${this.nameService.getClassName(
+                    property.type
+                )}.${TO_DTO_METHOD}(${modelProperty}) : ${UNDEFINED_STRING}`;
 
             case PropertyKind.Object:
                 if (property.isCollection) {
@@ -169,12 +174,14 @@ export class ObjectGenerator {
 
             case PropertyKind.Union:
                 if (property.isCollection) {
-                    return `${dtoProperty} ? ${dtoProperty}.map(x => ${getClassName(
+                    return `${dtoProperty} ? ${dtoProperty}.map(x => ${this.nameService.getClassName(
                         property.type
                     )}.${FROM_DTO_METHOD}(x)) : ${ARRAY_STRING}`;
                 }
 
-                return `${dtoProperty} ? ${getClassName(property.type)}.${FROM_DTO_METHOD}(${dtoProperty}) : ${UNDEFINED_STRING}`;
+                return `${dtoProperty} ? ${this.nameService.getClassName(
+                    property.type
+                )}.${FROM_DTO_METHOD}(${dtoProperty}) : ${UNDEFINED_STRING}`;
 
             case PropertyKind.Object:
                 if (property.isCollection) {

@@ -12,10 +12,12 @@ import { IIdentityModel } from '../../models/IdentityModel';
 import { InterfaceModel } from '../../models/InterfaceModel';
 import { IOptions } from '../../options';
 import { TO_DTO_METHOD } from '../ModelsGenerator';
-import { getGuardProperty } from '../utils/propertyDeclaration';
+import { PropertiesGenerator } from './PropertiesGenerator';
 import { TypeSerializer } from '../utils/TypeSerializer';
 
 export class IdentitiesGenerator {
+    private propertiesGenerator = new PropertiesGenerator();
+
     constructor(private settings: IOptions) {}
     public getIdentities(identities: IIdentityModel[], interfaces: InterfaceModel[]): StatementStructures[] {
         return identities.map(
@@ -41,7 +43,7 @@ export class IdentitiesGenerator {
                             : `this.${z.property.name} = new ${z.property.type}(${z.property.name});`
                     }
                 ] as OptionalKind<ConstructorDeclarationStructure>[],
-                properties: [{ scope: Scope.Public, name: z.property.name, type: z.property.type }, getGuardProperty(z.name)],
+                properties: [this.propertiesGenerator.getObjectProperty(z.property), this.propertiesGenerator.getGuardProperty(z.name)],
                 methods: [
                     {
                         scope: Scope.Public,

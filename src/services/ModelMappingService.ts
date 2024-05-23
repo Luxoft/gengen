@@ -5,6 +5,7 @@ import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IExtendedObjectModel, IObjectModel, IObjectPropertyModel, ObjectModel } from '../models/ObjectModel';
 import { IUnionModel } from '../models/UnionModel';
+import { NameService } from '../swagger/nameService';
 import { OpenAPIService } from '../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
@@ -14,7 +15,7 @@ import { IOpenAPI3EnumSchema } from '../swagger/v3/schemas/enum-schema';
 import { IOpenAPI3GuidSchema } from '../swagger/v3/schemas/guid-schema';
 import { IOpenAPI3ObjectSchema } from '../swagger/v3/schemas/object-schema';
 import { OpenAPI3Schema, OpenAPI3SchemaContainer, OpenAPI3SimpleSchema } from '../swagger/v3/schemas/schema';
-import { first, getInterfaceName, getUnionName, getUnionTypesName, sortBy } from '../utils';
+import { first, sortBy } from '../utils';
 import { TypesService } from './TypesService';
 
 const IGNORE_PROPERTIES = ['startRow', 'rowCount'];
@@ -22,6 +23,7 @@ const IGNORE_PROPERTIES = ['startRow', 'rowCount'];
 export class ModelMappingService {
     public additionalEnums: IEnumModel[] = [];
     public unions: IUnionModel[] = [];
+    private nameService = new NameService();
 
     constructor(
         private readonly openAPIService: OpenAPIService,
@@ -45,7 +47,7 @@ export class ModelMappingService {
                     identities.push({
                         name,
                         isNullable: false,
-                        dtoType: getInterfaceName(name),
+                        dtoType: this.nameService.getInterfaceName(name),
                         property: {
                             ...this.typesService.getSimpleType(schema.properties['id'] as IOpenAPI3GuidSchema),
                             isCollection: false,
@@ -90,7 +92,7 @@ export class ModelMappingService {
         const model: IExtendedObjectModel = {
             name,
             isNullable: schema.nullable ?? false,
-            dtoType: getInterfaceName(name),
+            dtoType: this.nameService.getInterfaceName(name),
             properties: [],
             extendingTypes: []
         };
@@ -113,7 +115,7 @@ export class ModelMappingService {
         const model: IObjectModel = {
             name,
             isNullable: schema.nullable ?? false,
-            dtoType: getInterfaceName(name),
+            dtoType: this.nameService.getInterfaceName(name),
             properties: []
         };
         this.addUnionTypesByDiscriminator(model.name, schema);
@@ -192,7 +194,7 @@ export class ModelMappingService {
         this.unions.push(unionModel);
 
         this.additionalEnums.push({
-            name: getUnionTypesName(modelName),
+            name: this.nameService.getUnionTypesName(modelName),
             isNullable: false,
             items: Object.keys(schema.discriminator.mapping).map((key) => {
                 const value = schema.discriminator!.mapping[key];
@@ -222,8 +224,8 @@ export class ModelMappingService {
             isCollection: false,
             name: name,
             isNullable: false,
-            type: getUnionName(schemaKey),
-            dtoType: getInterfaceName(getUnionName(schemaKey))
+            type: this.nameService.getUnionName(schemaKey),
+            dtoType: this.nameService.getInterfaceName(this.nameService.getUnionName(schemaKey))
         };
     }
 
@@ -250,13 +252,13 @@ export class ModelMappingService {
             name,
             isNullable: true,
             type: schemaKey,
-            dtoType: getInterfaceName(schemaKey)
+            dtoType: this.nameService.getInterfaceName(schemaKey)
         };
     }
 
     private getInterfaces(identities: IIdentityModel[], objects: ObjectModel[]): InterfaceModel[] {
         const interfaces: IInterfaceModel[] = identities.map((z) => ({
-            name: getInterfaceName(z.name),
+            name: this.nameService.getInterfaceName(z.name),
             properties: [{ name: z.property.name, dtoType: z.property.dtoType, isCollection: false, isNullable: false }]
         }));
 
@@ -264,8 +266,8 @@ export class ModelMappingService {
             objects.map((z) => {
                 if (this.isExtendedObjectModel(z)) {
                     return {
-                        name: getInterfaceName(z.name),
-                        extendingInterfaces: z.extendingTypes.map((x) => getInterfaceName(x)),
+                        name: this.nameService.getInterfaceName(z.name),
+                        extendingInterfaces: z.extendingTypes.map((x) => this.nameService.getInterfaceName(x)),
                         properties: z.properties.map((x) => ({
                             name: x.name,
                             dtoType: x.dtoType,
@@ -275,7 +277,7 @@ export class ModelMappingService {
                     };
                 } else {
                     return {
-                        name: getInterfaceName(z.name),
+                        name: this.nameService.getInterfaceName(z.name),
                         properties: z.properties.map((x) => ({
                             name: x.name,
                             dtoType: x.dtoType,
