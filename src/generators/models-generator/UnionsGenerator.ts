@@ -1,11 +1,12 @@
 import { ClassDeclarationStructure, CodeBlockWriter, Scope, StructureKind } from 'ts-morph';
 
 import { IUnionModel } from '../../models/UnionModel';
-import { NameService } from '../../swagger/nameService';
+import { NameService } from '../../services/NameService';
 import { FROM_DTO_METHOD, TO_DTO_METHOD } from '../ModelsGenerator';
 
 export class UnionGenerator {
-    private nameService = new NameService();
+    constructor(private readonly nameService: NameService) {}
+
     public getUnionObjects(objects: IUnionModel[]): ClassDeclarationStructure[] {
         return objects.map((z) => ({
             kind: StructureKind.Class,

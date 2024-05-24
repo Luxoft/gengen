@@ -7,7 +7,7 @@ import { PropertiesGenerator } from './PropertiesGenerator';
 type InterfacesStructures = InterfaceDeclarationStructure | TypeAliasDeclarationStructure;
 
 export class InterfacesGenerator {
-    private propertiesGenerator = new PropertiesGenerator();
+    constructor(private readonly propertiesGenerator: PropertiesGenerator) {}
 
     public getCodeStructure(interfaces: InterfaceModel[], unions: IUnionModel[]): InterfacesStructures[] {
         const unionStructures = unions.flatMap((curr) => this.propertiesGenerator.getUnionTypeAliases(curr));

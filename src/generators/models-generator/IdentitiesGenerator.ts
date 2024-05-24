@@ -16,9 +16,11 @@ import { TypeSerializer } from '../utils/TypeSerializer';
 import { PropertiesGenerator } from './PropertiesGenerator';
 
 export class IdentitiesGenerator {
-    private propertiesGenerator = new PropertiesGenerator();
+    constructor(
+        private readonly propertiesGenerator: PropertiesGenerator,
+        private readonly settings: IOptions
+    ) {}
 
-    constructor(private settings: IOptions) {}
     public getIdentities(identities: IIdentityModel[], interfaces: InterfaceModel[]): StatementStructures[] {
         return identities.map(
             (z): ClassDeclarationStructure => ({

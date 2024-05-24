@@ -5,7 +5,7 @@ import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
 import { IExtendedObjectModel, IObjectModel, IObjectPropertyModel, ObjectModel } from '../models/ObjectModel';
 import { IUnionModel } from '../models/UnionModel';
-import { NameService } from '../swagger/nameService';
+import { NameService } from './NameService';
 import { OpenAPIService } from '../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
@@ -23,12 +23,12 @@ const IGNORE_PROPERTIES = ['startRow', 'rowCount'];
 export class ModelMappingService {
     public additionalEnums: IEnumModel[] = [];
     public unions: IUnionModel[] = [];
-    private nameService = new NameService();
 
     constructor(
         private readonly openAPIService: OpenAPIService,
         private readonly typesGuard: OpenAPITypesGuard,
-        private readonly typesService: TypesService
+        private readonly typesService: TypesService,
+        private readonly nameService: NameService
     ) {}
 
     public toModelsContainer(schemas: OpenAPI3SchemaContainer): IModelsContainer {

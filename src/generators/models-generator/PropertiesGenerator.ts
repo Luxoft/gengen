@@ -11,13 +11,12 @@ import {
 import { IExtendedInterfaceModel, IInterfaceModel, IInterfacePropertyModel } from '../../models/InterfaceModel';
 import { IObjectPropertyModel } from '../../models/ObjectModel';
 import { IUnionModel } from '../../models/UnionModel';
-import { NameService } from '../../swagger/nameService';
+import { NameService } from '../../services/NameService';
 import { lowerFirst } from '../../utils';
 import { TypeSerializer } from '../utils/TypeSerializer';
 
 export class PropertiesGenerator {
-    private nameService = new NameService();
-
+    constructor(private readonly nameService: NameService) {}
     public getGuardProperty(name: string): PropertyDeclarationStructure {
         return {
             kind: StructureKind.Property,

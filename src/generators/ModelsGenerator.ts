@@ -14,14 +14,15 @@ export const TO_DTO_METHOD = 'toDTO';
 export const FROM_DTO_METHOD = 'fromDTO';
 
 export class ModelsGenerator {
-    private interfaceGenerator = new InterfacesGenerator();
-    private unionGenerator = new UnionGenerator();
-    private identitiesGenerator = new IdentitiesGenerator(this.settings);
-    private objectGenerator = new ObjectGenerator();
-
     private pathBuilder = new PathBuilder();
 
-    constructor(private settings: IOptions) {}
+    constructor(
+        private settings: IOptions,
+        private readonly interfaceGenerator: InterfacesGenerator,
+        private readonly unionGenerator: UnionGenerator,
+        private readonly identitiesGenerator: IdentitiesGenerator,
+        private readonly objectGenerator: ObjectGenerator
+    ) {}
 
     public getModelsCodeStructure(models: IModelsContainer): StatementStructures[] {
         return [

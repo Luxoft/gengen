@@ -16,6 +16,12 @@ import { UriBuilder } from '../services/UriBuilder';
 import { OpenAPIService } from '../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3 } from '../swagger/v3/open-api';
+import { NameService } from '../services/NameService';
+import { InterfacesGenerator } from '../generators/models-generator/InterfacesGenerator';
+import { UnionGenerator } from '../generators/models-generator/UnionsGenerator';
+import { IdentitiesGenerator } from '../generators/models-generator/IdentitiesGenerator';
+import { ObjectGenerator } from '../generators/models-generator/ObjectGenerator';
+import { PropertiesGenerator } from '../generators/models-generator/PropertiesGenerator';
 
 export abstract class EndpointsToken {
     public abstract getEndpoints(): Promise<Set<string>> | Set<string>;
@@ -61,7 +67,17 @@ export class GenGenCodeGenInjector {
             )
             .provide(OpenAPITypesGuard)
             .provide(EndpointNameResolver)
-            .provide(ModelsGenerator, () => new ModelsGenerator(this.options))
+            .provide(
+                ModelsGenerator,
+                (x) =>
+                    new ModelsGenerator(
+                        this.options,
+                        x.get(InterfacesGenerator),
+                        x.get(UnionGenerator),
+                        x.get(IdentitiesGenerator),
+                        x.get(ObjectGenerator)
+                    )
+            )
             .provide(UriBuilder)
             .provide(ServicesMethodGeneratorToken, (x) => new AngularServicesMethodGenerator(x.get(UriBuilder)))
             .provide(AliasResolver, () => new AliasResolver(this.options))
@@ -85,10 +101,20 @@ export class GenGenCodeGenInjector {
             )
             .provide(
                 ModelMappingService,
-                (x) => new ModelMappingService(x.get(OpenAPIService), x.get(OpenAPITypesGuard), x.get(TypesService))
+                (x) => new ModelMappingService(x.get(OpenAPIService), x.get(OpenAPITypesGuard), x.get(TypesService), x.get(NameService))
             )
             .provide(TypesService, (x) => new TypesService(x.get(OpenAPITypesGuard), this.options))
             .provide(OpenAPIService, (x) => new OpenAPIService(this.spec, x.get(OpenAPITypesGuard)))
+
+            .provide(InterfacesGenerator, (x) => new InterfacesGenerator(x.get(PropertiesGenerator)))
+            .provide(ObjectGenerator, (x) => new ObjectGenerator(x.get(NameService), x.get(PropertiesGenerator)))
+            .provide(UnionGenerator, (x) => new UnionGenerator(x.get(NameService)))
+            .provide(IdentitiesGenerator, (x) => new IdentitiesGenerator(x.get(PropertiesGenerator), this.options))
+            .provide(PropertiesGenerator, (x) => new PropertiesGenerator(x.get(NameService)))
+            .provide(NameService)
     );
-    constructor(private options: IOptions, private spec: IOpenAPI3) {}
+    constructor(
+        private options: IOptions,
+        private spec: IOpenAPI3
+    ) {}
 }

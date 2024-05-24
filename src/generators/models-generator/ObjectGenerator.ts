@@ -2,15 +2,17 @@ import { ClassDeclarationStructure, CodeBlockWriter, PropertyDeclarationStructur
 
 import { PropertyKind } from '../../models/kinds/PropertyKind';
 import { IExtendedObjectModel, IObjectPropertyModel, ObjectModel } from '../../models/ObjectModel';
-import { NameService } from '../../swagger/nameService';
+import { NameService } from '../../services/NameService';
 import { FROM_DTO_METHOD, TO_DTO_METHOD } from '../ModelsGenerator';
 import { ARRAY_STRING, NULL_STRING, UNDEFINED_STRING } from '../utils/consts';
 import { TypeSerializer } from '../utils/TypeSerializer';
 import { PropertiesGenerator } from './PropertiesGenerator';
 
 export class ObjectGenerator {
-    private nameService = new NameService();
-    private propertiesGenerator = new PropertiesGenerator();
+    constructor(
+        private readonly nameService: NameService,
+        private readonly propertiesGenerator: PropertiesGenerator
+    ) {}
 
     public getObjects(objects: ObjectModel[]): ClassDeclarationStructure[] {
         return objects.map((z) => ({
