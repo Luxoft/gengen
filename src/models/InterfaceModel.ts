@@ -9,3 +9,9 @@ export interface IInterfaceModel {
     name: string;
     properties: IInterfacePropertyModel[];
 }
+
+export interface IExtendedInterfaceModel extends IInterfaceModel {
+    extendingInterfaces: string[];
+}
+
+export type InterfaceModel = IInterfaceModel | IExtendedInterfaceModel;

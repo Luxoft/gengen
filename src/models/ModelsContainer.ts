@@ -1,11 +1,13 @@
 import { IEnumModel } from './EnumModel';
 import { IIdentityModel } from './IdentityModel';
-import { IInterfaceModel } from './InterfaceModel';
-import { IObjectModel } from './ObjectModel';
+import { InterfaceModel } from './InterfaceModel';
+import { ObjectModel } from './ObjectModel';
+import { IUnionModel } from './UnionModel';
 
 export interface IModelsContainer {
     enums: IEnumModel[];
-    interfaces: IInterfaceModel[];
+    interfaces: InterfaceModel[];
+    unions: IUnionModel[];
     identities: IIdentityModel[];
-    objects: IObjectModel[];
+    objects: ObjectModel[];
 }

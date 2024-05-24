@@ -1,25 +1,33 @@
-import { InterfaceDeclarationStructure, OptionalKind, PropertySignatureStructure, StructureKind } from 'ts-morph';
-import { IInterfaceModel, IInterfacePropertyModel } from '../../models/InterfaceModel';
-import { TypeSerializer } from '../utils/TypeSerializer';
+import { InterfaceDeclarationStructure, TypeAliasDeclarationStructure } from 'ts-morph';
+
+import { IExtendedInterfaceModel, InterfaceModel } from '../../models/InterfaceModel';
+import { IUnionModel } from '../../models/UnionModel';
+import { PropertiesGenerator } from './PropertiesGenerator';
+
+type InterfacesStructures = InterfaceDeclarationStructure | TypeAliasDeclarationStructure;
 
 export class InterfacesGenerator {
-    public getCodeStructure(interfaces: IInterfaceModel[]): InterfaceDeclarationStructure[] {
-        return interfaces.map((z) => ({
-            kind: StructureKind.Interface,
-            name: z.name,
-            isExported: true,
-            properties: z.properties.map((x) => this.getInterfaceProperty(x))
-        }));
+    constructor(private readonly propertiesGenerator: PropertiesGenerator) {}
+
+    public getCodeStructure(interfaces: InterfaceModel[], unions: IUnionModel[]): InterfacesStructures[] {
+        const unionStructures = unions.flatMap((curr) => this.propertiesGenerator.getUnionTypeAliases(curr));
+        const interfaceStructures = interfaces.flatMap((curr) =>
+            this.isIExtendedInterfaceModel(curr) ? this.generateExtendedInterface(curr) : this.propertiesGenerator.getInterface(curr)
+        );
+
+        return [...unionStructures, ...interfaceStructures];
     }
 
-    protected getInterfaceProperty(model: IInterfacePropertyModel): OptionalKind<PropertySignatureStructure> {
-        return {
-            name: model.name,
-            type: this.getInterfacePropertyType(model)
-        };
+    private generateExtendedInterface(curr: IExtendedInterfaceModel): InterfacesStructures[] {
+        const baseInterfaceName = `${curr.name}BaseInterface`;
+
+        return [
+            this.propertiesGenerator.getExtendedInterface(baseInterfaceName, curr),
+            this.propertiesGenerator.getExtendedInterfaceTypeAlias(baseInterfaceName, curr)
+        ];
     }
 
-    protected getInterfacePropertyType(model: IInterfacePropertyModel): string {
-        return TypeSerializer.fromInterfaceProperty(model).toString();
+    private isIExtendedInterfaceModel(objects: InterfaceModel): objects is IExtendedInterfaceModel {
+        return Boolean((objects as IExtendedInterfaceModel)?.extendingInterfaces);
     }
 }

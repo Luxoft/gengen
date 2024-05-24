@@ -4,5 +4,6 @@ export enum PropertyKind {
     Guid,
     Object,
     Enum,
-    Identity
+    Identity,
+    Union
 }

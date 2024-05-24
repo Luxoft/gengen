@@ -12,3 +12,9 @@ export interface IObjectModel {
     isNullable: boolean;
     properties: IObjectPropertyModel[];
 }
+
+export interface IExtendedObjectModel extends IObjectModel {
+    extendingTypes: string[];
+}
+
+export type ObjectModel = IObjectModel | IExtendedObjectModel;

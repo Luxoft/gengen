@@ -1,12 +1,16 @@
 import { IEnumModel } from '../models/EnumModel';
 import { IIdentityModel } from '../models/IdentityModel';
-import { IInterfaceModel } from '../models/InterfaceModel';
+import { IInterfaceModel, InterfaceModel } from '../models/InterfaceModel';
 import { PropertyKind } from '../models/kinds/PropertyKind';
 import { IModelsContainer } from '../models/ModelsContainer';
-import { IObjectModel, IObjectPropertyModel } from '../models/ObjectModel';
+import { IExtendedObjectModel, IObjectModel, IObjectPropertyModel, ObjectModel } from '../models/ObjectModel';
+import { IUnionModel } from '../models/UnionModel';
+import { NameService } from './NameService';
 import { OpenAPIService } from '../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Reference } from '../swagger/v3/reference';
+import { IOpenAPI3AllOfSchema } from '../swagger/v3/schemas/all-of-schema';
+import { IOpenAPI3DiscriminatorSchema } from '../swagger/v3/schemas/discriminator-schema';
 import { IOpenAPI3EnumSchema } from '../swagger/v3/schemas/enum-schema';
 import { IOpenAPI3GuidSchema } from '../swagger/v3/schemas/guid-schema';
 import { IOpenAPI3ObjectSchema } from '../swagger/v3/schemas/object-schema';
@@ -17,16 +21,20 @@ import { TypesService } from './TypesService';
 const IGNORE_PROPERTIES = ['startRow', 'rowCount'];
 
 export class ModelMappingService {
+    public additionalEnums: IEnumModel[] = [];
+    public unions: IUnionModel[] = [];
+
     constructor(
         private readonly openAPIService: OpenAPIService,
         private readonly typesGuard: OpenAPITypesGuard,
-        private readonly typesService: TypesService
+        private readonly typesService: TypesService,
+        private readonly nameService: NameService
     ) {}
 
     public toModelsContainer(schemas: OpenAPI3SchemaContainer): IModelsContainer {
+        const objects: ObjectModel[] = [];
         const enums: IEnumModel[] = [];
         const identities: IIdentityModel[] = [];
-        const objects: IObjectModel[] = [];
 
         Object.entries(schemas).forEach(([name, schema]) => {
             if (this.typesGuard.isEnum(schema)) {
@@ -39,7 +47,7 @@ export class ModelMappingService {
                     identities.push({
                         name,
                         isNullable: false,
-                        dtoType: this.getInterfaceName(name),
+                        dtoType: this.nameService.getInterfaceName(name),
                         property: {
                             ...this.typesService.getSimpleType(schema.properties['id'] as IOpenAPI3GuidSchema),
                             isCollection: false,
@@ -47,6 +55,8 @@ export class ModelMappingService {
                             isNullable: true
                         }
                     });
+                } else if (this.typesGuard.isAllOf(schema)) {
+                    objects.push(this.toExtendedObjectModel(name, schema));
                 } else {
                     objects.push(this.toObjectModel(name, schema));
                 }
@@ -54,8 +64,9 @@ export class ModelMappingService {
         });
 
         return {
-            enums: enums.sort(sortBy((z) => z.name)),
+            enums: [...this.additionalEnums, ...enums].sort(sortBy((z) => z.name)),
             identities: identities.sort(sortBy((z) => z.name)),
+            unions: this.unions.sort(sortBy((z) => z.name)),
             interfaces: this.getInterfaces(identities, objects).sort(sortBy((z) => z.name)),
             objects: objects.sort(sortBy((z) => z.name))
         };
@@ -74,18 +85,53 @@ export class ModelMappingService {
         };
     }
 
-    private toObjectModel(name: string, schema: IOpenAPI3ObjectSchema): IObjectModel {
-        const model: IObjectModel = { name, isNullable: schema.nullable ?? false, dtoType: this.getInterfaceName(name), properties: [] };
-        if (!schema.properties) {
-            return model;
-        }
+    private toExtendedObjectModel(
+        name: string,
+        schema: IOpenAPI3AllOfSchema & (IOpenAPI3ObjectSchema | IOpenAPI3DiscriminatorSchema)
+    ): IExtendedObjectModel {
+        const model: IExtendedObjectModel = {
+            name,
+            isNullable: schema.nullable ?? false,
+            dtoType: this.nameService.getInterfaceName(name),
+            properties: [],
+            extendingTypes: []
+        };
 
+        schema.allOf.forEach((x) => {
+            const refSchema = this.openAPIService.getRefSchema(x);
+            const schemaKey = this.openAPIService.getSchemaKey(x);
+            if (this.typesGuard.isObject(refSchema)) {
+                model.extendingTypes = [...model.extendingTypes, schemaKey];
+            }
+        });
+
+        this.addUnionTypesByDiscriminator(model.name, schema);
+        this.addProperties(model, schema);
+
+        return model;
+    }
+
+    private toObjectModel(name: string, schema: IOpenAPI3ObjectSchema | IOpenAPI3DiscriminatorSchema): IObjectModel {
+        const model: IObjectModel = {
+            name,
+            isNullable: schema.nullable ?? false,
+            dtoType: this.nameService.getInterfaceName(name),
+            properties: []
+        };
+        this.addUnionTypesByDiscriminator(model.name, schema);
+        this.addProperties(model, schema);
+        return model;
+    }
+
+    private addProperties<T extends ObjectModel>(model: T, schema: IOpenAPI3ObjectSchema): void {
+        if (!schema.properties) {
+            return;
+        }
         Object.entries(schema.properties)
             .filter(([name]) => !IGNORE_PROPERTIES.includes(name))
             .forEach(([name, propertySchema]) => this.addProperty(model, name, propertySchema));
 
         model.properties = model.properties.sort(sortBy((z) => z.name));
-        return model;
     }
 
     private addProperty(model: IObjectModel, name: string, schema: OpenAPI3Schema): void {
@@ -101,6 +147,9 @@ export class ModelMappingService {
             } else if (this.typesGuard.isReference(schema.items)) {
                 property = this.getReferenceProperty(name, schema.items);
             }
+            if (this.typesGuard.isOneOf(schema.items)) {
+                property = this.getUnionReferenceProperty(name, first(schema.items.oneOf));
+            }
 
             if (property) {
                 property.isCollection = true;
@@ -113,6 +162,8 @@ export class ModelMappingService {
             property = this.getReferenceProperty(name, schema);
         } else if (this.typesGuard.isAllOf(schema)) {
             property = this.getReferenceProperty(name, first(schema.allOf));
+        } else if (this.typesGuard.isOneOf(schema)) {
+            property = this.getUnionReferenceProperty(name, first(schema.oneOf));
         }
 
         if (property) {
@@ -121,12 +172,60 @@ export class ModelMappingService {
         }
     }
 
+    private addUnionTypesByDiscriminator(modelName: string, schema: IOpenAPI3ObjectSchema | IOpenAPI3DiscriminatorSchema): void {
+        if (!this.typesGuard.isDiscriminator(schema)) {
+            return;
+        }
+
+        const unionModel: IUnionModel = {
+            name: modelName,
+            unionInterfaces: []
+        };
+
+        Object.keys(schema.discriminator.mapping).forEach((key) => {
+            const value = schema.discriminator!.mapping[key];
+            const refSchema = this.openAPIService.getRefSchema({ $ref: value });
+            const schemaKey = this.openAPIService.getSchemaKey({ $ref: value });
+            if (this.typesGuard.isObject(refSchema)) {
+                unionModel.unionInterfaces.push(schemaKey);
+            }
+        });
+
+        this.unions.push(unionModel);
+
+        this.additionalEnums.push({
+            name: this.nameService.getUnionTypesName(modelName),
+            isNullable: false,
+            items: Object.keys(schema.discriminator.mapping).map((key) => {
+                const value = schema.discriminator!.mapping[key];
+                const schemaKey = this.openAPIService.getSchemaKey({ $ref: value });
+                return {
+                    key: schemaKey,
+                    value: key
+                };
+            })
+        });
+    }
+
     private getSimpleProperty(name: string, schema: OpenAPI3SimpleSchema): IObjectPropertyModel {
         return {
             ...this.typesService.getSimpleType(schema),
             name,
             isCollection: false,
             isNullable: Boolean(schema.nullable)
+        };
+    }
+
+    private getUnionReferenceProperty(name: string, schema: IOpenAPI3Reference): IObjectPropertyModel {
+        const schemaKey = this.openAPIService.getSchemaKey(schema);
+
+        return {
+            kind: PropertyKind.Union,
+            isCollection: false,
+            name: name,
+            isNullable: false,
+            type: this.nameService.getUnionName(schemaKey),
+            dtoType: this.nameService.getInterfaceName(this.nameService.getUnionName(schemaKey))
         };
     }
 
@@ -153,31 +252,46 @@ export class ModelMappingService {
             name,
             isNullable: true,
             type: schemaKey,
-            dtoType: this.getInterfaceName(schemaKey)
+            dtoType: this.nameService.getInterfaceName(schemaKey)
         };
     }
 
-    private getInterfaces(identities: IIdentityModel[], objects: IObjectModel[]): IInterfaceModel[] {
+    private getInterfaces(identities: IIdentityModel[], objects: ObjectModel[]): InterfaceModel[] {
         const interfaces: IInterfaceModel[] = identities.map((z) => ({
-            name: this.getInterfaceName(z.name),
+            name: this.nameService.getInterfaceName(z.name),
             properties: [{ name: z.property.name, dtoType: z.property.dtoType, isCollection: false, isNullable: false }]
         }));
 
         return interfaces.concat(
-            objects.map((z) => ({
-                name: this.getInterfaceName(z.name),
-                properties: z.properties.map((x) => ({
-                    name: x.name,
-                    dtoType: x.dtoType,
-                    isCollection: x.isCollection,
-                    isNullable: x.isNullable
-                }))
-            }))
+            objects.map((z) => {
+                if (this.isExtendedObjectModel(z)) {
+                    return {
+                        name: this.nameService.getInterfaceName(z.name),
+                        extendingInterfaces: z.extendingTypes.map((x) => this.nameService.getInterfaceName(x)),
+                        properties: z.properties.map((x) => ({
+                            name: x.name,
+                            dtoType: x.dtoType,
+                            isCollection: x.isCollection,
+                            isNullable: x.isNullable
+                        }))
+                    };
+                } else {
+                    return {
+                        name: this.nameService.getInterfaceName(z.name),
+                        properties: z.properties.map((x) => ({
+                            name: x.name,
+                            dtoType: x.dtoType,
+                            isCollection: x.isCollection,
+                            isNullable: x.isNullable
+                        }))
+                    };
+                }
+            })
         );
     }
 
-    private getInterfaceName(name: string): string {
-        return `I${name}`;
+    private isExtendedObjectModel(objects: ObjectModel): objects is IExtendedObjectModel {
+        return Boolean((objects as IExtendedObjectModel)?.extendingTypes);
     }
 
     private isIdentity(schema: IOpenAPI3ObjectSchema | undefined): boolean {
