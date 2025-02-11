@@ -65,6 +65,7 @@ export class AngularServicesMethodGenerator {
             case ParameterPlace.Query:
                 statement.type = this.getFullTypeName({
                     type: parameter.dtoType,
+                    isCollection: parameter.isCollection,
                     isModel: parameter.isModel,
                     isOptional: parameter.optional
                 });

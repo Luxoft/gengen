@@ -3,6 +3,7 @@ import { OpenAPIService } from '../../swagger/OpenAPIService';
 import { OpenAPITypesGuard } from '../../swagger/OpenAPITypesGuard';
 import { IOpenAPI3Parameter } from '../../swagger/v3/parameter';
 import { IOpenAPI3Reference } from '../../swagger/v3/reference';
+import { IOpenAPI3ArraySchema } from '../../swagger/v3/schemas/array-schema';
 import { OpenAPI3SimpleSchema } from '../../swagger/v3/schemas/schema';
 import { lowerFirst } from '../../utils';
 import { ParameterPlace } from '../kinds/ParameterPlace';
@@ -12,6 +13,7 @@ export abstract class MethodParameterModelBase implements IParameter {
     public name: string;
     public dtoType!: string;
     public isModel!: boolean;
+    public isCollection: boolean = false;
     public abstract place: ParameterPlace;
 
     constructor(
@@ -34,6 +36,11 @@ export abstract class MethodParameterModelBase implements IParameter {
             return;
         }
 
+        if (this.typesGuard.isCollection(this.model.schema)) {
+            this.setupCollection(this.model.schema);
+            return;
+        }
+
         if (this.typesGuard.isEnum(this.openAPIService.getRefSchema(this.model.schema))) {
             this.setupRef(this.model.schema);
             return;
@@ -45,6 +52,12 @@ export abstract class MethodParameterModelBase implements IParameter {
     private setupRef(schema: IOpenAPI3Reference): void {
         this.dtoType = this.openAPIService.getSchemaKey(schema);
         this.isModel = true;
+    }
+
+    private setupCollection(schema: IOpenAPI3ArraySchema): void {
+        this.dtoType = this.typesService.getSimpleType(schema.items as OpenAPI3SimpleSchema).dtoType;
+        this.isModel = false;
+        this.isCollection = true;
     }
 
     private setupSimple(schema: OpenAPI3SimpleSchema): void {

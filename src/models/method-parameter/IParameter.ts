@@ -5,4 +5,5 @@ export interface IParameter {
     dtoType: string;
     place: ParameterPlace;
     isModel: boolean;
+    isCollection: boolean;
 }

@@ -16,7 +16,10 @@ export class UriBuilder {
     }
 
     private getQueryParams(params: IParameter[]): string {
-        const pairs = params.filter((z) => z.place === ParameterPlace.Query).map((z) => `${z.name}=\${encodeURIComponent(${z.name})}`);
+        const pairs = params.filter((z) => z.place === ParameterPlace.Query)
+            .map((z) => z.isCollection ?
+                `\${(${z.name}.map(x=> \`${z.name}=\${encodeURIComponent(x)}\`).join('&'))}` :
+                `${z.name}=\${encodeURIComponent(${z.name})}`);
 
         if (!pairs.length) {
             return '';

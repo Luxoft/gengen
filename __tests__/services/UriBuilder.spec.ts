@@ -22,7 +22,8 @@ describe('UriBuilder tests', () => {
                             dtoType: 'string',
                             name: 'id',
                             place: ParameterPlace.Path,
-                            isModel: false
+                            isModel: false,
+                            isCollection: false,
                         }
                     ],
                     returnType: {
@@ -59,7 +60,8 @@ describe('UriBuilder tests', () => {
                             name: 'name',
                             optional: false,
                             place: ParameterPlace.Query,
-                            isModel: false
+                            isModel: false,
+                            isCollection: false,
                         }
                     ],
                     returnType: {
@@ -84,6 +86,45 @@ describe('UriBuilder tests', () => {
                 expect(result).toEqual(expected);
             });
 
+
+            test('method with array query param', () => {
+                // Arrange
+                const model: IMethodModel = {
+                    kind: MethodKind.Default,
+                    name: 'get',
+                    operation: MethodOperation.GET,
+                    parameters: [
+                        {
+                            dtoType: 'string',
+                            name: 'name',
+                            optional: false,
+                            place: ParameterPlace.Query,
+                            isModel: false,
+                            isCollection: true,
+                        }
+                    ],
+                    returnType: {
+                        isCollection: false,
+                        isModel: true,
+                        type: {
+                            dtoType: 'IProduct',
+                            kind: PropertyKind.Object,
+                            type: 'Product',
+                            isNullable: true
+                        }
+                    },
+                    originUri: 'get'
+                };
+
+                const expected = '`get?${(name.map(x=> `name=${encodeURIComponent(x)}`).join(\'&\'))}`';
+
+                // Act
+                const result = uriBuilder.buildUri(model);
+
+                // Assert
+                expect(result).toEqual(expected);
+            });
+
             test('method with one path and one query params', () => {
                 // Arrange
                 const model: IMethodModel = {
@@ -95,14 +136,16 @@ describe('UriBuilder tests', () => {
                             dtoType: 'string',
                             name: 'id',
                             place: ParameterPlace.Path,
-                            isModel: false
+                            isModel: false,
+                            isCollection: false,
                         },
                         {
                             dtoType: 'string',
                             name: 'name',
                             optional: false,
                             place: ParameterPlace.Query,
-                            isModel: false
+                            isModel: false,
+                            isCollection: false,
                         }
                     ],
                     returnType: {
@@ -138,20 +181,23 @@ describe('UriBuilder tests', () => {
                             dtoType: 'string',
                             name: 'customer',
                             place: ParameterPlace.Path,
-                            isModel: false
+                            isModel: false,
+                            isCollection: false,
                         },
                         {
                             dtoType: 'string',
                             name: 'type',
                             place: ParameterPlace.Path,
-                            isModel: false
+                            isModel: false,
+                            isCollection: false,
                         },
                         {
                             dtoType: 'string',
                             name: 'date',
                             optional: false,
                             place: ParameterPlace.Query,
-                            isModel: false
+                            isModel: false,
+                            isCollection: false,
                         }
                     ],
                     returnType: {
