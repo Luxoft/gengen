@@ -1,6 +1,6 @@
 # GenGen
 
- [![NPM version](https://img.shields.io/npm/v/@luxbss/gengen.svg)](https://www.npmjs.com/package/@luxbss/gengen) [![license](https://img.shields.io/github/license/luxoft/gengen)](https://github.com/Luxoft/gengen/blob/master/LICENSE.txt) [![GitHub contributors](https://img.shields.io/github/contributors/luxoft/gengen)](https://github.com/Luxoft/gengen/graphs/contributors/)
+[![NPM version](https://img.shields.io/npm/v/@luxbss/gengen.svg)](https://www.npmjs.com/package/@luxbss/gengen) [![license](https://img.shields.io/github/license/luxoft/gengen)](https://github.com/Luxoft/gengen/blob/master/LICENSE.txt) [![GitHub contributors](https://img.shields.io/github/contributors/luxoft/gengen)](https://github.com/Luxoft/gengen/graphs/contributors/)
 
 This tool generates models and [Angular](https://angular.io/) services based on generated [Swagger JSON](https://swagger.io/specification/).
 
@@ -45,18 +45,18 @@ gengen g --all
 
 ### Options
 
-| Option                 | Description                                                                                | Type    | Default value                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------ | ------- | ---------------------------------------------- |
-| **all**                | Generate all                                                                               | boolean | false                                          |
-| **url**                | Location of swagger.json                                                                   | string  | https://localhost:5001/swagger/v1/swagger.json |
-| **file**               | Local path to swagger.json                                                                 | string  |                                                |
-| **output**             | Output directory                                                                           | string  | ./src/generated                                |
-| **configOutput**       | Output directory using in 'Generate a part of API' scenario                                | string  | ./.generated                                   |
-| **aliasName**          | Specify prefix for generated filenames. [more info](#aliasName)                            | string  |                                                |
-| **withRequestOptions** | Allows to pass http request options to generated methods. [more info](#withRequestOptions) | boolean | false                                     |
-| **utilsRelativePath** | Relative path to utils files. It may be useful when you have multiple generation sources | string |                                      |
-| **unstrictId** | Disable converting 'id' properties to strong Guid type. [more info](#unstrictId) | boolean | false                                     |
-|                        |
+| Option                           | Description                                                                                                          | Type    | Default value                                  |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------------- |
+| **all**                          | Generate all                                                                                                         | boolean | false                                          |
+| **url**                          | Location of swagger.json                                                                                             | string  | https://localhost:5001/swagger/v1/swagger.json |
+| **file**                         | Local path to swagger.json                                                                                           | string  |                                                |
+| **output**                       | Output directory                                                                                                     | string  | ./src/generated                                |
+| **configOutput**                 | Output directory using in 'Generate a part of API' scenario                                                          | string  | ./.generated                                   |
+| **aliasName**                    | Specify prefix for generated filenames. [more info](#aliasName)                                                      | string  |                                                |
+| **withRequestOptions**           | Allows to pass http request options to generated methods. [more info](#withRequestOptions)                           | boolean | false                                          |
+| **utilsRelativePath**            | Relative path to utils files. It may be useful when you have multiple generation sources                             | string  |                                                |
+| **unstrictId**                   | Disable converting 'id' properties to strong Guid type. [more info](#unstrictId)                                     | boolean | false                                          |
+| **withLegacyUndefineGeneration** | Allow enabling the "previous" style generation with many undefined types. [more info](#withLegacyUndefineGeneration) | boolean | false                                          |
 
 ### Option details
 
@@ -110,9 +110,8 @@ export class ExampleService extends BaseHttpService {
     // ...
 }
 
-@Component(
-    // ...
-)
+@Component()
+// ...
 export class MyComponent {
     constructor(private exampleService: ExampleService) {
         this.exampleService.methodName({
@@ -143,6 +142,44 @@ public static fromDTO(dto: IProduct): Product {
     // ...
 }
 ```
+
+#### withLegacyUndefineGeneration
+
+From version 1.3, GenGen supports the [required properties](https://swagger.io/docs/specification/v3_0/data-models/data-types/#required-properties) option from types, which indicates that a field is required on the backend and mandatory (not-null) in the type. For `required` fields, GenGen uses non-null and non-undefined types. Additionally, the generation of the toDto methods has been changed to use `PublicFields<XXX>` instead of `Partial<XXX>`.
+
+Example:
+
+```ts
+// with withLegacyUndefineGeneration
+public static toDTO(model: Partial<Product>): IProduct {
+    return {
+        // ...
+        id: model.obj ? ObjDto.toDTO(model.obj) : undefined,
+        // ...
+    };
+}
+
+// default, all field in model required
+public static toDTO(model: PublicFields<Product>): IProduct {
+    return {
+        // ...
+        id: ObjDto.toDTO(model.obj),
+        // ...
+    };
+}
+```
+
+To enable all power of this behavior you need to customize generation your OpenAPI specification, for Swashbuckle.AspNetCore it can be done with the next [options](https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/2036):
+
+```csharp
+serviceCollection.AddSwaggerGen(builder =>
+{
+  builder.SupportNonNullableReferenceTypes();
+  builder.NonNullableReferenceTypesAsRequired();
+});
+```
+
+However, if you want to use the previous generation for some reason, you can enable it with the `withLegacyUndefineGeneration` option.
 
 # License and copyright
 

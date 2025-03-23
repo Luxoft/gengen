@@ -1,6 +1,6 @@
 {
     "name": "@luxbss/gengen",
-    "version": "1.2.9",
+    "version": "1.3.0",
     "description": "Tool for generating models and Angular services based on OpenAPIs and Swagger's JSON",
     "bin": {
         "gengen": "./bin/index.js"
@@ -12,8 +12,9 @@
         "g:selected": "node ./bin/index.js g --file=./swagger.json --output=./.output/selected",
         "g": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/all",
         "g:withRequestOptions": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/withRequestOptions --withRequestOptions",
+        "g:withLegacyUndefineGeneration": "node ./bin/index.js g --all --file=./swagger.json --output=./.output/withLegacyUndefineGeneration --withLegacyUndefineGeneration",
         "g:alias": "node ./bin/index.js g --file=./swagger.json --aliasName alias --output=./.output/selected",
-        "e2e": "npm run g && npm run g:withRequestOptions && ts-node ./e2e/e2e.ts",
+        "e2e": "npm run g && npm run g:withRequestOptions && npm run g:withLegacyUndefineGeneration && ts-node ./e2e/e2e.ts",
         "g:b": "npm run build && npm run g",
         "test": "jest",
         "test:w": "jest --watch",

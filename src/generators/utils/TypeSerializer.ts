@@ -18,7 +18,10 @@ export class TypeSerializer {
     public static fromInterfaceProperty(param: IInterfacePropertyModel): TypeSerializer {
         return new TypeSerializer({
             isCollection: param.isCollection,
-            isNullable: param.isNullable,
+            // TODO: by design object model in strong typed (c#) languages can combine isRequired=true and isNullable=true,
+            // but it's a strange for UI contract, so any required field will count as Non-Nullable
+            isNullable: !param.isRequired && param.isNullable,
+            isOptional: !param.isRequired,
             type: {
                 name: param.dtoType,
                 isInterface: true

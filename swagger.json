@@ -723,6 +723,7 @@
       },
       "Product": {
         "type": "object",
+        "required": ["modifyDates", "categories","parentProduct", "status"],
         "properties": {
           "id": {
             "type": "string",
@@ -785,6 +786,9 @@
                 }
               ]
             }
+          },
+          "parentProduct": {
+            "$ref": "#/components/schemas/Product"
           },
           "status": {
             "allOf": [

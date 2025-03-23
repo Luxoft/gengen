@@ -2,8 +2,8 @@ import { IType } from './TypeModel';
 
 export interface IObjectPropertyModel extends IType {
     name: string;
-    isNullable: boolean;
     isCollection: boolean;
+    isRequired: boolean;
 }
 
 export interface IObjectModel {

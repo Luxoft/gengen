@@ -32,6 +32,7 @@ program
     .option('--all')
     .option('--withRequestOptions')
     .option('--unstrictId')
+    .option('--withLegacyUndefineGeneration')
     .description('Generates models and services')
     .action(async (params) => {
         const options = getOptions(params);

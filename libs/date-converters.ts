@@ -1,21 +1,21 @@
-import type { TypeOrUndefined, TypeOrUndefinedNullable } from './types';
+import type { TypeOrUndefinedNullable } from './types';
 const HOUR_COEFF = 3600000;
 const MINUTS_IN_HOUR = 60;
 
-export function toDateOut(value: TypeOrUndefinedNullable<Date>): TypeOrUndefined<string> {
+export function toDateOut<T extends TypeOrUndefinedNullable<Date>>(value: T): T extends Date ? string : undefined {
     if (!value) {
-        return undefined;
+        return undefined as never;
     }
 
-    return dateOut(value).toISOString();
+    return dateOut(value).toISOString() as never;
 }
 
-export function toDateIn(value: TypeOrUndefinedNullable<string>): TypeOrUndefined<Date> {
+export function toDateIn<T extends TypeOrUndefinedNullable<string>>(value: T): T extends string ? Date : undefined {
     if (!value) {
-        return undefined;
+        return undefined as never;
     }
 
-    return dateIn(new Date(value));
+    return dateIn(new Date(value)) as never;
 }
 
 function dateOut(value: Date): Date {

@@ -43,15 +43,17 @@ export class ModelMappingService {
             }
 
             if (this.typesGuard.isObject(schema)) {
+                const idFieldName = 'id';
                 if (this.isIdentity(schema)) {
                     identities.push({
                         name,
                         isNullable: false,
                         dtoType: this.nameService.getInterfaceName(name),
                         property: {
-                            ...this.typesService.getSimpleType(schema.properties['id'] as IOpenAPI3GuidSchema),
+                            ...this.typesService.getSimpleType(schema.properties[idFieldName] as IOpenAPI3GuidSchema),
+                            isRequired: this.isRequiredField(schema, idFieldName),
                             isCollection: false,
-                            name: 'id',
+                            name: idFieldName,
                             isNullable: true
                         }
                     });
@@ -70,6 +72,10 @@ export class ModelMappingService {
             interfaces: this.getInterfaces(identities, objects).sort(sortBy((z) => z.name)),
             objects: objects.sort(sortBy((z) => z.name))
         };
+    }
+
+    protected isRequiredField(schema: IOpenAPI3ObjectSchema, fieldName: string): boolean {
+        return schema.required?.includes(fieldName) ?? false;
     }
 
     private toEnumModel(name: string, schema: IOpenAPI3EnumSchema): IEnumModel {
@@ -127,28 +133,29 @@ export class ModelMappingService {
         if (!schema.properties) {
             return;
         }
+
         Object.entries(schema.properties)
             .filter(([name]) => !IGNORE_PROPERTIES.includes(name))
-            .forEach(([name, propertySchema]) => this.addProperty(model, name, propertySchema));
+            .forEach(([name, propertySchema]) => this.addProperty(model, name, propertySchema, this.isRequiredField(schema, name)));
 
         model.properties = model.properties.sort(sortBy((z) => z.name));
     }
 
-    private addProperty(model: IObjectModel, name: string, schema: OpenAPI3Schema): void {
+    private addProperty(model: IObjectModel, name: string, schema: OpenAPI3Schema, isRequired: boolean): void {
         if (this.typesGuard.isSimple(schema)) {
-            model.properties.push(this.getSimpleProperty(name, schema));
+            model.properties.push(this.getSimpleProperty(name, schema, isRequired));
             return;
         }
 
         let property: IObjectPropertyModel | undefined;
         if (this.typesGuard.isCollection(schema)) {
             if (this.typesGuard.isSimple(schema.items)) {
-                property = this.getSimpleProperty(name, schema.items);
+                property = this.getSimpleProperty(name, schema.items, isRequired);
             } else if (this.typesGuard.isReference(schema.items)) {
-                property = this.getReferenceProperty(name, schema.items);
+                property = this.getReferenceProperty(name, schema.items, isRequired);
             }
             if (this.typesGuard.isOneOf(schema.items)) {
-                property = this.getUnionReferenceProperty(name, first(schema.items.oneOf));
+                property = this.getUnionReferenceProperty(name, first(schema.items.oneOf), isRequired);
             }
 
             if (property) {
@@ -159,11 +166,11 @@ export class ModelMappingService {
         }
 
         if (this.typesGuard.isReference(schema)) {
-            property = this.getReferenceProperty(name, schema);
+            property = this.getReferenceProperty(name, schema, isRequired);
         } else if (this.typesGuard.isAllOf(schema)) {
-            property = this.getReferenceProperty(name, first(schema.allOf));
+            property = this.getReferenceProperty(name, first(schema.allOf), isRequired);
         } else if (this.typesGuard.isOneOf(schema)) {
-            property = this.getUnionReferenceProperty(name, first(schema.oneOf));
+            property = this.getUnionReferenceProperty(name, first(schema.oneOf), isRequired);
         }
 
         if (property) {
@@ -207,16 +214,18 @@ export class ModelMappingService {
         });
     }
 
-    private getSimpleProperty(name: string, schema: OpenAPI3SimpleSchema): IObjectPropertyModel {
+    private getSimpleProperty(name: string, schema: OpenAPI3SimpleSchema, isRequired: boolean): IObjectPropertyModel {
         return {
             ...this.typesService.getSimpleType(schema),
             name,
             isCollection: false,
-            isNullable: Boolean(schema.nullable)
+            isRequired
+            // TODO: its always return from getSimpleType
+            //isNullable: Boolean(schema.nullable)
         };
     }
 
-    private getUnionReferenceProperty(name: string, schema: IOpenAPI3Reference): IObjectPropertyModel {
+    private getUnionReferenceProperty(name: string, schema: IOpenAPI3Reference, isRequired: boolean): IObjectPropertyModel {
         const schemaKey = this.openAPIService.getSchemaKey(schema);
 
         return {
@@ -224,12 +233,13 @@ export class ModelMappingService {
             isCollection: false,
             name: name,
             isNullable: false,
+            isRequired,
             type: this.nameService.getUnionName(schemaKey),
             dtoType: this.nameService.getInterfaceName(this.nameService.getUnionName(schemaKey))
         };
     }
 
-    private getReferenceProperty(name: string, schema: IOpenAPI3Reference): IObjectPropertyModel {
+    private getReferenceProperty(name: string, schema: IOpenAPI3Reference, isRequired: boolean): IObjectPropertyModel {
         const schemaKey = this.openAPIService.getSchemaKey(schema);
         const refSchema = this.openAPIService.getRefSchema(schema);
 
@@ -239,6 +249,7 @@ export class ModelMappingService {
                 isCollection: false,
                 name,
                 isNullable: false,
+                isRequired,
                 type: schemaKey,
                 dtoType: schemaKey
             };
@@ -252,6 +263,7 @@ export class ModelMappingService {
             name,
             isNullable: true,
             type: schemaKey,
+            isRequired,
             dtoType: this.nameService.getInterfaceName(schemaKey)
         };
     }
@@ -259,7 +271,15 @@ export class ModelMappingService {
     private getInterfaces(identities: IIdentityModel[], objects: ObjectModel[]): InterfaceModel[] {
         const interfaces: IInterfaceModel[] = identities.map((z) => ({
             name: this.nameService.getInterfaceName(z.name),
-            properties: [{ name: z.property.name, dtoType: z.property.dtoType, isCollection: false, isNullable: false }]
+            properties: [
+                {
+                    name: z.property.name,
+                    dtoType: z.property.dtoType,
+                    isRequired: z.property.isRequired,
+                    isCollection: false,
+                    isNullable: false
+                }
+            ]
         }));
 
         return interfaces.concat(
@@ -272,7 +292,8 @@ export class ModelMappingService {
                             name: x.name,
                             dtoType: x.dtoType,
                             isCollection: x.isCollection,
-                            isNullable: x.isNullable
+                            isNullable: x.isNullable,
+                            isRequired: x.isRequired
                         }))
                     };
                 } else {
@@ -282,7 +303,8 @@ export class ModelMappingService {
                             name: x.name,
                             dtoType: x.dtoType,
                             isCollection: x.isCollection,
-                            isNullable: x.isNullable
+                            isNullable: x.isNullable,
+                            isRequired: x.isRequired
                         }))
                     };
                 }

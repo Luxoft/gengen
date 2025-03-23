@@ -99,15 +99,12 @@ export class GenGenCodeGenInjector {
                         this.options
                     )
             )
-            .provide(
-                ModelMappingService,
-                (x) => new ModelMappingService(x.get(OpenAPIService), x.get(OpenAPITypesGuard), x.get(TypesService), x.get(NameService))
-            )
+            .provide(ModelMappingService, (x) => this.getModelMappingService(x))
             .provide(TypesService, (x) => new TypesService(x.get(OpenAPITypesGuard), this.options))
             .provide(OpenAPIService, (x) => new OpenAPIService(this.spec, x.get(OpenAPITypesGuard)))
 
             .provide(InterfacesGenerator, (x) => new InterfacesGenerator(x.get(PropertiesGenerator)))
-            .provide(ObjectGenerator, (x) => new ObjectGenerator(x.get(NameService), x.get(PropertiesGenerator)))
+            .provide(ObjectGenerator, (x) => this.getObjectGenerator(x))
             .provide(UnionGenerator, (x) => new UnionGenerator(x.get(NameService)))
             .provide(IdentitiesGenerator, (x) => new IdentitiesGenerator(x.get(PropertiesGenerator), this.options))
             .provide(PropertiesGenerator, (x) => new PropertiesGenerator(x.get(NameService)))
@@ -117,4 +114,42 @@ export class GenGenCodeGenInjector {
         private options: IOptions,
         private spec: IOpenAPI3
     ) {}
+
+    private getObjectGenerator(injector: Injector): ObjectGenerator {
+        if (!this.options.withLegacyUndefineGeneration) {
+            return new ObjectGenerator(injector.get(NameService), injector.get(PropertiesGenerator));
+        }
+
+        class LegacyObjectGenerator extends ObjectGenerator {
+            protected override getToDtoArgumentType(x: string): string {
+                return `Partial<${x}>`;
+            }
+        }
+
+        return new LegacyObjectGenerator(injector.get(NameService), injector.get(PropertiesGenerator));
+    }
+
+    private getModelMappingService(injector: Injector): ModelMappingService {
+        if (!this.options.withLegacyUndefineGeneration) {
+            return new ModelMappingService(
+                injector.get(OpenAPIService),
+                injector.get(OpenAPITypesGuard),
+                injector.get(TypesService),
+                injector.get(NameService)
+            );
+        }
+
+        class LegacyModelMappingService extends ModelMappingService {
+            protected isRequiredField(): boolean {
+                return false;
+            }
+        }
+
+        return new LegacyModelMappingService(
+            injector.get(OpenAPIService),
+            injector.get(OpenAPITypesGuard),
+            injector.get(TypesService),
+            injector.get(NameService)
+        );
+    }
 }

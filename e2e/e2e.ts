@@ -11,6 +11,11 @@ async function main() {
     snapshotter('./.snapshot/all/models.ts', './.output/all/models.ts', 'Models');
     snapshotter('./.snapshot/all/services.ts', './.output/all/services.ts', 'Services without RequestOptions');
     snapshotter('./.snapshot/withRequestOptions/services.ts', './.output/withRequestOptions/services.ts', 'Services with RequestOptions');
+    snapshotter(
+        './.snapshot/withLegacyUndefineGeneration/models.ts',
+        './.output/withLegacyUndefineGeneration/models.ts',
+        'Models with LegacyUndefineGeneration'
+    );
 }
 
 async function snapshotter(pathA: string, pathB: string, name: string) {

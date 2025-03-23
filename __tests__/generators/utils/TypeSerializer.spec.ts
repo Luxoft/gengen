@@ -63,18 +63,49 @@ describe('TypeSerializer tests', () => {
         });
     });
 
-    test('fromInterfaceProperty should return optional dtoType', () => {
+    test('fromInterfaceProperty without isRequired should return optional dtoType', () => {
         // Arrange
         // Act
         const result = TypeSerializer.fromInterfaceProperty({
             dtoType: 'MyDtoType',
             isCollection: false,
             isNullable: false,
-            name: 'interface property name'
+            name: 'interface property name',
+            isRequired: false
         }).toString();
 
         // Assert
         expect(result).toEqual('$types.TypeOrUndefined<MyDtoType>');
+    });
+
+    test('fromInterfaceProperty with isRequired should return dtoType', () => {
+        // Arrange
+        // Act
+        const result = TypeSerializer.fromInterfaceProperty({
+            dtoType: 'MyDtoType',
+            isCollection: false,
+            isNullable: false,
+            name: 'interface property name',
+            isRequired: true
+        }).toString();
+
+        // Assert
+        expect(result).toEqual('MyDtoType');
+    });
+
+    test('fromInterfaceProperty with isRequired but isNullable should return dtoType', () => {
+        // Arrange
+        // Act
+        const result = TypeSerializer.fromInterfaceProperty({
+            dtoType: 'MyDtoType',
+            isCollection: false,
+            isNullable: true,
+            name: 'interface property name',
+            isRequired: true
+        }).toString();
+
+        // Assert
+        expect(result).toEqual('MyDtoType');
     });
 
     test('fromTypeName should return optional type', () => {

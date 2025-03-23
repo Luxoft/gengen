@@ -34,15 +34,16 @@ interface ICategoryMotorsDtoBaseInterface {
 export type ICategoryMotorsDto = ICategoryMotorsDtoBaseInterface & ICategory;
 
 export interface IProduct {
-    categories: $types.TypeOrUndefined<ICategoryUnion[]>;
+    categories: ICategoryUnion[];
     category: $types.TypeOrUndefined<ICategoryUnion>;
     colors: $types.TypeOrUndefined<string[]>;
     expireDate: $types.TypeOrUndefined<string>;
     externalId: $types.TypeOrUndefinedNullable<string>;
     id: $types.TypeOrUndefined<string>;
-    modifyDates: $types.TypeOrUndefined<string[]>;
+    modifyDates: string[];
     name: $types.TypeOrUndefinedNullable<string>;
-    status: $types.TypeOrUndefined<ProductStatus>;
+    parentProduct: IProduct;
+    status: ProductStatus;
 }
 
 export interface IProductIdentityDTO {
@@ -101,11 +102,16 @@ export class ProductIdentityDTO {
 }
 
 export class Category {
-    public name: $types.TypeOrUndefinedNullable<string> = undefined;
-    public type: $types.TypeOrUndefined<string> = undefined;
+    public name: $types.TypeOrUndefinedNullable<string>;
+    public type: $types.TypeOrUndefined<string>;
     private __category!: string;
 
-    public static toDTO(model: Partial<Category>): ICategory {
+    protected constructor(dto: ICategory) {
+        this.name = dto.name;
+        this.type = dto.type;
+    }
+
+    public static toDTO(model: $types.PublicFields<Category>): ICategory {
         return {
             name: model.name,
             type: model.type,
@@ -113,20 +119,23 @@ export class Category {
     }
 
     public static fromDTO(dto: ICategory): Category {
-        const model = new Category();
-        model.name = dto.name;
-        model.type = dto.type;
-        return model;
+        return new Category(dto);
     }
 }
 
 export class CategoryElectronicsDto {
-    public name: $types.TypeOrUndefinedNullable<string> = undefined;
-    public type: $types.TypeOrUndefined<string> = undefined;
-    public syntheticTest: $types.TypeOrUndefinedNullable<number> = undefined;
+    public name: $types.TypeOrUndefinedNullable<string>;
+    public type: $types.TypeOrUndefined<string>;
+    public syntheticTest: $types.TypeOrUndefinedNullable<number>;
     private __categoryElectronicsDto!: string;
 
-    public static toDTO(model: Partial<CategoryElectronicsDto>): ICategoryElectronicsDto {
+    protected constructor(dto: ICategoryElectronicsDto) {
+        this.syntheticTest = dto.syntheticTest;
+        this.name = dto.name;
+        this.type = dto.type;
+    }
+
+    public static toDTO(model: $types.PublicFields<CategoryElectronicsDto>): ICategoryElectronicsDto {
         return {
             syntheticTest: model.syntheticTest,
             name: model.name,
@@ -135,21 +144,23 @@ export class CategoryElectronicsDto {
     }
 
     public static fromDTO(dto: ICategoryElectronicsDto): CategoryElectronicsDto {
-        const model = new CategoryElectronicsDto();
-        model.syntheticTest = dto.syntheticTest;
-        model.name = dto.name;
-        model.type = dto.type;
-        return model;
+        return new CategoryElectronicsDto(dto);
     }
 }
 
 export class CategoryMotorsDto {
-    public name: $types.TypeOrUndefinedNullable<string> = undefined;
-    public type: $types.TypeOrUndefined<string> = undefined;
-    public volume: $types.TypeOrUndefinedNullable<number> = undefined;
+    public name: $types.TypeOrUndefinedNullable<string>;
+    public type: $types.TypeOrUndefined<string>;
+    public volume: $types.TypeOrUndefinedNullable<number>;
     private __categoryMotorsDto!: string;
 
-    public static toDTO(model: Partial<CategoryMotorsDto>): ICategoryMotorsDto {
+    protected constructor(dto: ICategoryMotorsDto) {
+        this.volume = dto.volume;
+        this.name = dto.name;
+        this.type = dto.type;
+    }
+
+    public static toDTO(model: $types.PublicFields<CategoryMotorsDto>): ICategoryMotorsDto {
         return {
             volume: model.volume,
             name: model.name,
@@ -158,51 +169,52 @@ export class CategoryMotorsDto {
     }
 
     public static fromDTO(dto: ICategoryMotorsDto): CategoryMotorsDto {
-        const model = new CategoryMotorsDto();
-        model.volume = dto.volume;
-        model.name = dto.name;
-        model.type = dto.type;
-        return model;
+        return new CategoryMotorsDto(dto);
     }
 }
 
 export class Product {
-    public categories: CategoryUnion[] = [];
-    public category: $types.TypeOrUndefined<CategoryUnion> = undefined;
-    public colors: string[] = [];
-    public expireDate: $types.TypeOrUndefined<Date> = undefined;
-    public externalId: $types.TypeOrUndefinedNullable<Guid> = undefined;
-    public id: $types.TypeOrUndefined<Guid> = undefined;
-    public modifyDates: Date[] = [];
-    public name: $types.TypeOrUndefinedNullable<string> = undefined;
-    public status: $types.TypeOrUndefined<ProductStatus> = undefined;
+    public categories: CategoryUnion[];
+    public category: $types.TypeOrUndefined<CategoryUnion>;
+    public colors: string[];
+    public expireDate: $types.TypeOrUndefined<Date>;
+    public externalId: $types.TypeOrUndefinedNullable<Guid>;
+    public id: $types.TypeOrUndefined<Guid>;
+    public modifyDates: Date[];
+    public name: $types.TypeOrUndefinedNullable<string>;
+    public parentProduct: Product;
+    public status: ProductStatus;
     private __product!: string;
 
-    public static toDTO(model: Partial<Product>): IProduct {
+    protected constructor(dto: IProduct) {
+        this.categories = dto.categories.map(x => CategoryUnionClass.fromDTO(x));
+        this.category = dto.category ? CategoryUnionClass.fromDTO(dto.category) : undefined;
+        this.colors = dto.colors ? dto.colors : [];
+        this.expireDate = toDateIn(dto.expireDate);
+        this.externalId = dto.externalId ? new Guid(dto.externalId) : null;
+        this.id = new Guid(dto.id);
+        this.modifyDates = dto.modifyDates.map(toDateIn);
+        this.name = dto.name;
+        this.parentProduct = Product.fromDTO(dto.parentProduct);
+        this.status = dto.status;
+    }
+
+    public static toDTO(model: $types.PublicFields<Product>): IProduct {
         return {
-            categories: model.categories ? model.categories.map(x => CategoryUnionClass.toDTO(x)) : undefined,
+            categories: model.categories.map(x => CategoryUnionClass.toDTO(x)),
             category: model.category ? CategoryUnionClass.toDTO(model.category) : undefined,
             colors: model.colors,
             expireDate: toDateOut(model.expireDate),
             externalId: model.externalId ? model.externalId.toString() : null,
             id: model.id ? model.id.toString() : Guid.empty.toString(),
-            modifyDates: model.modifyDates ? model.modifyDates.map(toDateOut) : undefined,
+            modifyDates: model.modifyDates.map(toDateOut),
             name: model.name,
+            parentProduct: Product.toDTO(model.parentProduct),
             status: model.status,
         };
     }
 
     public static fromDTO(dto: IProduct): Product {
-        const model = new Product();
-        model.categories = dto.categories ? dto.categories.map(x => CategoryUnionClass.fromDTO(x)) : [];
-        model.category = dto.category ? CategoryUnionClass.fromDTO(dto.category) : undefined;
-        model.colors = dto.colors ? dto.colors : [];
-        model.expireDate = toDateIn(dto.expireDate);
-        model.externalId = dto.externalId ? new Guid(dto.externalId) : null;
-        model.id = new Guid(dto.id);
-        model.modifyDates = dto.modifyDates ? dto.modifyDates.map(toDateIn) : [];
-        model.name = dto.name;
-        model.status = dto.status;
-        return model;
+        return new Product(dto);
     }
 }

@@ -6,7 +6,8 @@ export const defaultOptions: IOptions = {
     utilsRelativePath: '',
     url: 'https://localhost:5001/swagger/v1/swagger.json',
     withRequestOptions: false,
-    unstrictId: false
+    unstrictId: false,
+    withLegacyUndefineGeneration: false
 };
 
 export interface IOptions {
@@ -19,6 +20,7 @@ export interface IOptions {
     withRequestOptions: boolean;
     unstrictId: boolean;
     utilsRelativePath: string;
+    withLegacyUndefineGeneration: boolean;
 }
 
 export const pathOptions = {

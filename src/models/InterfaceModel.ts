@@ -3,6 +3,7 @@ export interface IInterfacePropertyModel {
     name: string;
     dtoType: string;
     isNullable: boolean;
+    isRequired: boolean;
 }
 
 export interface IInterfaceModel {
